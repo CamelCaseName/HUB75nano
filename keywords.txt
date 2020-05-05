@@ -1,0 +1,13 @@
+Panel KEYWORD1
+init KEYWORD2
+emptyLine KEYWORD2
+fillscreen KEYWORD2
+sendTwoPixels KEYWORD2
+sendWholeRow KEYWORD2
+sendData KEYWORD2
+latch KEYWORD2
+clock KEYWORD2
+createBuffer KEYWORD2
+displayBuffer KEYWORD2
+test KEYWORD2
+LED KEYWORD2
