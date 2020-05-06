@@ -22,9 +22,9 @@ void setup() {
 
 void loop() {
     //panel.displayBuffer(0);
-    //panel.test();
+    panel.test();
 
-
+/*
     for (int i = 0; i < 128; i++) {
 
         //COLORS
@@ -36,7 +36,7 @@ void loop() {
         //panel.latch();
     
     }
-
+*/
     //panel.sendWholeRow(1,0,1,0,0,0);
     //panel.latch();
 }

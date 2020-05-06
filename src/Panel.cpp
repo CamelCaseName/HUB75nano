@@ -37,8 +37,6 @@ int rc2;
 int gc2;
 int bc2;
 
-bool debug = false;
-
 struct LED{
     unsigned int rc1 : 2;
     unsigned int gc1 : 2;
@@ -56,15 +54,38 @@ struct LED{
     unsigned int bc4 : 2; 
 };
 
+struct Color{
+    unsigned int on : 2;
+    unsigned int r : 2;
+    unsigned int g : 2;
+    unsigned int b : 2;
+    unsigned int   : 0;
+};
+
+enum StringValue { 
+                RED, 
+                GREEN, 
+                BLUE, 
+                WHITE,
+                BLACK,
+                LIGHTRED,
+                LIGHTGREEN,
+                LIGHTBLUE,
+                LIGHTWHITE,
+                PURPLE,
+                YELLOW,
+                CYAN,
+                LIGHTCYAN,
+                ORANGE,
+                };
+
 Panel::Panel(int height,int width){
     rows = height;
     cols = width;
+    Color color;
 }
 
 void Panel::init(bool useBuffer){
-    
-    rows = 32;
-    cols = 64;
     /*
     Pin mapping:
     A A0,
@@ -102,7 +123,7 @@ void Panel::init(bool useBuffer){
 }
 
 void Panel::createBuffer(){
-    LED bufferOne[524];
+    LED bufferOne[rows*cols/4];
     
     for(int x = 0; x < rows * cols / 4; x++){
         bufferOne[x].rc1 = 1;
@@ -214,28 +235,337 @@ void Panel::selectLine(uint8_t c) {
     }
 }
 
-void Panel::fillScreen(int s) {
-    debug = false;
+void Panel::fillScreenShift(int s) {
     for (uint8_t r = 0; r < rows / 2; r++) {
         //switch through all rows
         selectLine(r);
 
-        // for (int c = 0; c<cols; c++) {
-        //     //c = coloumn r = row s = shift for moving fist number is offset for color, second for overall
-        //      rc1 =  ((c + 0 + r + s*2 + 0) % 16) == 0;
-        //      bc1 =  ((c + 1 + r + s*2 + 0) % 16) == 0;
-        //      gc1 =  ((c + 2 + r + s*3 + 0) % 16) == 0;
-        //      rc1 ^= ((c + 3 - r + s*1 + 0) % 16) == 0;
-        //      gc1 ^= ((c + 4 - r + s*2 + 0) % 16) == 0;
-        //      bc1 ^= ((c + 5 - r + s*3 + 0) % 16) == 0;
-        //  sendTwoPixels(rc1,gc1,bc1,rc1,gc1,bc1);
-        // }
-
-        sendWholeRow(rc1, gc1, bc1, rc1, gc1, bc1);
+        for (int c = 0; c<cols; c++) {
+            //c = coloumn r = row s = shift for moving fist number is offset for color, second for overall
+            rc1 =  ((c + 0 + r + s*2 + 0) % 16) == 0;
+            bc1 =  ((c + 1 + r + s*2 + 0) % 16) == 0;
+            gc1 =  ((c + 2 + r + s*3 + 0) % 16) == 0;
+            rc1 ^= ((c + 3 - r + s*1 + 0) % 16) == 0;
+            gc1 ^= ((c + 4 - r + s*2 + 0) % 16) == 0;
+            bc1 ^= ((c + 5 - r + s*3 + 0) % 16) == 0;
+            sendTwoPixels(rc1,gc1,bc1,rc1,gc1,bc1);
+        }       
         latch(); //general latch to get rid of ghosting, or so i thought
     }
 }
 
+void Panel::fillScreenColor(int c){
+    //switches all the colrs and sets the values depending on colors
+    switch (c)
+    {
+        case RED:
+            color.on = 1;
+            color.r = 1;
+            color.g = 0;
+            color.b = 0;
+            break;
+        
+        case GREEN:
+            color.on = 1;
+            color.r = 0;
+            color.g = 1;
+            color.b = 0;
+            break;
+        
+        case BLUE:
+            color.on = 1;
+            color.r = 0;
+            color.g = 0;
+            color.b = 1;
+            break;
+        
+        case WHITE:
+            color.on = 1;
+            color.r = 1;
+            color.g = 1;
+            color.b = 1;
+            break;
+        
+        case BLACK:
+            color.on = 0;
+            color.r = 0;
+            color.g = 0;
+            color.b = 0;
+            break;
+        
+        case LIGHTRED:
+            color.on = 2;
+            color.r = 2;
+            color.g = 0;
+            color.b = 0;
+            break;
+        
+        case LIGHTGREEN:
+            color.on = 2;
+            color.r = 0;
+            color.g = 2;
+            color.b = 0;
+            break;
+        
+        case LIGHTBLUE:
+            color.on = 2;
+            color.r = 0;
+            color.g = 0;
+            color.b = 2;
+            break;
+        
+        case LIGHTWHITE:
+            color.on = 2;
+            color.r = 2;
+            color.g = 2;
+            color.b = 2;
+            break;
+        
+        case PURPLE:
+            color.on = 1;
+            color.r = 1;
+            color.g = 0;
+            color.b = 1;
+            break;
+        
+        case YELLOW:
+            color.on = 1;
+            color.r = 1;
+            color.g = 1;
+            color.b = 0;
+            break;
+        
+        case CYAN:
+            color.on = 1;
+            color.r = 0;
+            color.g = 1;
+            color.b = 1;
+            break;
+
+        case LIGHTCYAN:
+            color.on = 2;
+            color.r = 0;
+            color.g = 2;
+            color.b = 2;
+            break;
+        
+        case ORANGE:
+            color.on = 2;
+            color.r = 1;
+            color.g = 2;
+            color.b = 0;
+            break;
+        
+        default:
+            color.on = 1;
+            color.r = 1;
+            color.g = 1;
+            color.b = 1;
+            break;
+    }
+
+    //actually filling the screen
+    for (uint8_t r = 0; r < rows / 2; r++) {
+        //switch through all rows
+        selectLine(r);
+
+        if(color.on > 0){ //when panel is on at all
+            if (color.on == 2){//when panel has to pwm
+                if (color.r == 2 && color.g == 0 && color.b == 0){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 0;
+                        bc1 = 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 1 && color.b == 0){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 1;
+                        bc1 = 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 2 && color.b == 0){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 0 && color.b == 1){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 0;
+                        bc1 = 1;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 1 && color.b == 1){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 1;
+                        bc1 = 1;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 0 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 1 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = 1;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 2 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 1 && color.g == 0 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 1;
+                        gc1 = 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 0 && color.g == 0 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 0;
+                        gc1 = 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 0 && color.g == 1 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 0;
+                        gc1 = 1;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 1 && color.g == 1 && color.b == 2){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 1;
+                        gc1 = 1;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 1 && color.g == 2 && color.b == 2){ //ORANGE
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 1;
+                        gc1 = (i % 2) == 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 0 && color.g == 2 && color.b == 2){ //LIGHTCYAN
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = (i % 2) == 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 1 && color.g == 2 && color.b == 0){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 1;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 0 && color.g == 2 && color.b == 0){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 0;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 1 && color.g == 2 && color.b == 1){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 1;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 1;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 2 && color.g == 2 && color.b == 1){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = (i % 2) == 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 1;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+                else if (color.r == 0 && color.g == 2 && color.b == 1){
+                    for (int i = 0; i < 256; i++){//for loop to do pwm
+                        //depending on wether to switch led fast or not
+                        rc1 = 0;
+                        gc1 = (i % 2) == 0;
+                        bc1 = 1;
+                        sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                    }
+                }
+            }
+            else{
+                rc1 = color.r;
+                gc1 = color.g;
+                bc1 = color.b;
+                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                latch(); //general latch to get rid of ghosting, or so i thought
+            }
+        }
+        else{
+            //output off
+            digitalWrite(OE, LOW);
+            //address zero
+            digitalWrite(RA, LOW);
+            digitalWrite(RB, LOW);
+            digitalWrite(RC, LOW);
+            digitalWrite(RD, LOW);
+            for (size_t i = 0; i < cols; i++)
+            {
+                clock(0);
+            }
+        }
+    }
+}
 
 //checks with bool wether pin has been set or not (to get rid of unnecessary changes)
 void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl){ //first upper half values, the lower half
@@ -298,7 +628,6 @@ void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_
         digitalWrite(BS, LOW);
         b2 = false;
     }
-
     clock(0);
 }
 
@@ -367,18 +696,11 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
     for (int i = 0; i < cols; i++) {
         clock(0);
     }
+    latch();
 }
 
-void Panel::sendData(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl, bool rows){ //first upper half values, the lower half
-    //clocks in data set previously for complete row
-    for (uint8_t i = 0; i <= cols; i++)
-    {
-        sendTwoPixels(ru, bu, bu, rl, gl, bl);
-    }
-}
-
+//clock function for data entry
 void Panel::clock(uint8_t d) {
-    debug = true;
     digitalWrite(CLK, HIGH);
     if (d > 0) {
         delay(d);
@@ -406,26 +728,6 @@ void Panel::displayBuffer(uint8_t bnum) {
 }
 
 void Panel::test(){
-    /*  HUB75 interface used for lot of LED displays. It is couple of links below if you want to learn about it.
-    It is slight differences between panels, but for panels used by Adafruit and many others basically you need is to do flowing to operate the display:
-
-    - Clock in data for entire row (use R1,G1,B1,R2,G2,B2 for data and CLK for clock)
-    - OE high
-    - Select line address (A,B,C,D)
-    - LAT high
-    - LAT low
-    - OE low
-
-    Repeat for each line*/
-
     //fills entire screen somehow
-    for (int i = 0; i < 128; i++) {
-
-        //COLORS
-        rc1 = 0;//((i + 0) % 2) == 0;
-        gc1 = ((i + 0) % 2) == 0;
-        bc1 = 0;//((i + 0) % 2) == 0;
-        //method for setting leds
-        fillScreen(i);
-    }
+    fillScreenColor(RED);
 }

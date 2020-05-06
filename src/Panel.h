@@ -48,7 +48,8 @@ class Panel{
     void init(bool useBuffer);
     void emptyLine();
     void selectLine(uint8_t c);
-    void fillScreen(int s);
+    void fillScreenShift(int s);
+    void fillScreenColor(int c);
     void sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendData(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl, bool rows);
@@ -73,9 +74,18 @@ class Panel{
       unsigned int gc4:2;
       unsigned int bc4:2;
     };
+    struct Color{
+      unsigned int on : 2;
+      unsigned int r : 2;
+      unsigned int g : 2;
+      unsigned int b : 2;
+      unsigned int   : 0;
+    };
+    enum StringValues{};
     int rc1,gc1,bc1,rc2,gc2,bc2;
     uint8_t r,g,b,rows,cols;
-    bool r1,g1,b1,r2,g2,b2,debug; 
+    bool r1,g1,b1,r2,g2,b2; 
+    Color color;
     LED bufferOne[];
 };
 
