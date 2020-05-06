@@ -56,8 +56,9 @@ struct LED{
     unsigned int bc4 : 2; 
 };
 
-Panel::Panel(){
-
+Panel::Panel(int height,int width){
+    rows = height;
+    cols = width;
 }
 
 void Panel::init(bool useBuffer){

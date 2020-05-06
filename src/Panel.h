@@ -44,7 +44,7 @@ GND GND
 
 class Panel{
   public:
-    Panel();
+    Panel(int height, int width);
     void init(bool useBuffer);
     void emptyLine();
     void selectLine(uint8_t c);

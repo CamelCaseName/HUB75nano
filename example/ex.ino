@@ -14,7 +14,7 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-Panel panel;
+Panel panel(32,64);
 
 void setup() {
     panel.init(true);  
