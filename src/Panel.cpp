@@ -60,19 +60,27 @@ enum StringValue {
                 BLUE, 
                 WHITE,
                 BLACK,
+                PURPLE,
+                YELLOW,
+                CYAN,
                 LIGHTRED,
                 LIGHTGREEN,
                 LIGHTBLUE,
                 LIGHTWHITE,
-                PURPLE,
-                YELLOW,
-                CYAN,
                 LIGHTCYAN,
                 DARKYELLOW,
                 LIGHTPURPLE,
                 LIGHTYELLOW,
-                GREENCYAN,
+                TURQUOISE,
                 PINK,
+                DARKPURPLE,
+                BRIGHTGREEN,
+                BRIGHTCYAN,
+                MEDIUMGREEN,
+                DEEPPURPLE,
+                OCEANBLUE,
+                FLESH,
+                LIGHTPINK,
                 };
 
 Panel::Panel(int height,int width){
@@ -355,24 +363,6 @@ void Panel::fillScreenColor(int c){
                 sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
             }
             break;
-
-        default:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 1;
-                gc1 = 1;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-    }
-}
-
-void Panel::fillScreenUnstableColor(int c){
-    switch (c)
-    {        
         case LIGHTRED:
             for (int i = 0; i < 256; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
@@ -485,7 +475,7 @@ void Panel::fillScreenUnstableColor(int c){
             }
             break;
 
-        case GREENCYAN:
+        case TURQUOISE:
             for (int i = 0; i < 256; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
@@ -513,6 +503,118 @@ void Panel::fillScreenUnstableColor(int c){
             }
             break;
         
+        case DARKPURPLE:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = (i % 2) == 0;
+                gc1 = 0;
+                bc1 = 1;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case BRIGHTGREEN:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = (i % 2) == 0;
+                gc1 = 1;
+                bc1 = 0;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case BRIGHTCYAN:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = (i % 2) == 0;
+                gc1 = 1;
+                bc1 = 1;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case MEDIUMGREEN:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = (i % 2) == 0;
+                gc1 = 1;
+                bc1 = (i % 2) == 0;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case DEEPPURPLE:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = (i % 2) == 0;
+                gc1 = (i % 2) == 0;
+                bc1 = 1;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case OCEANBLUE:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = 0;
+                gc1 = (i % 2) == 0;
+                bc1 = 1;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case FLESH:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = 1;
+                gc1 = (i % 2) == 0;
+                bc1 = (i % 2) == 0;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
+        case LIGHTPINK:
+            for (int i = 0; i < 256; i++){//for loop to do pwm
+                //depending on wether to switch led fast or not
+                rc1 = 1;
+                gc1 = (i % 2) == 0;
+                bc1 = 1;
+                for (uint8_t r = 0; r < rows / 2; r++) {
+                    //switch through all rows
+                    selectLine(r);
+                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
+                }
+            }
+            break;
+
         default:
             for (uint8_t r = 0; r < rows / 2; r++) {
                 //switch through all rows
@@ -689,5 +791,5 @@ void Panel::displayBuffer(uint8_t bnum) {
 
 void Panel::test(){
     //fills entire screen somehow
-    fillScreenUnstableColor(PINK);
+    fillScreenColor(FLESH);
 }

@@ -50,7 +50,6 @@ class Panel{
     void selectLine(uint8_t c);
     void fillScreenShift(int s);
     void fillScreenColor(int c);
-    void fillScreenUnstableColor(int c);
     void sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendData(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl, bool rows);
