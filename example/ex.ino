@@ -22,21 +22,14 @@ void setup() {
 
 void loop() {
     //panel.displayBuffer(0);
-    panel.test();
+    //panel.test();
 
-/*
-    for (int i = 0; i < 128; i++) {
+    //this example iterates through all available colors in the panel
+    for (int i = 0; i < 25; i++) {
 
-        //COLORS
-        panel.rc1 = 1;//((i + 0) % 2) == 0;
-        panel.gc1 = 1;//((i + 0) % 2) == 0;
-        panel.bc1 = 1;//((i + 0) % 2) == 0;
-        //delay(1000);
-        panel.fillScreen(i);
-        //panel.latch();
-    
+        panel.fillScreenColor(i);
     }
-*/
+
     //panel.sendWholeRow(1,0,1,0,0,0);
     //panel.latch();
 }

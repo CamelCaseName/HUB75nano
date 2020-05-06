@@ -55,33 +55,33 @@ struct LED{
 };
 
 enum StringValue { 
-                RED, 
-                GREEN, 
-                BLUE, 
-                WHITE,
-                BLACK,
-                PURPLE,
-                YELLOW,
-                CYAN,
-                LIGHTRED,
-                LIGHTGREEN,
-                LIGHTBLUE,
-                LIGHTWHITE,
-                LIGHTCYAN,
-                DARKYELLOW,
-                LIGHTPURPLE,
-                LIGHTYELLOW,
-                TURQUOISE,
-                PINK,
-                DARKPURPLE,
-                BRIGHTGREEN,
-                BRIGHTCYAN,
-                MEDIUMGREEN,
-                DEEPPURPLE,
-                OCEANBLUE,
-                FLESH,
-                LIGHTPINK,
-                };
+    RED, 
+    GREEN, 
+    BLUE, 
+    WHITE,
+    BLACK,
+    PURPLE,
+    YELLOW,
+    CYAN,
+    LIGHTRED,
+    LIGHTGREEN,
+    LIGHTBLUE,
+    LIGHTWHITE,
+    LIGHTCYAN,
+    DARKYELLOW,
+    LIGHTPURPLE,
+    LIGHTYELLOW,
+    TURQUOISE,
+    PINK,
+    DARKPURPLE,
+    BRIGHTGREEN,
+    BRIGHTCYAN,
+    MEDIUMGREEN,
+    DEEPPURPLE,
+    OCEANBLUE,
+    FLESH,
+    LIGHTPINK,
+};
 
 Panel::Panel(int height,int width){
     rows = height;
@@ -364,7 +364,7 @@ void Panel::fillScreenColor(int c){
             }
             break;
         case LIGHTRED:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -378,7 +378,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTGREEN:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -392,7 +392,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTBLUE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0; 
                 gc1 = 0;
@@ -406,7 +406,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTWHITE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -420,7 +420,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTCYAN:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -434,7 +434,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case DARKYELLOW:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
@@ -448,7 +448,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTPURPLE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -462,7 +462,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTYELLOW:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -476,7 +476,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case TURQUOISE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = 1;
@@ -490,7 +490,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case PINK:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = 0;
@@ -504,7 +504,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case DARKPURPLE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -518,7 +518,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case BRIGHTGREEN:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -532,7 +532,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case BRIGHTCYAN:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -546,7 +546,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case MEDIUMGREEN:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -560,7 +560,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case DEEPPURPLE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -574,7 +574,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case OCEANBLUE:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -588,7 +588,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case FLESH:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
@@ -602,7 +602,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTPINK:
-            for (int i = 0; i < 256; i++){//for loop to do pwm
+            for (int i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
