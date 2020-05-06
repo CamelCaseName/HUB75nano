@@ -1,5 +1,7 @@
 #include <Panel.h>
 
+//which cable goes where
+
 #define RA 14 //register selector a
 #define RB 15 //register selector b
 #define RC 16 //register selector c
@@ -17,19 +19,46 @@
 Panel panel(32,64);
 
 void setup() {
-    panel.init(true);  
+    //use no buffer
+    panel.init(false);  
 }
 
 void loop() {
-    //panel.displayBuffer(0);
     //panel.test();
 
     //this example iterates through all available colors in the panel
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 26; i++) {
 
         panel.fillScreenColor(i);
     }
+    /*
+    |||ALL COLORS|||
 
-    //panel.sendWholeRow(1,0,1,0,0,0);
-    //panel.latch();
+    RED, 
+    GREEN, 
+    BLUE, 
+    WHITE,
+    BLACK,
+    PURPLE,
+    YELLOW,
+    CYAN,
+    LIGHTRED,
+    LIGHTGREEN,
+    LIGHTBLUE,
+    LIGHTWHITE,
+    LIGHTCYAN,
+    DARKYELLOW,
+    LIGHTPURPLE,
+    LIGHTYELLOW,
+    TURQUOISE,
+    PINK,
+    DARKPURPLE,
+    BRIGHTGREEN,
+    BRIGHTCYAN,
+    MEDIUMGREEN,
+    DEEPPURPLE,
+    OCEANBLUE,
+    FLESH,
+    LIGHTPINK,
+    */
 }
