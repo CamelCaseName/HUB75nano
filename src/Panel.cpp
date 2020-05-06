@@ -38,20 +38,33 @@ int gc2;
 int bc2;
 
 struct LED{
-    unsigned int rc1 : 2;
-    unsigned int gc1 : 2;
-    unsigned int bc1 : 2;  
-    unsigned int rc2 : 2;
+    unsigned int rc1 : 1;
+    unsigned int gc1 : 1;
+    unsigned int bc1 : 1;  
+    unsigned int rc2 : 1;
+    unsigned int gc2 : 1;
+    unsigned int bc2 : 1; 
+    unsigned int rc3 : 1;
+    unsigned int gc3 : 1; 
     unsigned int :0;
-    unsigned int gc2 : 2;
-    unsigned int bc2 : 2; 
-    unsigned int rc3 : 2;
-    unsigned int gc3 : 2; 
+    unsigned int bc3 : 1;
+    unsigned int rc4 : 1; 
+    unsigned int gc4 : 1;
+    unsigned int bc4 : 1; 
+    unsigned int rc5 : 1;
+    unsigned int gc5 : 1;
+    unsigned int bc5 : 1;  
+    unsigned int rc6 : 1;
     unsigned int :0;
-    unsigned int bc3 : 2;
-    unsigned int rc4 : 2; 
-    unsigned int gc4 : 2;
-    unsigned int bc4 : 2; 
+    unsigned int gc6 : 1;
+    unsigned int bc6 : 1; 
+    unsigned int rc7 : 1;
+    unsigned int gc7 : 1; 
+    unsigned int bc7 : 1;
+    unsigned int rc8 : 1; 
+    unsigned int gc8 : 1;
+    unsigned int bc8 : 1; 
+    unsigned int :0;
 };
 
 enum StringValue { 
@@ -126,9 +139,9 @@ void Panel::init(bool useBuffer){
 }
 
 void Panel::createBuffer(){
-    LED bufferOne[rows*cols/4];
+    LED bufferOne[rows*cols/8];
     
-    for(int x = 0; x < rows * cols / 4; x++){
+    for(int x = 0; x < rows * cols / 8; x++){
         bufferOne[x].rc1 = 1;
         bufferOne[x].gc1 = 0;
         bufferOne[x].bc1 = 0;
@@ -141,6 +154,18 @@ void Panel::createBuffer(){
         bufferOne[x].rc4 = 1;
         bufferOne[x].gc4 = 0;
         bufferOne[x].bc4 = 0;
+        bufferOne[x].rc5 = 1;
+        bufferOne[x].gc5 = 0;
+        bufferOne[x].bc5 = 0;
+        bufferOne[x].rc6 = 1;
+        bufferOne[x].gc6 = 0;
+        bufferOne[x].bc6 = 0;
+        bufferOne[x].rc7 = 1;
+        bufferOne[x].gc7 = 0;
+        bufferOne[x].bc7 = 0;
+        bufferOne[x].rc8 = 1;
+        bufferOne[x].gc8 = 0;
+        bufferOne[x].bc8 = 0;
     }
 }
 
@@ -773,10 +798,10 @@ void Panel::clock(uint8_t d) {
 //puts the  buffer contents onto the display
 void Panel::displayBuffer(uint8_t bnum) {
     if(bnum == 0){
-        for(long x = 0; x < rows * cols / 4; x++){
+        for(long x = 0; x < rows * cols / 8; x++){
         if(x % (rows) == 0){
             latch();
-            int temprow = x / (cols / 4) / 2;
+            int temprow = x / (cols / 8) / 2;
             selectLine(temprow);
         }
         //                r1             g1                  b1               r2                                        g2                                        b2
@@ -784,6 +809,10 @@ void Panel::displayBuffer(uint8_t bnum) {
         sendTwoPixels(bufferOne[x].rc2, bufferOne[x].gc2, bufferOne[x].bc2, bufferOne[x + (rows * cols / 4) / 2].rc2, bufferOne[x + (rows * cols / 4) / 2].gc2, bufferOne[x + (rows * cols / 4) / 2].bc2);
         sendTwoPixels(bufferOne[x].rc3, bufferOne[x].gc3, bufferOne[x].bc3, bufferOne[x + (rows * cols / 4) / 2].rc3, bufferOne[x + (rows * cols / 4) / 2].gc3, bufferOne[x + (rows * cols / 4) / 2].bc3);
         sendTwoPixels(bufferOne[x].rc4, bufferOne[x].gc4, bufferOne[x].bc4, bufferOne[x + (rows * cols / 4) / 2].rc4, bufferOne[x + (rows * cols / 4) / 2].gc4, bufferOne[x + (rows * cols / 4) / 2].bc4);
+        sendTwoPixels(bufferOne[x].rc5, bufferOne[x].gc5, bufferOne[x].bc5, bufferOne[x + (rows * cols / 4) / 2].rc5, bufferOne[x + (rows * cols / 4) / 2].gc5, bufferOne[x + (rows * cols / 4) / 2].bc5);
+        sendTwoPixels(bufferOne[x].rc6, bufferOne[x].gc6, bufferOne[x].bc6, bufferOne[x + (rows * cols / 4) / 2].rc6, bufferOne[x + (rows * cols / 4) / 2].gc6, bufferOne[x + (rows * cols / 4) / 2].bc6);
+        sendTwoPixels(bufferOne[x].rc7, bufferOne[x].gc7, bufferOne[x].bc7, bufferOne[x + (rows * cols / 4) / 2].rc7, bufferOne[x + (rows * cols / 4) / 2].gc7, bufferOne[x + (rows * cols / 4) / 2].bc7);
+        sendTwoPixels(bufferOne[x].rc8, bufferOne[x].gc8, bufferOne[x].bc8, bufferOne[x + (rows * cols / 4) / 2].rc8, bufferOne[x + (rows * cols / 4) / 2].gc8, bufferOne[x + (rows * cols / 4) / 2].bc8);
 
         }
     }
@@ -791,5 +820,5 @@ void Panel::displayBuffer(uint8_t bnum) {
 
 void Panel::test(){
     //fills entire screen somehow
-    fillScreenColor(FLESH);
+    fillScreenColor(PURPLE);
 }
