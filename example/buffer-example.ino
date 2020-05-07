@@ -21,9 +21,10 @@ Panel panel(32,64);
 void setup() {
     //use buffer
     panel.init(true);  
+    //delay(3000);
 }
 
 void loop() {
-    panel.test();
-
+    //panel.fillScreenColor(panel.PURPLE);
+    panel.displayBuffer();
 }
