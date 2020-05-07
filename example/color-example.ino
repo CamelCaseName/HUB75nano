@@ -27,7 +27,7 @@ void loop() {
     //panel.test();
 
     //this example iterates through all available colors in the panel
-    for (int i = 0; i < 52000; i++) {
+    for (long i = 0; i < 52000; i++) {
         panel.fillScreenColor(i/2000);//changes after some time 
     }
     /*
