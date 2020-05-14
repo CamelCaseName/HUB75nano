@@ -360,7 +360,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #vscode configs
-.vscode
+*.vscode
 
 #visual micro build details
 __vm/
@@ -368,5 +368,5 @@ __vm/
 #visual micro debug files
 Debug/
 
-#some vs project file
-.vcxproj
+#visual micro project files
+*.vcxproj*
