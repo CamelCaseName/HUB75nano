@@ -36,20 +36,20 @@ CLK 8,
 OE 9,
 GND GND
 */
-
+//#include "../../../../../../../Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h"
 #include <arduino.h>
 
 #ifndef Panel_h
 #define Panel_h
 
 class Panel{
-  public:
-    Panel(int height, int width);
+    public:
+    Panel(uint8_t height, uint8_t width);
     void init(bool useBuffer);
     void emptyLine();
     void selectLine(uint8_t c);
-    void fillScreenShift(int s);
-    void fillScreenColor(int c);
+    void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
+    void fillScreenColor(uint8_t c);
     void sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void displayBuffer();
@@ -57,40 +57,39 @@ class Panel{
     void clock(uint8_t d);
     void latch();
     void createBuffer();
-    struct LED{
-      unsigned int rc1 : 1;
-      unsigned int gc1 : 1;
-      unsigned int bc1 : 1;  
-      unsigned int rc2 : 1;
-      unsigned int gc2 : 1;
-      unsigned int bc2 : 1; 
-      unsigned int rc3 : 1;
-      unsigned int gc3 : 1; 
-      unsigned int :0;
-      unsigned int bc3 : 1;
-      unsigned int rc4 : 1; 
-      unsigned int gc4 : 1;
-      unsigned int bc4 : 1; 
-      unsigned int rc5 : 1;
-      unsigned int gc5 : 1;
-      unsigned int bc5 : 1;  
-      unsigned int rc6 : 1;
-      unsigned int :0;
-      unsigned int gc6 : 1;
-      unsigned int bc6 : 1; 
-      unsigned int rc7 : 1;
-      unsigned int gc7 : 1; 
-      unsigned int bc7 : 1;
-      unsigned int rc8 : 1; 
-      unsigned int gc8 : 1;
-      unsigned int bc8 : 1; 
-      unsigned int :0;
+    struct LED{ 
+        uint8_t rc1 : 1;
+        uint8_t gc1 : 1;
+        uint8_t bc1 : 1;  
+        uint8_t rc2 : 1;
+        uint8_t gc2 : 1;
+        uint8_t bc2 : 1; 
+        uint8_t rc3 : 1;
+        uint8_t gc3 : 1; 
+        uint8_t :0;
+        uint8_t bc3 : 1;
+        uint8_t rc4 : 1; 
+        uint8_t gc4 : 1;
+        uint8_t bc4 : 1; 
+        uint8_t rc5 : 1;
+        uint8_t gc5 : 1;
+        uint8_t bc5 : 1;  
+        uint8_t rc6 : 1;
+        uint8_t :0;
+        uint8_t gc6 : 1;
+        uint8_t bc6 : 1; 
+        uint8_t rc7 : 1;
+        uint8_t gc7 : 1; 
+        uint8_t bc7 : 1;
+        uint8_t rc8 : 1; 
+        uint8_t gc8 : 1;
+        uint8_t bc8 : 1; 
+        uint8_t :0;
     };
     enum StringValue { RED, GREEN, BLUE, WHITE,BLACK,PURPLE,YELLOW,CYAN,LIGHTRED,LIGHTGREEN,LIGHTBLUE,LIGHTWHITE,LIGHTCYAN,DARKYELLOW,LIGHTPURPLE,LIGHTYELLOW,TURQUOISE,PINK,DARKPURPLE,BRIGHTGREEN,BRIGHTCYAN,MEDIUMGREEN,DEEPPURPLE,OCEANBLUE,FLESH,LIGHTPINK,};
-    int rc1,gc1,bc1,rc2,gc2,bc2;
-    uint8_t r,g,b,rows,cols;
+    uint8_t r,g,b,rows,cols,rc1,gc1,bc1,rc2,gc2,bc2,t,x;
+    uint16_t bsize;
     bool r1,g1,b1,r2,g2,b2; 
     LED buffer[256];
 };
-
 #endif

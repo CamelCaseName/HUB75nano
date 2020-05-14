@@ -20,7 +20,7 @@ uint8_t b = 0;
 
 uint8_t rows;
 uint8_t cols;
-uint8_t bsize;
+uint16_t bsize;
 
 //register for string pin status
 bool r1;
@@ -31,41 +31,41 @@ bool g2;
 bool b2;
 
 //color values
-int rc1;
-int gc1;
-int bc1;
-int rc2;
-int gc2;
-int bc2;
+uint8_t rc1;
+uint8_t gc1;
+uint8_t bc1;
+uint8_t rc2;
+uint8_t gc2;
+uint8_t bc2;
 
-struct LED{//3 bytes long
-    unsigned int rc1 : 1;
-    unsigned int gc1 : 1;
-    unsigned int bc1 : 1;  
-    unsigned int rc2 : 1;
-    unsigned int gc2 : 1;
-    unsigned int bc2 : 1; 
-    unsigned int rc3 : 1;
-    unsigned int gc3 : 1; 
-    unsigned int :0;
-    unsigned int bc3 : 1;
-    unsigned int rc4 : 1; 
-    unsigned int gc4 : 1;
-    unsigned int bc4 : 1; 
-    unsigned int rc5 : 1;
-    unsigned int gc5 : 1;
-    unsigned int bc5 : 1;  
-    unsigned int rc6 : 1;
-    unsigned int :0;
-    unsigned int gc6 : 1;
-    unsigned int bc6 : 1; 
-    unsigned int rc7 : 1;
-    unsigned int gc7 : 1; 
-    unsigned int bc7 : 1;
-    unsigned int rc8 : 1; 
-    unsigned int gc8 : 1;
-    unsigned int bc8 : 1; 
-    unsigned int :0;
+struct LED{//3 bytes long, contains 8 leds
+    uint8_t rc1 : 1;
+    uint8_t gc1 : 1;
+    uint8_t bc1 : 1;  
+    uint8_t rc2 : 1;
+    uint8_t gc2 : 1;
+    uint8_t bc2 : 1; 
+    uint8_t rc3 : 1;
+    uint8_t gc3 : 1; 
+    uint8_t :0;
+    uint8_t bc3 : 1;
+    uint8_t rc4 : 1; 
+    uint8_t gc4 : 1;
+    uint8_t bc4 : 1; 
+    uint8_t rc5 : 1;
+    uint8_t gc5 : 1;
+    uint8_t bc5 : 1;  
+    uint8_t rc6 : 1;
+    uint8_t :0;
+    uint8_t gc6 : 1;
+    uint8_t bc6 : 1; 
+    uint8_t rc7 : 1;
+    uint8_t gc7 : 1; 
+    uint8_t bc7 : 1;
+    uint8_t rc8 : 1; 
+    uint8_t gc8 : 1;
+    uint8_t bc8 : 1; 
+    uint8_t :0;
 };
 
 enum StringValue { 
@@ -97,11 +97,12 @@ enum StringValue {
     LIGHTPINK,
 };
 
-Panel::Panel(int height,int width){
+Panel::Panel(uint8_t height,uint8_t width){
     rows = height;
     cols = width;
 }
 
+//initialization function, use buffer y/n + serial with 112500 baud
 void Panel::init(bool useBuffer){
     /*
     Pin mapping:
@@ -134,12 +135,14 @@ void Panel::init(bool useBuffer){
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
 
-    //Serial.begin(112500);
+
+    //DEBUG PLS REMOVE
+    Serial.begin(112500);
 
     if(useBuffer){
-        createBuffer();
         //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
-        bsize = rows * cols / 8;
+        bsize = rows * (cols / 8);
+        createBuffer();
     }
 }
 
@@ -147,7 +150,7 @@ void Panel::init(bool useBuffer){
 void Panel::createBuffer(){
     LED buffer[bsize];
     //makes everything white
-    for(int x = 0; x < bsize; x++){
+    for(uint16_t x = 0; x < bsize; x++){
         buffer[x].rc1 = 1;
         buffer[x].gc1 = 1;
         buffer[x].bc1 = 1;
@@ -175,6 +178,7 @@ void Panel::createBuffer(){
     }
 }
 
+//outputs an empty row on the selected line
 void Panel::emptyLine() {
     //output off
     digitalWrite(OE, LOW);
@@ -196,6 +200,7 @@ void Panel::latch() {
     emptyLine();
 }
 
+//selects one of the 16 lines, 0 based
 void Panel::selectLine(uint8_t c) {
     switch (c) {
         case B0000:
@@ -269,26 +274,28 @@ void Panel::selectLine(uint8_t c) {
     }
 }
 
-void Panel::fillScreenShift(int s) {
+//creates interesting patterns (shift, factor, offset)
+void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {
     for (uint8_t r = 0; r < rows / 2; r++) {
         //switch through all rows
         selectLine(r);
 
-        for (int c = 0; c<cols; c++) {
+        for (uint8_t c = 0; c<cols; c++) {
             //c = coloumn r = row s = shift for moving fist number is offset for color, second for overall
-            rc1 =  ((c + 0 + r + s*2 + 0) % 16) == 0;
-            bc1 =  ((c + 1 + r + s*2 + 0) % 16) == 0;
-            gc1 =  ((c + 2 + r + s*3 + 0) % 16) == 0;
-            rc1 ^= ((c + 3 - r + s*1 + 0) % 16) == 0;
-            gc1 ^= ((c + 4 - r + s*2 + 0) % 16) == 0;
-            bc1 ^= ((c + 5 - r + s*3 + 0) % 16) == 0;
+            rc1 =  ((c + 0 + r + s*1 + o) % f) == 0;
+            bc1 =  ((c + 1 + r + s*2 + o) % f) == 0;
+            gc1 =  ((c + 2 + r + s*3 + o) % f) == 0;
+            rc1 ^= ((c + 3 - r + s*1 + o) % f) == 0;
+            gc1 ^= ((c + 4 - r + s*2 + o) % f) == 0;
+            bc1 ^= ((c + 5 - r + s*3 + o) % f) == 0;
             sendTwoPixels(rc1,gc1,bc1,rc1,gc1,bc1);
         }       
         latch(); //general latch to get rid of ghosting, or so i thought
     }
 }
 
-void Panel::fillScreenColor(int c){
+//fills the screeen with the set color
+void Panel::fillScreenColor(uint8_t c){
     //switches all the colrs and sets the values depending on colors
     switch (c)
     {
@@ -395,7 +402,7 @@ void Panel::fillScreenColor(int c){
             }
             break;
         case LIGHTRED:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -409,7 +416,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTGREEN:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -423,7 +430,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTBLUE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0; 
                 gc1 = 0;
@@ -437,7 +444,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTWHITE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -451,7 +458,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case LIGHTCYAN:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -465,7 +472,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case DARKYELLOW:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
@@ -479,7 +486,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTPURPLE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -493,7 +500,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTYELLOW:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -507,7 +514,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case TURQUOISE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = 1;
@@ -521,7 +528,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case PINK:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = 0;
@@ -535,7 +542,7 @@ void Panel::fillScreenColor(int c){
             break;
         
         case DARKPURPLE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 0;
@@ -549,7 +556,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case BRIGHTGREEN:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -563,7 +570,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case BRIGHTCYAN:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -577,7 +584,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case MEDIUMGREEN:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = 1;
@@ -591,7 +598,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case DEEPPURPLE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = (i % 2) == 0;
                 gc1 = (i % 2) == 0;
@@ -605,7 +612,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case OCEANBLUE:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 0;
                 gc1 = (i % 2) == 0;
@@ -619,7 +626,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case FLESH:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
@@ -633,7 +640,7 @@ void Panel::fillScreenColor(int c){
             break;
 
         case LIGHTPINK:
-            for (int i = 0; i < 32; i++){//for loop to do pwm
+            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
                 //depending on wether to switch led fast or not
                 rc1 = 1;
                 gc1 = (i % 2) == 0;
@@ -660,7 +667,7 @@ void Panel::fillScreenColor(int c){
     }
 }
 
-//checks with bool wether pin has been set or not (to get rid of unnecessary changes)
+//sends two pixels, one in upper half, one in lower halöf to display
 void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl){ //first upper half values, the lower half
     if (ru > 0 && r1 == false) //turns upper half red
     {
@@ -724,6 +731,7 @@ void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_
     clock(0);
 }
 
+//sends two rows of pixels to display
 void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl) { //first upper half values, the lower half
     
     if (ru > 0 && r1 == false) //turns upper half red
@@ -786,7 +794,7 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
         b2 = false;
     }
 
-    for (int i = 0; i < cols; i++) {
+    for (uint8_t i = 0; i < cols; i++) {
         clock(0);
     }
     latch();
@@ -803,13 +811,16 @@ void Panel::clock(uint8_t d) {
 
 //puts the  buffer contents onto the display
 void Panel::displayBuffer() {
-    int t = rows * 4;
-    for(uint8_t x = 0; x < t; x++){
+    
+    //when the bufer is created, every value is set to 1
+    //but when calling this function, it is somehow all back to 0
+    //therefor no picture is displayed, shich makes sense at least
+
+    Serial.println(buffer[0].rc1);
+    uint16_t t = rows * 4;
+    uint16_t x = 0;
+    for(x = 0; x < t; x++){
         selectLine(x);
-        //Serial.print(x);
-        //Serial.print(buffer[x].rc1);
-        //Serial.print(buffer[x].gc1);
-        //Serial.println(buffer[x].bc1);
         //             r1                  g1                  b1                   r2                                g2                              b2
         sendTwoPixels(buffer[x+0].rc1, buffer[x+0].gc1, buffer[x+0].bc1, buffer[x+0 + (t)].rc1, buffer[x+0 + (t)].gc1, buffer[x+0 + (t)].bc1);
         sendTwoPixels(buffer[x+0].rc2, buffer[x+0].gc2, buffer[x+0].bc2, buffer[x+0 + (t)].rc2, buffer[x+0 + (t)].gc2, buffer[x+0 + (t)].bc2);
