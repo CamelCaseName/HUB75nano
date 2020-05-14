@@ -20,6 +20,7 @@ uint8_t b = 0;
 
 uint8_t rows;
 uint8_t cols;
+uint8_t bsize;
 
 //register for string pin status
 bool r1;
@@ -137,14 +138,16 @@ void Panel::init(bool useBuffer){
 
     if(useBuffer){
         createBuffer();
+        //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
+        bsize = rows * cols / 8;
     }
 }
 
 //creates a buffer used to display stuff
 void Panel::createBuffer(){
-    LED buffer[rows*cols/8];
+    LED buffer[bsize];
     //makes everything white
-    for(int x = 0; x < rows * cols / 8; x++){
+    for(int x = 0; x < bsize; x++){
         buffer[x].rc1 = 1;
         buffer[x].gc1 = 1;
         buffer[x].bc1 = 1;
