@@ -20,8 +20,8 @@ Panel panel(32,64);
 
 void setup() {
     //use buffer
-    panel.init(true);  
-    //delay(3000);
+    panel.init(false);
+    panel.createBuffer();
 }
 
 void loop() {
