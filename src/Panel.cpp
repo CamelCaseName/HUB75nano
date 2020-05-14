@@ -133,7 +133,7 @@ void Panel::init(bool useBuffer){
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
 
-    Serial.begin(112500);
+    //Serial.begin(112500);
 
     if(useBuffer){
         createBuffer();
@@ -802,12 +802,11 @@ void Panel::clock(uint8_t d) {
 void Panel::displayBuffer() {
     int t = rows * 4;
     for(uint8_t x = 0; x < t; x++){
-
         selectLine(x);
-        Serial.print(x);
-        Serial.print(buffer[x].rc1);
-        Serial.print(buffer[x].gc1);
-        Serial.println(buffer[x].bc1);
+        //Serial.print(x);
+        //Serial.print(buffer[x].rc1);
+        //Serial.print(buffer[x].gc1);
+        //Serial.println(buffer[x].bc1);
         //             r1                  g1                  b1                   r2                                g2                              b2
         sendTwoPixels(buffer[x+0].rc1, buffer[x+0].gc1, buffer[x+0].bc1, buffer[x+0 + (t)].rc1, buffer[x+0 + (t)].gc1, buffer[x+0 + (t)].bc1);
         sendTwoPixels(buffer[x+0].rc2, buffer[x+0].gc2, buffer[x+0].bc2, buffer[x+0 + (t)].rc2, buffer[x+0 + (t)].gc2, buffer[x+0 + (t)].bc2);
