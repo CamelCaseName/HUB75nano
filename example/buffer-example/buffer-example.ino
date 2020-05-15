@@ -20,7 +20,7 @@
 uint8_t maxAmount = 96;
 
 Panel panel(32,64,true);
-Pixel pixel(maxAmount,true,32,64);
+Pixel pixel(maxAmount,32,64);
 
 //creates a sideways smiley face
 void setup() {
@@ -73,11 +73,11 @@ void putPixels() {
         uint8_t ty = pixel.pixs[pixelIndex].y;
         uint16_t c = tx / 8 + (ty) * 8;
         if (pixel.pixs[pixelIndex].v){
-            Serial.print(tx);
+            /*Serial.print(tx);
             Serial.print(" ");
             Serial.print(ty);
             Serial.print(" ");
-            Serial.println(c);
+            Serial.println(c);*/
             switch (tx % 8){
                 case 0:
                     panel.buffer[c].rc1 = pixel.pixs[pixelIndex].r;

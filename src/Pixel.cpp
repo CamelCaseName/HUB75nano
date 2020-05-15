@@ -33,13 +33,8 @@ struct Small {
 uint8_t height;
 uint8_t width;
 
-Pixel::Pixel(uint8_t maxAmount, bool small, uint8_t panelX, uint8_t panelY) {
-    if (small) {
-        Small pixs[maxAmount];
-    }
-    /*else {
-        Large pixls[maxAmount];
-    }*/
+Pixel::Pixel(uint8_t maxAmount, uint8_t panelX, uint8_t panelY) {
+    Small pixs[maxAmount];
     height = panelX;
     width = panelY;
 }

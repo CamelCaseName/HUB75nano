@@ -25,7 +25,7 @@
 
 class Pixel {
     public:
-        Pixel(uint8_t maxAmount, bool small, uint8_t panelX, uint8_t panelY);
+        Pixel(uint8_t maxAmount, uint8_t panelX, uint8_t panelY);
         void translate(uint8_t newX, uint8_t newY);
         //uint16_t convertCoords(uint8_t x, uint8_t y);
         struct Small {
