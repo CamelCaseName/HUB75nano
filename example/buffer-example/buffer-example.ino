@@ -38,7 +38,7 @@ void setup() {
     for (uint8_t k = 0; k < 2; k++) { //k= 0 for left eye, 1*40 for second
         for (uint8_t j = 0; j < 4; j++){ //j = 0 to 4 for all four rows
             for (uint8_t i = 0; i < 4; i++){//i = 0 to 4 for four coloums
-                pixel.pixs[temp].x = 7 + i + (k * 41);
+                pixel.pixs[temp].x = 7 + i + (k * 46);
                 pixel.pixs[temp].y = 7 + j;
                 temp++;
             }
@@ -48,14 +48,14 @@ void setup() {
     //creates a mouth
     for (uint8_t j = 0; j < 2; j++) {
         for (uint8_t i = 0; i < 32; i++) {
-            pixel.pixs[temp].x = 15 + i;
+            pixel.pixs[temp].x = 16 + i;
             pixel.pixs[temp].y = 23 + j;
             temp++;
         }
     }
 
     //sets the buffer background to black
-    panel.createBufferBG(panel.BLACK);
+    panel.createBufferBG(panel.RED);
 
     //writes pixels to buffer
     putPixels();
@@ -133,3 +133,39 @@ void putPixels() {
         }
     }
 }
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//        ####                                      ####
+//        ####                                      ####
+//        ####                                      ####
+//        ####                                      ####
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//              ##################################
+//              ##################################
+//
+//
+//
+//
+//
+//
