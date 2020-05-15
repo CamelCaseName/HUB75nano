@@ -25,21 +25,22 @@
 
 class Pixel {
     public:
-        Pixel(uint8_t maxAmount, bool small);
+        Pixel(uint8_t maxAmount, bool small, uint8_t panelX, uint8_t panelY);
         void translate(uint8_t newX, uint8_t newY);
+        //uint16_t convertCoords(uint8_t x, uint8_t y);
         struct Small {
-            uint8_t x : 5; //x coordinate of set pixel
+            uint8_t y : 5; //x coordinate of set pixel, long side
             uint8_t r : 1; //r value of set pixel
             uint8_t g : 1; //g value of set pixel
             uint8_t b : 1; //b value of set pixel
             uint8_t : 0;
-            uint8_t y : 6; //y coordinate of set pixel
+            uint8_t x : 6; //y coordinate of set pixel
             uint8_t v : 1; //visible or not
             uint8_t : 1;
             uint8_t : 0;
         };
-        struct Large {
-            uint8_t x : 4; //x coordinate of set pixel
+        /*struct Large {
+            uint8_t x : 4; //x coordinate of set pixel, short side
             uint8_t r : 1; //r value of set pixel
             uint8_t g : 1; //g value of set pixel
             uint8_t b : 1; //b value of set pixel
@@ -49,8 +50,11 @@ class Pixel {
             uint8_t v : 1; //visible or not
             uint8_t : 2;
             uint8_t : 0;
-        };
-        Small pixels[];
+        };*/
+        uint8_t height;
+        uint8_t width;
+        Small pixs[128];//ram limits
+        //Large pixl[];
 };
 
 #endif
