@@ -13,7 +13,8 @@ For the Pixels, do the same with
 There is also the Buffer example, which is an implementation of these librarys
 
 # Which cable goes where
-![HUB75 Pinout](https://hackster.imgix.net/uploads/image/file/146124/DisplayPinout.jpg?auto=compress%2Cformat&w=740&h=555&fit=max) This is a pin description for the HUB75 connector on the panels.
+<img src="https://hackster.imgix.net/uploads/image/file/146124/DisplayPinout.jpg" alt="HUB75 Pinout" width="200"/>
+This is a pin description for the HUB75 connector on the panels.
 The corresponding pins on the arduino are as follows:
 
 - A A0
@@ -36,8 +37,8 @@ Right side is the panel, left the Arduino.
 # Examples
 This library also contains some examples on how to use it. The examples all end with *.ino. The Color example focuses on how to fill the screen with a color, and also with special colors. 
 The buffer examples demonstrates how to interact with the 1bit rgb buffer for the display, in order to show more precise images. It also uses the bundled pixel class to display a smiley face.
-![smiley face](https://i.imgur.com/Zr81xNZ.jpg)
+<img src="https://i.imgur.com/Zr81xNZ.jpg" alt="smiley face" width="200"/>
 
 # current problems
-There is some ghosting, excpecially on black pixels: ![ghosting example](https://i.imgur.com/KeBjTea.jpg)
+There is some ghosting, excpecially on black pixels: <img src="https://i.imgur.com/KeBjTea.jpg" alt="ghosting on smiley" width="200"/>
 Unfortunately, it seems there is no way around this, because it is probably caused by badly insulated lanes on the pcb and stray currents. Your experience may differ.
