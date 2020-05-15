@@ -5,10 +5,10 @@ it can display colors up to 1/2 refresh rate pwm colors, or a 1 bit rgb buffer. 
 # Getting set up
 Clone or download the archive and put it inside your Arduino IDE custom library folder. 
 Then just put 
-	#import <Panel.h>
+	'#import <Panel.h>'
 and everything should work.
 For the Pixels, do the same with
-	#import <Pixel.h>
+	'#import <Pixel.h>'
 
 
 There is also the Buffer example, which is an implementation of these librarys
