@@ -853,8 +853,8 @@ void Panel::clock(uint8_t d) {
     digitalWrite(CLK, LOW);
 }
 
-//puts the  buffer contents onto the display
-void Panel::displayBuffer() {
+
+void Panel::displayBuffer() {//puts the  buffer contents onto the display
     uint16_t t = rows * 4;
     uint16_t x = 0;
     for(x = 0; x < t; x++){

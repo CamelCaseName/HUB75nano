@@ -89,6 +89,6 @@ class Panel{
         uint8_t r,g,b,rows,cols,rc1,gc1,bc1,rc2,gc2,bc2,t,x;
         uint16_t bsize;
         bool r1,g1,b1,r2,g2,b2; 
-        LED buffer[];
+        LED buffer[];//uses 1024 bytes on max size display
 };
 #endif
