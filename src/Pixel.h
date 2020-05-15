@@ -53,7 +53,7 @@ class Pixel {
         };*/
         uint8_t height;
         uint8_t width;
-        Small pixs[128];//ram limits
+        Small pixs[256];//ram limits
         //Large pixl[];
 };
 

@@ -248,6 +248,10 @@ void Panel::latch() {
 void Panel::selectLine(uint8_t c) {
     switch (c) {
         case B0000:
+            digitalWrite(RA, HIGH);
+            digitalWrite(RB, HIGH);
+            digitalWrite(RC, HIGH);
+            digitalWrite(RD, HIGH);
             digitalWrite(RA, LOW);
             digitalWrite(RB, LOW);
             digitalWrite(RC, LOW);
@@ -858,6 +862,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
     uint16_t t = rows * 4;
     uint16_t x = 0;
     for(x = 0; x < t; x++){
+        //Serial.println(x/8);
         selectLine(x/8);
         //             r1                  g1                  b1                   r2                                g2                              b2
         sendTwoPixels(buffer[x+0].rc1, buffer[x+0].gc1, buffer[x+0].bc1, buffer[x+0 + (t)].rc1, buffer[x+0 + (t)].gc1, buffer[x+0 + (t)].bc1);
