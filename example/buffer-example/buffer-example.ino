@@ -1,4 +1,5 @@
 #include <Panel.h>
+//#include <Pixel.h>
 
 //which cable goes where
 
@@ -16,12 +17,13 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-Panel panel(32,64);
+Panel panel(32,64,true);
+//Pixel pixel(10,true);
 
 void setup() {
-    //use buffer
-    panel.init(true);  
-    //delay(3000);
+
+    panel.createBufferBG(panel.PURPLE);
+    
 }
 
 void loop() {

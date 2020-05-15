@@ -97,13 +97,9 @@ enum StringValue {
     LIGHTPINK,
 };
 
-Panel::Panel(uint8_t height,uint8_t width){
+Panel::Panel(uint8_t height,uint8_t width, bool usebuffer){
     rows = height;
     cols = width;
-}
-
-//initialization function, use buffer y/n + serial with 112500 baud
-void Panel::init(bool useBuffer){
     /*
     Pin mapping:
     A A0,
@@ -134,47 +130,95 @@ void Panel::init(bool useBuffer){
     pinMode(BS, OUTPUT);
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
-
-
-    //DEBUG PLS REMOVE
+    
+    //primarily used for debugging
     Serial.begin(112500);
-
-    if(useBuffer){
+    
+    
+    if (usebuffer) {
         //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
         bsize = rows * (cols / 8);
-        createBuffer();
+        LED buffer[bsize];
     }
 }
 
 //creates a buffer used to display stuff
-void Panel::createBuffer(){
-    LED buffer[bsize];
-    //makes everything white
+void Panel::createBufferBG(uint8_t c){
+    uint8_t rt, gt, bt;
+    //initiates buffer accordingly
+    switch (c){
+        case RED:
+            rt = 1;
+            gt = 0;
+            bt = 0;
+            break;
+        case GREEN:
+            rt = 0;
+            gt = 1;
+            bt = 0;
+            break;
+        case BLUE:
+            rt = 0;
+            gt = 0;
+            bt = 1;
+            break;
+        case WHITE:
+            rt = 1;
+            gt = 1;
+            bt = 1;
+            break;
+        case BLACK:
+            rt = 0;
+            gt = 0;
+            bt = 0;
+            break;
+        case PURPLE:
+            rt = 1;
+            gt = 0;
+            bt = 1;
+            break;
+        case YELLOW:
+            rt = 1;
+            gt = 1;
+            bt = 0;
+            break;
+        case CYAN:
+            rt = 0;
+            gt = 1;
+            bt = 1;
+            break;
+
+        default:
+            rt = 1;
+            gt = 1;
+            bt = 1;
+            break;
+    }
     for(uint16_t x = 0; x < bsize; x++){
-        buffer[x].rc1 = 1;
-        buffer[x].gc1 = 1;
-        buffer[x].bc1 = 1;
-        buffer[x].rc2 = 1;
-        buffer[x].gc2 = 1;
-        buffer[x].bc2 = 1;
-        buffer[x].rc3 = 1;
-        buffer[x].gc3 = 1;
-        buffer[x].bc3 = 1;
-        buffer[x].rc4 = 1;
-        buffer[x].gc4 = 1;
-        buffer[x].bc4 = 1;
-        buffer[x].rc5 = 1;
-        buffer[x].gc5 = 1;
-        buffer[x].bc5 = 1;
-        buffer[x].rc6 = 1;
-        buffer[x].gc6 = 1;
-        buffer[x].bc6 = 1;
-        buffer[x].rc7 = 1;
-        buffer[x].gc7 = 1;
-        buffer[x].bc7 = 1;
-        buffer[x].rc8 = 1;
-        buffer[x].gc8 = 1;
-        buffer[x].bc8 = 1;
+        buffer[x].rc1 = rt;
+        buffer[x].gc1 = gt;
+        buffer[x].bc1 = bt;
+        buffer[x].rc2 = rt;
+        buffer[x].gc2 = gt;
+        buffer[x].bc2 = bt;
+        buffer[x].rc3 = rt;
+        buffer[x].gc3 = gt;
+        buffer[x].bc3 = bt;
+        buffer[x].rc4 = rt;
+        buffer[x].gc4 = gt;
+        buffer[x].bc4 = bt;
+        buffer[x].rc5 = rt;
+        buffer[x].gc5 = gt;
+        buffer[x].bc5 = bt;
+        buffer[x].rc6 = rt;
+        buffer[x].gc6 = gt;
+        buffer[x].bc6 = bt;
+        buffer[x].rc7 = rt;
+        buffer[x].gc7 = gt;
+        buffer[x].bc7 = bt;
+        buffer[x].rc8 = rt;
+        buffer[x].gc8 = gt;
+        buffer[x].bc8 = bt;
     }
 }
 
@@ -811,16 +855,10 @@ void Panel::clock(uint8_t d) {
 
 //puts the  buffer contents onto the display
 void Panel::displayBuffer() {
-    
-    //when the bufer is created, every value is set to 1
-    //but when calling this function, it is somehow all back to 0
-    //therefor no picture is displayed, shich makes sense at least
-
-    Serial.println(buffer[0].rc1);
     uint16_t t = rows * 4;
     uint16_t x = 0;
     for(x = 0; x < t; x++){
-        selectLine(x);
+        selectLine(x/8);
         //             r1                  g1                  b1                   r2                                g2                              b2
         sendTwoPixels(buffer[x+0].rc1, buffer[x+0].gc1, buffer[x+0].bc1, buffer[x+0 + (t)].rc1, buffer[x+0 + (t)].gc1, buffer[x+0 + (t)].bc1);
         sendTwoPixels(buffer[x+0].rc2, buffer[x+0].gc2, buffer[x+0].bc2, buffer[x+0 + (t)].rc2, buffer[x+0 + (t)].gc2, buffer[x+0 + (t)].bc2);
