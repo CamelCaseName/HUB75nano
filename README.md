@@ -47,6 +47,9 @@ The buffer examples demonstrates how to interact with the 1bit rgb buffer for th
 in order to show more precise images. 
 It also uses the bundled pixel class to display a smiley face.
 
+The picture example shows how text generated with [this tool](https://www.github.com/CamelCaseName/pic2led) can be shown.
+simply copy the generated text into your setup, it will take awhile though. These images will use around 6,5kb of ROM.
+
 <img src="https://i.imgur.com/Zr81xNZ.jpg" alt="smiley face" width="200"/>
 
 # current problems
