@@ -142,58 +142,64 @@ Panel::Panel(uint8_t height,uint8_t width, bool usebuffer){
     }
 }
 
-//creates a buffer used to display stuff
-void Panel::createBufferBG(uint8_t c){
-    uint8_t rt, gt, bt;
-    //initiates buffer accordingly
+void cnvColor(uint8_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, get converted color by reference
     switch (c){
         case RED:
-            rt = 1;
-            gt = 0;
-            bt = 0;
+            *rt = 1;
+            *gt = 0;
+            *bt = 0;
             break;
         case GREEN:
-            rt = 0;
-            gt = 1;
-            bt = 0;
+            *rt = 0;
+            *gt = 1;
+            *bt = 0;
             break;
         case BLUE:
-            rt = 0;
-            gt = 0;
-            bt = 1;
+            *rt = 0;
+            *gt = 0;
+            *bt = 1;
             break;
         case WHITE:
-            rt = 1;
-            gt = 1;
-            bt = 1;
+            *rt = 1;
+            *gt = 1;
+            *bt = 1;
             break;
         case BLACK:
-            rt = 0;
-            gt = 0;
-            bt = 0;
+            *rt = 0;
+            *gt = 0;
+            *bt = 0;
             break;
         case PURPLE:
-            rt = 1;
-            gt = 0;
-            bt = 1;
+            *rt = 1;
+            *gt = 0;
+            *bt = 1;
             break;
         case YELLOW:
-            rt = 1;
-            gt = 1;
-            bt = 0;
+            *rt = 1;
+            *gt = 1;
+            *bt = 0;
             break;
         case CYAN:
-            rt = 0;
-            gt = 1;
-            bt = 1;
+            *rt = 0;
+            *gt = 1;
+            *bt = 1;
             break;
 
         default:
-            rt = 1;
-            gt = 1;
-            bt = 1;
+            *rt = 1;
+            *gt = 1;
+            *bt = 1;
             break;
     }
+}
+
+//creates a buffer used to display stuff
+void Panel::createBufferBG(uint8_t c){
+    uint8_t rt, gt, bt;
+
+    //get colors
+    cnvColor(c, &rt, &gt, &bt);
+    //initiates buffer accordingly
     for(uint16_t x = 0; x < bsize; x++){
         buffer[x].rc1 = rt;
         buffer[x].gc1 = gt;

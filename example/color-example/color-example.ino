@@ -16,19 +16,17 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-Panel panel(32,64);
+Panel panel(32,64, false);
 
 void setup() {
-    //use no buffer
-    panel.init(false);  
 }
 
 void loop() {
     //panel.test();
 
     //this example iterates through all available colors in the panel
-    for (long i = 0; i < 52000; i++) {
-        panel.fillScreenColor(i/2000);//changes after some time 
+    for (long i = 0; i < 26000; i++) {
+        panel.fillScreenColor(i/1000);//changes after some time 
     }
     /*
     |||ALL COLORS|||

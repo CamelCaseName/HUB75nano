@@ -1,5 +1,4 @@
 Panel KEYWORD1
-init KEYWORD2
 emptyLine KEYWORD2
 fillScreenColor KEYWORD2
 fillScreenShift KEYWORD2
@@ -10,6 +9,8 @@ latch KEYWORD2
 clock KEYWORD2
 createBuffer KEYWORD2
 displayBuffer KEYWORD2
+createBufferBG KEYWORD2
+cnvColor KEYWORD2
 test KEYWORD2
 LED KEYWORD2
 RED KEYWORD2
