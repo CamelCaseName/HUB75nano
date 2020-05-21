@@ -14,21 +14,9 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-uint8_t r = 0;
-uint8_t g = 0;
-uint8_t b = 0;
-
 uint8_t rows;
 uint8_t cols;
 uint16_t bsize;
-
-//register for string pin status
-bool r1;
-bool g1;
-bool b1;
-bool r2;
-bool g2;
-bool b2;
 
 //color values
 uint8_t rc1;
@@ -37,6 +25,14 @@ uint8_t bc1;
 uint8_t rc2;
 uint8_t gc2;
 uint8_t bc2;
+
+//register for string pin status
+bool r1;
+bool g1;
+bool b1;
+bool r2;
+bool g2;
+bool b2;
 
 #pragma pack(1)
 struct LED{//3 bytes long, contains 8 leds
@@ -196,10 +192,10 @@ void cnvColor(uint8_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, 
 
 //creates a buffer used to display stuff
 void Panel::createBufferBG(uint8_t c){
-    uint8_t rt, gt, bt;
-
     //get colors
+    uint8_t rt, gt, bt;
     cnvColor(c, &rt, &gt, &bt);
+
     //initiates buffer accordingly
     for(uint16_t x = 0; x < bsize; x++){
         buffer[x].rc1 = rt;
@@ -864,7 +860,6 @@ void Panel::clock(uint8_t d) {
     digitalWrite(CLK, LOW);
 }
 
-
 void Panel::displayBuffer() {//puts the  buffer contents onto the display
     uint8_t t = rows * 4;
     //uint16_t t = 3 * 4;
@@ -872,73 +867,79 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
     for(x = 0; x < t; x++){
         //Serial.println(x/8);
         //for (uint8_t f = 0; f < 2; f++) {
-            selectLine((x) / 8);
-            //             r1                  g1                  b1                   r2                    g2                        b2
-            sendTwoPixels(buffer[x + 0].rc1, buffer[x + 0].gc1, buffer[x + 0].bc1, buffer[x + 0 + (t)].rc1, buffer[x + 0 + (t)].gc1, buffer[x + 0 + (t)].bc1);
-            sendTwoPixels(buffer[x + 0].rc2, buffer[x + 0].gc2, buffer[x + 0].bc2, buffer[x + 0 + (t)].rc2, buffer[x + 0 + (t)].gc2, buffer[x + 0 + (t)].bc2);
-            sendTwoPixels(buffer[x + 0].rc3, buffer[x + 0].gc3, buffer[x + 0].bc3, buffer[x + 0 + (t)].rc3, buffer[x + 0 + (t)].gc3, buffer[x + 0 + (t)].bc3);
-            sendTwoPixels(buffer[x + 0].rc4, buffer[x + 0].gc4, buffer[x + 0].bc4, buffer[x + 0 + (t)].rc4, buffer[x + 0 + (t)].gc4, buffer[x + 0 + (t)].bc4);
-            sendTwoPixels(buffer[x + 0].rc5, buffer[x + 0].gc5, buffer[x + 0].bc5, buffer[x + 0 + (t)].rc5, buffer[x + 0 + (t)].gc5, buffer[x + 0 + (t)].bc5);
-            sendTwoPixels(buffer[x + 0].rc6, buffer[x + 0].gc6, buffer[x + 0].bc6, buffer[x + 0 + (t)].rc6, buffer[x + 0 + (t)].gc6, buffer[x + 0 + (t)].bc6);
-            sendTwoPixels(buffer[x + 0].rc7, buffer[x + 0].gc7, buffer[x + 0].bc7, buffer[x + 0 + (t)].rc7, buffer[x + 0 + (t)].gc7, buffer[x + 0 + (t)].bc7);
-            sendTwoPixels(buffer[x + 0].rc8, buffer[x + 0].gc8, buffer[x + 0].bc8, buffer[x + 0 + (t)].rc8, buffer[x + 0 + (t)].gc8, buffer[x + 0 + (t)].bc8);
-            sendTwoPixels(buffer[x + 1].rc1, buffer[x + 1].gc1, buffer[x + 1].bc1, buffer[x + 1 + (t)].rc1, buffer[x + 1 + (t)].gc1, buffer[x + 1 + (t)].bc1);
-            sendTwoPixels(buffer[x + 1].rc2, buffer[x + 1].gc2, buffer[x + 1].bc2, buffer[x + 1 + (t)].rc2, buffer[x + 1 + (t)].gc2, buffer[x + 1 + (t)].bc2);
-            sendTwoPixels(buffer[x + 1].rc3, buffer[x + 1].gc3, buffer[x + 1].bc3, buffer[x + 1 + (t)].rc3, buffer[x + 1 + (t)].gc3, buffer[x + 1 + (t)].bc3);
-            sendTwoPixels(buffer[x + 1].rc4, buffer[x + 1].gc4, buffer[x + 1].bc4, buffer[x + 1 + (t)].rc4, buffer[x + 1 + (t)].gc4, buffer[x + 1 + (t)].bc4);
-            sendTwoPixels(buffer[x + 1].rc5, buffer[x + 1].gc5, buffer[x + 1].bc5, buffer[x + 1 + (t)].rc5, buffer[x + 1 + (t)].gc5, buffer[x + 1 + (t)].bc5);
-            sendTwoPixels(buffer[x + 1].rc6, buffer[x + 1].gc6, buffer[x + 1].bc6, buffer[x + 1 + (t)].rc6, buffer[x + 1 + (t)].gc6, buffer[x + 1 + (t)].bc6);
-            sendTwoPixels(buffer[x + 1].rc7, buffer[x + 1].gc7, buffer[x + 1].bc7, buffer[x + 1 + (t)].rc7, buffer[x + 1 + (t)].gc7, buffer[x + 1 + (t)].bc7);
-            sendTwoPixels(buffer[x + 1].rc8, buffer[x + 1].gc8, buffer[x + 1].bc8, buffer[x + 1 + (t)].rc8, buffer[x + 1 + (t)].gc8, buffer[x + 1 + (t)].bc8);
-            sendTwoPixels(buffer[x + 2].rc1, buffer[x + 2].gc1, buffer[x + 2].bc1, buffer[x + 2 + (t)].rc1, buffer[x + 2 + (t)].gc1, buffer[x + 2 + (t)].bc1);
-            sendTwoPixels(buffer[x + 2].rc2, buffer[x + 2].gc2, buffer[x + 2].bc2, buffer[x + 2 + (t)].rc2, buffer[x + 2 + (t)].gc2, buffer[x + 2 + (t)].bc2);
-            sendTwoPixels(buffer[x + 2].rc3, buffer[x + 2].gc3, buffer[x + 2].bc3, buffer[x + 2 + (t)].rc3, buffer[x + 2 + (t)].gc3, buffer[x + 2 + (t)].bc3);
-            sendTwoPixels(buffer[x + 2].rc4, buffer[x + 2].gc4, buffer[x + 2].bc4, buffer[x + 2 + (t)].rc4, buffer[x + 2 + (t)].gc4, buffer[x + 2 + (t)].bc4);
-            sendTwoPixels(buffer[x + 2].rc5, buffer[x + 2].gc5, buffer[x + 2].bc5, buffer[x + 2 + (t)].rc5, buffer[x + 2 + (t)].gc5, buffer[x + 2 + (t)].bc5);
-            sendTwoPixels(buffer[x + 2].rc6, buffer[x + 2].gc6, buffer[x + 2].bc6, buffer[x + 2 + (t)].rc6, buffer[x + 2 + (t)].gc6, buffer[x + 2 + (t)].bc6);
-            sendTwoPixels(buffer[x + 2].rc7, buffer[x + 2].gc7, buffer[x + 2].bc7, buffer[x + 2 + (t)].rc7, buffer[x + 2 + (t)].gc7, buffer[x + 2 + (t)].bc7);
-            sendTwoPixels(buffer[x + 2].rc8, buffer[x + 2].gc8, buffer[x + 2].bc8, buffer[x + 2 + (t)].rc8, buffer[x + 2 + (t)].gc8, buffer[x + 2 + (t)].bc8);
-            sendTwoPixels(buffer[x + 3].rc1, buffer[x + 3].gc1, buffer[x + 3].bc1, buffer[x + 3 + (t)].rc1, buffer[x + 3 + (t)].gc1, buffer[x + 3 + (t)].bc1);
-            sendTwoPixels(buffer[x + 3].rc2, buffer[x + 3].gc2, buffer[x + 3].bc2, buffer[x + 3 + (t)].rc2, buffer[x + 3 + (t)].gc2, buffer[x + 3 + (t)].bc2);
-            sendTwoPixels(buffer[x + 3].rc3, buffer[x + 3].gc3, buffer[x + 3].bc3, buffer[x + 3 + (t)].rc3, buffer[x + 3 + (t)].gc3, buffer[x + 3 + (t)].bc3);
-            sendTwoPixels(buffer[x + 3].rc4, buffer[x + 3].gc4, buffer[x + 3].bc4, buffer[x + 3 + (t)].rc4, buffer[x + 3 + (t)].gc4, buffer[x + 3 + (t)].bc4);
-            sendTwoPixels(buffer[x + 3].rc5, buffer[x + 3].gc5, buffer[x + 3].bc5, buffer[x + 3 + (t)].rc5, buffer[x + 3 + (t)].gc5, buffer[x + 3 + (t)].bc5);
-            sendTwoPixels(buffer[x + 3].rc6, buffer[x + 3].gc6, buffer[x + 3].bc6, buffer[x + 3 + (t)].rc6, buffer[x + 3 + (t)].gc6, buffer[x + 3 + (t)].bc6);
-            sendTwoPixels(buffer[x + 3].rc7, buffer[x + 3].gc7, buffer[x + 3].bc7, buffer[x + 3 + (t)].rc7, buffer[x + 3 + (t)].gc7, buffer[x + 3 + (t)].bc7);
-            sendTwoPixels(buffer[x + 3].rc8, buffer[x + 3].gc8, buffer[x + 3].bc8, buffer[x + 3 + (t)].rc8, buffer[x + 3 + (t)].gc8, buffer[x + 3 + (t)].bc8);
-            sendTwoPixels(buffer[x + 4].rc1, buffer[x + 4].gc1, buffer[x + 4].bc1, buffer[x + 4 + (t)].rc1, buffer[x + 4 + (t)].gc1, buffer[x + 4 + (t)].bc1);
-            sendTwoPixels(buffer[x + 4].rc2, buffer[x + 4].gc2, buffer[x + 4].bc2, buffer[x + 4 + (t)].rc2, buffer[x + 4 + (t)].gc2, buffer[x + 4 + (t)].bc2);
-            sendTwoPixels(buffer[x + 4].rc3, buffer[x + 4].gc3, buffer[x + 4].bc3, buffer[x + 4 + (t)].rc3, buffer[x + 4 + (t)].gc3, buffer[x + 4 + (t)].bc3);
-            sendTwoPixels(buffer[x + 4].rc4, buffer[x + 4].gc4, buffer[x + 4].bc4, buffer[x + 4 + (t)].rc4, buffer[x + 4 + (t)].gc4, buffer[x + 4 + (t)].bc4);
-            sendTwoPixels(buffer[x + 4].rc5, buffer[x + 4].gc5, buffer[x + 4].bc5, buffer[x + 4 + (t)].rc5, buffer[x + 4 + (t)].gc5, buffer[x + 4 + (t)].bc5);
-            sendTwoPixels(buffer[x + 4].rc6, buffer[x + 4].gc6, buffer[x + 4].bc6, buffer[x + 4 + (t)].rc6, buffer[x + 4 + (t)].gc6, buffer[x + 4 + (t)].bc6);
-            sendTwoPixels(buffer[x + 4].rc7, buffer[x + 4].gc7, buffer[x + 4].bc7, buffer[x + 4 + (t)].rc7, buffer[x + 4 + (t)].gc7, buffer[x + 4 + (t)].bc7);
-            sendTwoPixels(buffer[x + 4].rc8, buffer[x + 4].gc8, buffer[x + 4].bc8, buffer[x + 4 + (t)].rc8, buffer[x + 4 + (t)].gc8, buffer[x + 4 + (t)].bc8);
-            sendTwoPixels(buffer[x + 5].rc1, buffer[x + 5].gc1, buffer[x + 5].bc1, buffer[x + 5 + (t)].rc1, buffer[x + 5 + (t)].gc1, buffer[x + 5 + (t)].bc1);
-            sendTwoPixels(buffer[x + 5].rc2, buffer[x + 5].gc2, buffer[x + 5].bc2, buffer[x + 5 + (t)].rc2, buffer[x + 5 + (t)].gc2, buffer[x + 5 + (t)].bc2);
-            sendTwoPixels(buffer[x + 5].rc3, buffer[x + 5].gc3, buffer[x + 5].bc3, buffer[x + 5 + (t)].rc3, buffer[x + 5 + (t)].gc3, buffer[x + 5 + (t)].bc3);
-            sendTwoPixels(buffer[x + 5].rc4, buffer[x + 5].gc4, buffer[x + 5].bc4, buffer[x + 5 + (t)].rc4, buffer[x + 5 + (t)].gc4, buffer[x + 5 + (t)].bc4);
-            sendTwoPixels(buffer[x + 5].rc5, buffer[x + 5].gc5, buffer[x + 5].bc5, buffer[x + 5 + (t)].rc5, buffer[x + 5 + (t)].gc5, buffer[x + 5 + (t)].bc5);
-            sendTwoPixels(buffer[x + 5].rc6, buffer[x + 5].gc6, buffer[x + 5].bc6, buffer[x + 5 + (t)].rc6, buffer[x + 5 + (t)].gc6, buffer[x + 5 + (t)].bc6);
-            sendTwoPixels(buffer[x + 5].rc7, buffer[x + 5].gc7, buffer[x + 5].bc7, buffer[x + 5 + (t)].rc7, buffer[x + 5 + (t)].gc7, buffer[x + 5 + (t)].bc7);
-            sendTwoPixels(buffer[x + 5].rc8, buffer[x + 5].gc8, buffer[x + 5].bc8, buffer[x + 5 + (t)].rc8, buffer[x + 5 + (t)].gc8, buffer[x + 5 + (t)].bc8);
-            sendTwoPixels(buffer[x + 6].rc1, buffer[x + 6].gc1, buffer[x + 6].bc1, buffer[x + 6 + (t)].rc1, buffer[x + 6 + (t)].gc1, buffer[x + 6 + (t)].bc1);
-            sendTwoPixels(buffer[x + 6].rc2, buffer[x + 6].gc2, buffer[x + 6].bc2, buffer[x + 6 + (t)].rc2, buffer[x + 6 + (t)].gc2, buffer[x + 6 + (t)].bc2);
-            sendTwoPixels(buffer[x + 6].rc3, buffer[x + 6].gc3, buffer[x + 6].bc3, buffer[x + 6 + (t)].rc3, buffer[x + 6 + (t)].gc3, buffer[x + 6 + (t)].bc3);
-            sendTwoPixels(buffer[x + 6].rc4, buffer[x + 6].gc4, buffer[x + 6].bc4, buffer[x + 6 + (t)].rc4, buffer[x + 6 + (t)].gc4, buffer[x + 6 + (t)].bc4);
-            sendTwoPixels(buffer[x + 6].rc5, buffer[x + 6].gc5, buffer[x + 6].bc5, buffer[x + 6 + (t)].rc5, buffer[x + 6 + (t)].gc5, buffer[x + 6 + (t)].bc5);
-            sendTwoPixels(buffer[x + 6].rc6, buffer[x + 6].gc6, buffer[x + 6].bc6, buffer[x + 6 + (t)].rc6, buffer[x + 6 + (t)].gc6, buffer[x + 6 + (t)].bc6);
-            sendTwoPixels(buffer[x + 6].rc7, buffer[x + 6].gc7, buffer[x + 6].bc7, buffer[x + 6 + (t)].rc7, buffer[x + 6 + (t)].gc7, buffer[x + 6 + (t)].bc7);
-            sendTwoPixels(buffer[x + 6].rc8, buffer[x + 6].gc8, buffer[x + 6].bc8, buffer[x + 6 + (t)].rc8, buffer[x + 6 + (t)].gc8, buffer[x + 6 + (t)].bc8);
-            sendTwoPixels(buffer[x + 7].rc1, buffer[x + 7].gc1, buffer[x + 7].bc1, buffer[x + 7 + (t)].rc1, buffer[x + 7 + (t)].gc1, buffer[x + 7 + (t)].bc1);
-            sendTwoPixels(buffer[x + 7].rc2, buffer[x + 7].gc2, buffer[x + 7].bc2, buffer[x + 7 + (t)].rc2, buffer[x + 7 + (t)].gc2, buffer[x + 7 + (t)].bc2);
-            sendTwoPixels(buffer[x + 7].rc3, buffer[x + 7].gc3, buffer[x + 7].bc3, buffer[x + 7 + (t)].rc3, buffer[x + 7 + (t)].gc3, buffer[x + 7 + (t)].bc3);
-            sendTwoPixels(buffer[x + 7].rc4, buffer[x + 7].gc4, buffer[x + 7].bc4, buffer[x + 7 + (t)].rc4, buffer[x + 7 + (t)].gc4, buffer[x + 7 + (t)].bc4);
-            sendTwoPixels(buffer[x + 7].rc5, buffer[x + 7].gc5, buffer[x + 7].bc5, buffer[x + 7 + (t)].rc5, buffer[x + 7 + (t)].gc5, buffer[x + 7 + (t)].bc5);
-            sendTwoPixels(buffer[x + 7].rc6, buffer[x + 7].gc6, buffer[x + 7].bc6, buffer[x + 7 + (t)].rc6, buffer[x + 7 + (t)].gc6, buffer[x + 7 + (t)].bc6);
-            sendTwoPixels(buffer[x + 7].rc7, buffer[x + 7].gc7, buffer[x + 7].bc7, buffer[x + 7 + (t)].rc7, buffer[x + 7 + (t)].gc7, buffer[x + 7 + (t)].bc7);
-            sendTwoPixels(buffer[x + 7].rc8, buffer[x + 7].gc8, buffer[x + 7].bc8, buffer[x + 7 + (t)].rc8, buffer[x + 7 + (t)].gc8, buffer[x + 7 + (t)].bc8);
-            latch();
+        if (x / 8 > 0) {
+            selectLine((x / 8) - 1);
+        }
+        else {
+            selectLine(15);
+        }
+        
+        //             r1                  g1                  b1                   r2                    g2                        b2
+        sendTwoPixels(buffer[x + 0].rc1, buffer[x + 0].gc1, buffer[x + 0].bc1, buffer[x + 0 + (t)].rc1, buffer[x + 0 + (t)].gc1, buffer[x + 0 + (t)].bc1);
+        sendTwoPixels(buffer[x + 0].rc2, buffer[x + 0].gc2, buffer[x + 0].bc2, buffer[x + 0 + (t)].rc2, buffer[x + 0 + (t)].gc2, buffer[x + 0 + (t)].bc2);
+        sendTwoPixels(buffer[x + 0].rc3, buffer[x + 0].gc3, buffer[x + 0].bc3, buffer[x + 0 + (t)].rc3, buffer[x + 0 + (t)].gc3, buffer[x + 0 + (t)].bc3);
+        sendTwoPixels(buffer[x + 0].rc4, buffer[x + 0].gc4, buffer[x + 0].bc4, buffer[x + 0 + (t)].rc4, buffer[x + 0 + (t)].gc4, buffer[x + 0 + (t)].bc4);
+        sendTwoPixels(buffer[x + 0].rc5, buffer[x + 0].gc5, buffer[x + 0].bc5, buffer[x + 0 + (t)].rc5, buffer[x + 0 + (t)].gc5, buffer[x + 0 + (t)].bc5);
+        sendTwoPixels(buffer[x + 0].rc6, buffer[x + 0].gc6, buffer[x + 0].bc6, buffer[x + 0 + (t)].rc6, buffer[x + 0 + (t)].gc6, buffer[x + 0 + (t)].bc6);
+        sendTwoPixels(buffer[x + 0].rc7, buffer[x + 0].gc7, buffer[x + 0].bc7, buffer[x + 0 + (t)].rc7, buffer[x + 0 + (t)].gc7, buffer[x + 0 + (t)].bc7);
+        sendTwoPixels(buffer[x + 0].rc8, buffer[x + 0].gc8, buffer[x + 0].bc8, buffer[x + 0 + (t)].rc8, buffer[x + 0 + (t)].gc8, buffer[x + 0 + (t)].bc8);
+        sendTwoPixels(buffer[x + 1].rc1, buffer[x + 1].gc1, buffer[x + 1].bc1, buffer[x + 1 + (t)].rc1, buffer[x + 1 + (t)].gc1, buffer[x + 1 + (t)].bc1);
+        sendTwoPixels(buffer[x + 1].rc2, buffer[x + 1].gc2, buffer[x + 1].bc2, buffer[x + 1 + (t)].rc2, buffer[x + 1 + (t)].gc2, buffer[x + 1 + (t)].bc2);
+        sendTwoPixels(buffer[x + 1].rc3, buffer[x + 1].gc3, buffer[x + 1].bc3, buffer[x + 1 + (t)].rc3, buffer[x + 1 + (t)].gc3, buffer[x + 1 + (t)].bc3);
+        sendTwoPixels(buffer[x + 1].rc4, buffer[x + 1].gc4, buffer[x + 1].bc4, buffer[x + 1 + (t)].rc4, buffer[x + 1 + (t)].gc4, buffer[x + 1 + (t)].bc4);
+        sendTwoPixels(buffer[x + 1].rc5, buffer[x + 1].gc5, buffer[x + 1].bc5, buffer[x + 1 + (t)].rc5, buffer[x + 1 + (t)].gc5, buffer[x + 1 + (t)].bc5);
+        sendTwoPixels(buffer[x + 1].rc6, buffer[x + 1].gc6, buffer[x + 1].bc6, buffer[x + 1 + (t)].rc6, buffer[x + 1 + (t)].gc6, buffer[x + 1 + (t)].bc6);
+        sendTwoPixels(buffer[x + 1].rc7, buffer[x + 1].gc7, buffer[x + 1].bc7, buffer[x + 1 + (t)].rc7, buffer[x + 1 + (t)].gc7, buffer[x + 1 + (t)].bc7);
+        sendTwoPixels(buffer[x + 1].rc8, buffer[x + 1].gc8, buffer[x + 1].bc8, buffer[x + 1 + (t)].rc8, buffer[x + 1 + (t)].gc8, buffer[x + 1 + (t)].bc8);
+        sendTwoPixels(buffer[x + 2].rc1, buffer[x + 2].gc1, buffer[x + 2].bc1, buffer[x + 2 + (t)].rc1, buffer[x + 2 + (t)].gc1, buffer[x + 2 + (t)].bc1);
+        sendTwoPixels(buffer[x + 2].rc2, buffer[x + 2].gc2, buffer[x + 2].bc2, buffer[x + 2 + (t)].rc2, buffer[x + 2 + (t)].gc2, buffer[x + 2 + (t)].bc2);
+        sendTwoPixels(buffer[x + 2].rc3, buffer[x + 2].gc3, buffer[x + 2].bc3, buffer[x + 2 + (t)].rc3, buffer[x + 2 + (t)].gc3, buffer[x + 2 + (t)].bc3);
+        sendTwoPixels(buffer[x + 2].rc4, buffer[x + 2].gc4, buffer[x + 2].bc4, buffer[x + 2 + (t)].rc4, buffer[x + 2 + (t)].gc4, buffer[x + 2 + (t)].bc4);
+        sendTwoPixels(buffer[x + 2].rc5, buffer[x + 2].gc5, buffer[x + 2].bc5, buffer[x + 2 + (t)].rc5, buffer[x + 2 + (t)].gc5, buffer[x + 2 + (t)].bc5);
+        sendTwoPixels(buffer[x + 2].rc6, buffer[x + 2].gc6, buffer[x + 2].bc6, buffer[x + 2 + (t)].rc6, buffer[x + 2 + (t)].gc6, buffer[x + 2 + (t)].bc6);
+        sendTwoPixels(buffer[x + 2].rc7, buffer[x + 2].gc7, buffer[x + 2].bc7, buffer[x + 2 + (t)].rc7, buffer[x + 2 + (t)].gc7, buffer[x + 2 + (t)].bc7);
+        sendTwoPixels(buffer[x + 2].rc8, buffer[x + 2].gc8, buffer[x + 2].bc8, buffer[x + 2 + (t)].rc8, buffer[x + 2 + (t)].gc8, buffer[x + 2 + (t)].bc8);
+        sendTwoPixels(buffer[x + 3].rc1, buffer[x + 3].gc1, buffer[x + 3].bc1, buffer[x + 3 + (t)].rc1, buffer[x + 3 + (t)].gc1, buffer[x + 3 + (t)].bc1);
+        sendTwoPixels(buffer[x + 3].rc2, buffer[x + 3].gc2, buffer[x + 3].bc2, buffer[x + 3 + (t)].rc2, buffer[x + 3 + (t)].gc2, buffer[x + 3 + (t)].bc2);
+        sendTwoPixels(buffer[x + 3].rc3, buffer[x + 3].gc3, buffer[x + 3].bc3, buffer[x + 3 + (t)].rc3, buffer[x + 3 + (t)].gc3, buffer[x + 3 + (t)].bc3);
+        sendTwoPixels(buffer[x + 3].rc4, buffer[x + 3].gc4, buffer[x + 3].bc4, buffer[x + 3 + (t)].rc4, buffer[x + 3 + (t)].gc4, buffer[x + 3 + (t)].bc4);
+        sendTwoPixels(buffer[x + 3].rc5, buffer[x + 3].gc5, buffer[x + 3].bc5, buffer[x + 3 + (t)].rc5, buffer[x + 3 + (t)].gc5, buffer[x + 3 + (t)].bc5);
+        sendTwoPixels(buffer[x + 3].rc6, buffer[x + 3].gc6, buffer[x + 3].bc6, buffer[x + 3 + (t)].rc6, buffer[x + 3 + (t)].gc6, buffer[x + 3 + (t)].bc6);
+        sendTwoPixels(buffer[x + 3].rc7, buffer[x + 3].gc7, buffer[x + 3].bc7, buffer[x + 3 + (t)].rc7, buffer[x + 3 + (t)].gc7, buffer[x + 3 + (t)].bc7);
+        sendTwoPixels(buffer[x + 3].rc8, buffer[x + 3].gc8, buffer[x + 3].bc8, buffer[x + 3 + (t)].rc8, buffer[x + 3 + (t)].gc8, buffer[x + 3 + (t)].bc8);
+        sendTwoPixels(buffer[x + 4].rc1, buffer[x + 4].gc1, buffer[x + 4].bc1, buffer[x + 4 + (t)].rc1, buffer[x + 4 + (t)].gc1, buffer[x + 4 + (t)].bc1);
+        sendTwoPixels(buffer[x + 4].rc2, buffer[x + 4].gc2, buffer[x + 4].bc2, buffer[x + 4 + (t)].rc2, buffer[x + 4 + (t)].gc2, buffer[x + 4 + (t)].bc2);
+        sendTwoPixels(buffer[x + 4].rc3, buffer[x + 4].gc3, buffer[x + 4].bc3, buffer[x + 4 + (t)].rc3, buffer[x + 4 + (t)].gc3, buffer[x + 4 + (t)].bc3);
+        sendTwoPixels(buffer[x + 4].rc4, buffer[x + 4].gc4, buffer[x + 4].bc4, buffer[x + 4 + (t)].rc4, buffer[x + 4 + (t)].gc4, buffer[x + 4 + (t)].bc4);
+        sendTwoPixels(buffer[x + 4].rc5, buffer[x + 4].gc5, buffer[x + 4].bc5, buffer[x + 4 + (t)].rc5, buffer[x + 4 + (t)].gc5, buffer[x + 4 + (t)].bc5);
+        sendTwoPixels(buffer[x + 4].rc6, buffer[x + 4].gc6, buffer[x + 4].bc6, buffer[x + 4 + (t)].rc6, buffer[x + 4 + (t)].gc6, buffer[x + 4 + (t)].bc6);
+        sendTwoPixels(buffer[x + 4].rc7, buffer[x + 4].gc7, buffer[x + 4].bc7, buffer[x + 4 + (t)].rc7, buffer[x + 4 + (t)].gc7, buffer[x + 4 + (t)].bc7);
+        sendTwoPixels(buffer[x + 4].rc8, buffer[x + 4].gc8, buffer[x + 4].bc8, buffer[x + 4 + (t)].rc8, buffer[x + 4 + (t)].gc8, buffer[x + 4 + (t)].bc8);
+        sendTwoPixels(buffer[x + 5].rc1, buffer[x + 5].gc1, buffer[x + 5].bc1, buffer[x + 5 + (t)].rc1, buffer[x + 5 + (t)].gc1, buffer[x + 5 + (t)].bc1);
+        sendTwoPixels(buffer[x + 5].rc2, buffer[x + 5].gc2, buffer[x + 5].bc2, buffer[x + 5 + (t)].rc2, buffer[x + 5 + (t)].gc2, buffer[x + 5 + (t)].bc2);
+        sendTwoPixels(buffer[x + 5].rc3, buffer[x + 5].gc3, buffer[x + 5].bc3, buffer[x + 5 + (t)].rc3, buffer[x + 5 + (t)].gc3, buffer[x + 5 + (t)].bc3);
+        sendTwoPixels(buffer[x + 5].rc4, buffer[x + 5].gc4, buffer[x + 5].bc4, buffer[x + 5 + (t)].rc4, buffer[x + 5 + (t)].gc4, buffer[x + 5 + (t)].bc4);
+        sendTwoPixels(buffer[x + 5].rc5, buffer[x + 5].gc5, buffer[x + 5].bc5, buffer[x + 5 + (t)].rc5, buffer[x + 5 + (t)].gc5, buffer[x + 5 + (t)].bc5);
+        sendTwoPixels(buffer[x + 5].rc6, buffer[x + 5].gc6, buffer[x + 5].bc6, buffer[x + 5 + (t)].rc6, buffer[x + 5 + (t)].gc6, buffer[x + 5 + (t)].bc6);
+        sendTwoPixels(buffer[x + 5].rc7, buffer[x + 5].gc7, buffer[x + 5].bc7, buffer[x + 5 + (t)].rc7, buffer[x + 5 + (t)].gc7, buffer[x + 5 + (t)].bc7);
+        sendTwoPixels(buffer[x + 5].rc8, buffer[x + 5].gc8, buffer[x + 5].bc8, buffer[x + 5 + (t)].rc8, buffer[x + 5 + (t)].gc8, buffer[x + 5 + (t)].bc8);
+        sendTwoPixels(buffer[x + 6].rc1, buffer[x + 6].gc1, buffer[x + 6].bc1, buffer[x + 6 + (t)].rc1, buffer[x + 6 + (t)].gc1, buffer[x + 6 + (t)].bc1);
+        sendTwoPixels(buffer[x + 6].rc2, buffer[x + 6].gc2, buffer[x + 6].bc2, buffer[x + 6 + (t)].rc2, buffer[x + 6 + (t)].gc2, buffer[x + 6 + (t)].bc2);
+        sendTwoPixels(buffer[x + 6].rc3, buffer[x + 6].gc3, buffer[x + 6].bc3, buffer[x + 6 + (t)].rc3, buffer[x + 6 + (t)].gc3, buffer[x + 6 + (t)].bc3);
+        sendTwoPixels(buffer[x + 6].rc4, buffer[x + 6].gc4, buffer[x + 6].bc4, buffer[x + 6 + (t)].rc4, buffer[x + 6 + (t)].gc4, buffer[x + 6 + (t)].bc4);
+        sendTwoPixels(buffer[x + 6].rc5, buffer[x + 6].gc5, buffer[x + 6].bc5, buffer[x + 6 + (t)].rc5, buffer[x + 6 + (t)].gc5, buffer[x + 6 + (t)].bc5);
+        sendTwoPixels(buffer[x + 6].rc6, buffer[x + 6].gc6, buffer[x + 6].bc6, buffer[x + 6 + (t)].rc6, buffer[x + 6 + (t)].gc6, buffer[x + 6 + (t)].bc6);
+        sendTwoPixels(buffer[x + 6].rc7, buffer[x + 6].gc7, buffer[x + 6].bc7, buffer[x + 6 + (t)].rc7, buffer[x + 6 + (t)].gc7, buffer[x + 6 + (t)].bc7);
+        sendTwoPixels(buffer[x + 6].rc8, buffer[x + 6].gc8, buffer[x + 6].bc8, buffer[x + 6 + (t)].rc8, buffer[x + 6 + (t)].gc8, buffer[x + 6 + (t)].bc8);
+        sendTwoPixels(buffer[x + 7].rc1, buffer[x + 7].gc1, buffer[x + 7].bc1, buffer[x + 7 + (t)].rc1, buffer[x + 7 + (t)].gc1, buffer[x + 7 + (t)].bc1);
+        sendTwoPixels(buffer[x + 7].rc2, buffer[x + 7].gc2, buffer[x + 7].bc2, buffer[x + 7 + (t)].rc2, buffer[x + 7 + (t)].gc2, buffer[x + 7 + (t)].bc2);
+        sendTwoPixels(buffer[x + 7].rc3, buffer[x + 7].gc3, buffer[x + 7].bc3, buffer[x + 7 + (t)].rc3, buffer[x + 7 + (t)].gc3, buffer[x + 7 + (t)].bc3);
+        sendTwoPixels(buffer[x + 7].rc4, buffer[x + 7].gc4, buffer[x + 7].bc4, buffer[x + 7 + (t)].rc4, buffer[x + 7 + (t)].gc4, buffer[x + 7 + (t)].bc4);
+        sendTwoPixels(buffer[x + 7].rc5, buffer[x + 7].gc5, buffer[x + 7].bc5, buffer[x + 7 + (t)].rc5, buffer[x + 7 + (t)].gc5, buffer[x + 7 + (t)].bc5);
+        sendTwoPixels(buffer[x + 7].rc6, buffer[x + 7].gc6, buffer[x + 7].bc6, buffer[x + 7 + (t)].rc6, buffer[x + 7 + (t)].gc6, buffer[x + 7 + (t)].bc6);
+        sendTwoPixels(buffer[x + 7].rc7, buffer[x + 7].gc7, buffer[x + 7].bc7, buffer[x + 7 + (t)].rc7, buffer[x + 7 + (t)].gc7, buffer[x + 7 + (t)].bc7);
+        sendTwoPixels(buffer[x + 7].rc8, buffer[x + 7].gc8, buffer[x + 7].bc8, buffer[x + 7 + (t)].rc8, buffer[x + 7 + (t)].gc8, buffer[x + 7 + (t)].bc8);
+        latch();
         //}
         x+=7;
     }
@@ -947,4 +948,103 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
 void Panel::test(){
     //fills entire screen somehow
     fillScreenColor(OCEANBLUE);
+}
+
+void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i) {
+    switch (i % 8) {
+        case 0:
+            buffer[temp].rc1 = r;
+            buffer[temp].gc1 = g;
+            buffer[temp].bc1 = b;
+            break;
+        case 1:
+            buffer[temp].rc2 = r;
+            buffer[temp].gc2 = g;
+            buffer[temp].bc2 = b;
+            break;
+        case 2:
+            buffer[temp].rc3 = r;
+            buffer[temp].gc3 = g;
+            buffer[temp].bc3 = b;
+            break;
+        case 3:
+            buffer[temp].rc4 = r;
+            buffer[temp].gc4 = g;
+            buffer[temp].bc4 = b;
+            break;
+        case 4:
+            buffer[temp].rc5 = r;
+            buffer[temp].gc5 = g;
+            buffer[temp].bc5 = b;
+            break;
+        case 5:
+            buffer[temp].rc6 = r;
+            buffer[temp].gc6 = g;
+            buffer[temp].bc6 = b;
+            break;
+        case 6:
+            buffer[temp].rc7 = r;
+            buffer[temp].gc7 = g;
+            buffer[temp].bc7 = b;
+            break;
+        case 7: 
+            buffer[temp].rc8 = r;
+            buffer[temp].gc8 = g;
+            buffer[temp].bc8 = b;
+            break;
+        default:
+            break;
+    }
+}
+
+void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, bool fill) { //draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
+    //get colors
+    uint8_t r, g, b;
+    cnvColor(c, &r, &g, &b);
+
+    if (fill) {
+        for (uint8_t i = x1; i <= x2; i++) {
+            for (uint8_t j = y1; j <= y2; j++) {
+                uint8_t temp = (j * cols / 8) + (i / 8);
+                setBuffer(r, g, b, temp, i);
+            }
+        }
+    }
+    else {
+        //left line
+        for (uint8_t j = y1; j <= y2; j++) {
+            uint8_t temp = (j * cols / 8) + (x1 / 8);
+            setBuffer(r, g, b, temp, x1);
+        }
+
+        //right line
+        for (uint8_t j = y1; j <= y2; j++) {
+            uint8_t temp = (j * cols / 8) + (x2 / 8);
+            setBuffer(r, g, b, temp, x2);
+        }
+        
+        //top line
+        for (uint8_t i = x1; i <= x2; i++) {
+            uint8_t temp = (y1 * cols / 8) + (i / 8);
+            setBuffer(r, g, b, temp, i);
+        }
+
+        //bottom line
+        for (uint8_t i = x1; i <= x2; i++) {
+            uint8_t temp = (y2 * cols / 8) + (i / 8);
+            setBuffer(r, g, b, temp, i);
+        }
+    }
+}
+
+void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c) { //draws a line with color at coords given
+    //get colors
+    uint8_t r, g, b;
+    cnvColor(c, &r, &g, &b);
+}
+
+void Panel::drawEllipse(uint8_t x, uint8_t y, uint8_t r1, uint8_t r2, uint8_t c) { //draws an ellipse at the coords with radiae and color
+    //get colors
+    uint8_t r, g, b;
+    cnvColor(c, &r, &g, &b);
 }

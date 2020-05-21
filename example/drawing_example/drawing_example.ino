@@ -1,21 +1,12 @@
 #include <Panel.h>
 
 Panel panel(32, 64, true);
-int i = 0;
 void setup() {
-
+	panel.createBufferBG(panel.PURPLE);
+	panel.drawRect(0, 0, 5, 10, panel.YELLOW, true);
+	panel.drawRect(25, 12, 29, 16, panel.GREEN, false);
 }
 
 void loop() {
-	if (i / 1000 < 16) {
-		panel.selectLine(i / 1000);
-		panel.sendWholeRow(1, 1, 1, 1, 1, 1);
-		if (i % 1000 == 0) {
-			Serial.println(i / 1000);
-		}
-	}
-	i++;
-	if (i > 16000) {
-		i = 0;
-	}
+	panel.displayBuffer();
 }
