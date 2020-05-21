@@ -1066,4 +1066,21 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fil
     //get colors
     uint8_t r, g, b;
     cnvColor(c, &r, &g, &b);
+    uint8_t temp = 0;
+    int xC;
+    int yC;
+
+    if (fill) {
+
+    }
+    else {
+        for (uint8_t i = 1; i < 180; i++) {
+            xC = x + radius * cos(i * 0.035) + 0.5;
+            yC = y + radius * sin(i * 0.035) + 0.5;
+            //Serial.print(xC);
+            //Serial.println((y + radius * sin(i * 0.03490658504)));
+            temp = (uint8_t) (yC * cols / 8) + xC / 8;
+            setBuffer(r,g,b,temp,xC);
+        }
+    }
 }
