@@ -718,7 +718,7 @@ void Panel::fillScreenColor(uint8_t c){
     }
 }
 
-//sends two pixels, one in upper half, one in lower halöf to display
+//sends two pixels, one in upper half, one in lower half to display
 void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl){ //first upper half values, the lower half
     if (ru > 0 && r1 == false) //turns upper half red
     {
@@ -1037,13 +1037,32 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, 
     }
 }
 
-void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c) { //draws a line with color at coords given
+void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c) { //draws a line with color at coords given, must be left to right
     //get colors
     uint8_t r, g, b;
     cnvColor(c, &r, &g, &b);
+
+    //  f(x) = m*x+t
+    //  t = f(0) = y1
+    //  m =(y2-y1)/(x2-x1)
+    //  ->iterate for each x from x1 to x2
+    //
+
+    float dy = y2 + 1 - y1;//delta y
+    float m = dy / (x2 + 1 - x1);
+    uint8_t temp = 0;
+    //Serial.println(m);
+    for (uint8_t x = 0; x <= (x2 - x1); x++){
+        //Serial.print((m * x + y1) + 0.5f);
+        //Serial.print(" ");
+        //Serial.println(x + x1);
+        uint8_t y = (uint8_t)(m * x + y1) + 0.5f;
+        temp = (uint8_t) (y * cols / 8) + ((x + x1) / 8);
+        setBuffer(r, g, b, temp, x + x1);
+    }
 }
 
-void Panel::drawEllipse(uint8_t x, uint8_t y, uint8_t r1, uint8_t r2, uint8_t c) { //draws an ellipse at the coords with radiae and color
+void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fill) { //draws a circle at the coords with radius and color
     //get colors
     uint8_t r, g, b;
     cnvColor(c, &r, &g, &b);

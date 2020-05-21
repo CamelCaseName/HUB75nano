@@ -58,7 +58,7 @@ class Panel{
         void createBufferBG(uint8_t c);
         void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, bool fill);
         void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c);
-        void drawEllipse(uint8_t x, uint8_t y, uint8_t r1, uint8_t r2, uint8_t c);
+        void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fill);
         struct LED {
             uint8_t rc1 : 1;
             uint8_t gc1 : 1;
@@ -92,7 +92,7 @@ class Panel{
         uint8_t rows,cols,rc1,gc1,bc1,rc2,gc2,bc2,t;
         uint16_t bsize;
         bool r1,g1,b1,r2,g2,b2; 
-        LED buffer[];//uses 1024 bytes on max size display
+        LED buffer[];//uses 768 bytes on max size display
     private:
         void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
 };
