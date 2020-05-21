@@ -1071,16 +1071,32 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fil
     int yC;
 
     if (fill) {
-
+        //draw outline
+        for (uint8_t i = 1; i < 180; i++) {
+            xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
+            yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
+            temp = (uint8_t)(yC * cols / 8) + xC / 8;
+            setBuffer(r, g, b, temp, xC);
+        }
+        //check if point in circle, then fill
+        for (uint8_t i = x - radius; i < x + radius; i++) {
+            for (uint8_t j = y - radius; j < y + radius; j++) {
+                if ((x - i) * (x - i) + (y - j) * (y - j) < ((radius - 0.5) * (radius - 0.5))) {
+                    temp = (j * cols / 8) + i / 8;
+                    setBuffer(r, g, b, temp, i);
+                }
+            }
+        }
     }
     else {
+        //draw circle outline
         for (uint8_t i = 1; i < 180; i++) {
+            //draws a circle using trigonomic formulas
             xC = x + radius * cos(i * 0.035) + 0.5;
             yC = y + radius * sin(i * 0.035) + 0.5;
-            //Serial.print(xC);
-            //Serial.println((y + radius * sin(i * 0.03490658504)));
+            //create index
             temp = (uint8_t) (yC * cols / 8) + xC / 8;
-            setBuffer(r,g,b,temp,xC);
+            setBuffer(r, g, b, temp, xC);
         }
     }
 }
