@@ -26,7 +26,7 @@
 class Pixel {
     public:
         Pixel(uint8_t maxAmount, uint8_t panelX, uint8_t panelY);
-        void translate(uint8_t newX, uint8_t newY);
+        void translate(uint8_t Xspeed, uint8_t Yspeed, uint8_t index);
         //uint16_t convertCoords(uint8_t x, uint8_t y);
         struct Small {
             uint8_t y : 5; //x coordinate of set pixel, long side
