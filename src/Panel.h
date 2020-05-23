@@ -59,6 +59,7 @@ class Panel{
         void clock();
         void latch();
         void createBufferBG(uint8_t c);
+        void clearBuffer(uint8_t c);
         void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, bool fill);
         void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c);
         void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fill);

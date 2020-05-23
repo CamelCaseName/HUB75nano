@@ -1071,6 +1071,40 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
     }
 }
 
+void Panel::clearBuffer(uint8_t c) {
+    //get colors
+    uint8_t rt, gt, bt;
+    cnvColor(c, &rt, &gt, &bt);
+
+        //fills the buffer
+    for (uint16_t x = 0; x < bsize; x++) {
+        buffer[x].rc1 = rt;
+        buffer[x].gc1 = gt;
+        buffer[x].bc1 = bt;
+        buffer[x].rc2 = rt;
+        buffer[x].gc2 = gt;
+        buffer[x].bc2 = bt;
+        buffer[x].rc3 = rt;
+        buffer[x].gc3 = gt;
+        buffer[x].bc3 = bt;
+        buffer[x].rc4 = rt;
+        buffer[x].gc4 = gt;
+        buffer[x].bc4 = bt;
+        buffer[x].rc5 = rt;
+        buffer[x].gc5 = gt;
+        buffer[x].bc5 = bt;
+        buffer[x].rc6 = rt;
+        buffer[x].gc6 = gt;
+        buffer[x].bc6 = bt;
+        buffer[x].rc7 = rt;
+        buffer[x].gc7 = gt;
+        buffer[x].bc7 = bt;
+        buffer[x].rc8 = rt;
+        buffer[x].gc8 = gt;
+        buffer[x].bc8 = bt;
+    }
+}
+
 void Panel::test(){
     //fills entire screen somehow
     fillScreenColor(OCEANBLUE);
