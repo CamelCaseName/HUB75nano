@@ -65,7 +65,145 @@ struct LED{//3 bytes long, contains 8 leds
     uint8_t :0;
 };
 
-enum StringValue { 
+//Copyright <2010> <Robey Pointer, https://robey.lag.net/> =========>
+// 
+//Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
+//The above copyright noticeand this permission notice shall be included in all copies or substantial portions of the Software.
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Font Definition
+const uint8_t font4x6[96][2] PROGMEM = {
+ {  0x00  ,  0x00  },   /*SPACE*/
+ {  0x49  ,  0x08  },   /*'!'*/
+ {  0xb4  ,  0x00  },   /*'"'*/
+ {  0xbe  ,  0xf6  },   /*'#'*/
+ {  0x7b  ,  0x7a  },   /*'$'*/
+ {  0xa5  ,  0x94  },   /*'%'*/
+ {  0x55  ,  0xb8  },   /*'&'*/
+ {  0x48  ,  0x00  },   /*'''*/
+ {  0x29  ,  0x44  },   /*'('*/
+ {  0x44  ,  0x2a  },   /*')'*/
+ {  0x15  ,  0xa0  },   /*'*'*/
+ {  0x0b  ,  0x42  },   /*'+'*/
+ {  0x00  ,  0x50  },   /*','*/
+ {  0x03  ,  0x02  },   /*'-'*/
+ {  0x00  ,  0x08  },   /*'.'*/
+ {  0x25  ,  0x90  },   /*'/'*/
+ {  0x76  ,  0xba  },   /*'0'*/
+ {  0x59  ,  0x5c  },   /*'1'*/
+ {  0xc5  ,  0x9e  },   /*'2'*/
+ {  0xc5  ,  0x38  },   /*'3'*/
+ {  0x92  ,  0xe6  },   /*'4'*/
+ {  0xf3  ,  0x3a  },   /*'5'*/
+ {  0x73  ,  0xba  },   /*'6'*/
+ {  0xe5  ,  0x90  },   /*'7'*/
+ {  0x77  ,  0xba  },   /*'8'*/
+ {  0x77  ,  0x3a  },   /*'9'*/
+ {  0x08  ,  0x40  },   /*':'*/
+ {  0x08  ,  0x50  },   /*';'*/
+ {  0x2a  ,  0x44  },   /*'<'*/
+ {  0x1c  ,  0xe0  },   /*'='*/
+ {  0x88  ,  0x52  },   /*'>'*/
+ {  0xe5  ,  0x08  },   /*'?'*/
+ {  0x56  ,  0x8e  },   /*'@'*/
+ {  0x77  ,  0xb6  },   /*'A'*/
+ {  0x77  ,  0xb8  },   /*'B'*/
+ {  0x72  ,  0x8c  },   /*'C'*/
+ {  0xd6  ,  0xba  },   /*'D'*/
+ {  0x73  ,  0x9e  },   /*'E'*/
+ {  0x73  ,  0x92  },   /*'F'*/
+ {  0x72  ,  0xae  },   /*'G'*/
+ {  0xb7  ,  0xb6  },   /*'H'*/
+ {  0xe9  ,  0x5c  },   /*'I'*/
+ {  0x64  ,  0xaa  },   /*'J'*/
+ {  0xb7  ,  0xb4  },   /*'K'*/
+ {  0x92  ,  0x9c  },   /*'L'*/
+ {  0xbe  ,  0xb6  },   /*'M'*/
+ {  0xd6  ,  0xb6  },   /*'N'*/
+ {  0x56  ,  0xaa  },   /*'O'*/
+ {  0xd7  ,  0x92  },   /*'P'*/
+ {  0x76  ,  0xee  },   /*'Q'*/
+ {  0x77  ,  0xb4  },   /*'R'*/
+ {  0x71  ,  0x38  },   /*'S'*/
+ {  0xe9  ,  0x48  },   /*'T'*/
+ {  0xb6  ,  0xae  },   /*'U'*/
+ {  0xb6  ,  0xaa  },   /*'V'*/
+ {  0xb6  ,  0xf6  },   /*'W'*/
+ {  0xb5  ,  0xb4  },   /*'X'*/
+ {  0xb5  ,  0x48  },   /*'Y'*/
+ {  0xe5  ,  0x9c  },   /*'Z'*/
+ {  0x69  ,  0x4c  },   /*'['*/
+ {  0x91  ,  0x24  },   /*'\'*/
+ {  0x64  ,  0x2e  },   /*']'*/
+ {  0x54  ,  0x00  },   /*'^'*/
+ {  0x00  ,  0x1c  },   /*'_'*/
+ {  0x44  ,  0x00  },   /*'`'*/
+ {  0x0e  ,  0xae  },   /*'a'*/
+ {  0x9a  ,  0xba  },   /*'b'*/
+ {  0x0e  ,  0x8c  },   /*'c'*/
+ {  0x2e  ,  0xae  },   /*'d'*/
+ {  0x0e  ,  0xce  },   /*'e'*/
+ {  0x56  ,  0xd0  },   /*'f'*/
+ {  0x55  ,  0x3B  },   /*'g'*/
+ {  0x93  ,  0xb4  },   /*'h'*/
+ {  0x41  ,  0x44  },   /*'i'*/
+ {  0x41  ,  0x51  },   /*'j'*/
+ {  0x97  ,  0xb4  },   /*'k'*/
+ {  0x49  ,  0x44  },   /*'l'*/
+ {  0x17  ,  0xb6  },   /*'m'*/
+ {  0x1a  ,  0xb6  },   /*'n'*/
+ {  0x0a  ,  0xaa  },   /*'o'*/
+ {  0xd6  ,  0xd3  },   /*'p'*/
+ {  0x76  ,  0x67  },   /*'q'*/
+ {  0x17  ,  0x90  },   /*'r'*/
+ {  0x0f  ,  0x38  },   /*'s'*/
+ {  0x9a  ,  0x8c  },   /*'t'*/
+ {  0x16  ,  0xae  },   /*'u'*/
+ {  0x16  ,  0xba  },   /*'v'*/
+ {  0x16  ,  0xf6  },   /*'w'*/
+ {  0x15  ,  0xb4  },   /*'x'*/
+ {  0xb5  ,  0x2b  },   /*'y'*/
+ {  0x1c  ,  0x5e  },   /*'z'*/
+ {  0x6b  ,  0x4c  },   /*'{'*/
+ {  0x49  ,  0x48  },   /*'|'*/
+ {  0xc9  ,  0x5a  },   /*'}'*/
+ {  0x54  ,  0x00  },   /*'~'*/
+ {  0x56  ,  0xe2  }    /*''*/
+};
+//<=============================================================================
+// 
+//  
+// 
+//Copyright <2015> <https://hackaday.io/PK.3>========================>
+// 
+//Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
+//The above copyright noticeand this permission notice shall be included in all copies or substantial portions of the Software.
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//Font retreival function - ugly, but needed. 
+//kindly stolen from https://hackaday.io/project/6309-vga-graphics-over-spi-and-serial-vgatonic/log/20759-a-tiny-4x6-pixel-font-that-will-fit-on-almost-any-microcontroller-license-mit#header
+unsigned char getFontLine(unsigned char data, int line_num) {
+    const uint8_t index = (data - 32);
+    unsigned char pixel = 0;
+    if (pgm_read_byte(&font4x6[index][1]) & 1 == 1) line_num -= 1;
+    if (line_num == 0) {
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> 4;
+    }
+    else if (line_num == 1) {
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> 1;
+    }
+    else if (line_num == 2) {
+        // Split over 2 bytes
+        return (((pgm_read_byte(&font4x6[index][0])) & 0x03) << 2) | (((pgm_read_byte(&font4x6[index][1])) & 0x02));
+    }
+    else if (line_num == 3) {
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> 4;
+    }
+    else if (line_num == 4) {
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> 1;
+    }
+    return pixel & 0xE;
+}//<=============================================================================
+
+enum Colors { 
     RED, 
     GREEN, 
     BLUE, 
@@ -190,8 +328,7 @@ void cnvColor(uint8_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, 
     }
 }
 
-//creates a buffer used to display stuff
-void Panel::createBufferBG(uint8_t c){
+void Panel::createBufferBG(uint8_t c){//creates a buffer used to display stuff
     //get colors
     uint8_t rt, gt, bt;
     cnvColor(c, &rt, &gt, &bt);
@@ -225,8 +362,7 @@ void Panel::createBufferBG(uint8_t c){
     }
 }
 
-//outputs an empty row on the selected line
-void Panel::emptyLine() {
+void Panel::emptyLine() {//outputs an empty row on the selected line
     //output off
     digitalWrite(OE, LOW);
     //address zero
@@ -236,8 +372,7 @@ void Panel::emptyLine() {
     digitalWrite(RD, LOW);
 }
 
-//this function cleans up and latches the data, so diplays it
-void Panel::latch() {
+void Panel::latch() {//this function cleans up and latches the data, so diplays it
     //latch output
     digitalWrite(LAT, HIGH);
     //delatch
@@ -247,8 +382,7 @@ void Panel::latch() {
     emptyLine();
 }
 
-//selects one of the 16 lines, 0 based
-void Panel::selectLine(uint8_t c) {
+void Panel::selectLine(uint8_t c) {//selects one of the 16 lines, 0 based
     switch (c) {
         case B0000:
             digitalWrite(RA, HIGH);
@@ -325,8 +459,7 @@ void Panel::selectLine(uint8_t c) {
     }
 }
 
-//creates interesting patterns (shift, factor, offset)
-void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {
+void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset)
     for (uint8_t r = 0; r < rows / 2; r++) {
         //switch through all rows
         selectLine(r);
@@ -345,8 +478,7 @@ void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {
     }
 }
 
-//fills the screeen with the set color
-void Panel::fillScreenColor(uint8_t c){
+void Panel::fillScreenColor(uint8_t c){//fills the screeen with the set color
     //switches all the colrs and sets the values depending on colors
     switch (c)
     {
@@ -412,7 +544,7 @@ void Panel::fillScreenColor(uint8_t c){
                 digitalWrite(RD, LOW);
                 for (size_t i = 0; i < cols; i++)
                 {
-                    clock(0);
+                    clock();
                 }
             }
             break;
@@ -718,8 +850,7 @@ void Panel::fillScreenColor(uint8_t c){
     }
 }
 
-//sends two pixels, one in upper half, one in lower half to display
-void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl){ //first upper half values, the lower half
+void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl){ //sends two pixels, one in upper half, one in lower half to display | first upper half values, the lower half
     if (ru > 0 && r1 == false) //turns upper half red
     {
         digitalWrite(RF, HIGH);
@@ -779,11 +910,10 @@ void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_
         digitalWrite(BS, LOW);
         b2 = false;
     }
-    clock(0);
+    clock();
 }
 
-//sends two rows of pixels to display
-void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl) { //first upper half values, the lower half
+void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl) { //sends two rows of pixels to display | first upper half values, the lower half
     
     if (ru > 0 && r1 == false) //turns upper half red
     {
@@ -846,17 +976,13 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
     }
 
     for (uint8_t i = 0; i < cols; i++) {
-        clock(0);
+        clock();
     }
     latch();
 }
 
-//clock function for data entry
-void Panel::clock(uint8_t d) {
+void Panel::clock() {//clock function for data entry
     digitalWrite(CLK, HIGH);
-    if (d > 0) {
-        delay(d);
-    }
     digitalWrite(CLK, LOW);
 }
 
@@ -1097,6 +1223,27 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fil
             //create index
             temp = (uint8_t) (yC * cols / 8) + xC / 8;
             setBuffer(r, g, b, temp, xC);
+        }
+    }
+}
+
+void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint8_t c) {
+    //color for the char
+    uint8_t r, g, b;
+    cnvColor(c, &r, &g, &b);
+    //iterate through the character line by line
+    uint8_t temp = 0;
+    char out;
+    for (uint8_t i = 0; i < 5; i++){
+        out = getFontLine(ch, i);
+        //iterate through the character bit by bit
+        for (uint8_t j = 4; j > 0; --j) {
+            temp = ((y + i) * (cols / 8) + (x + 4 - j) / 8);
+                //shift by j and check for bit set
+            if (out & (1 << j)) {
+                //set pixel at i and j
+                setBuffer(r, g, b, temp, x + 4 - j);
+            }
         }
     }
 }
