@@ -44,13 +44,25 @@ void loop() {
         if(Serial.available() && strlen(out) < 80) {
             t = (char)Serial.read();
             Serial.print(t);
+            if (t == 12) {
+                for (uint8_t i = 0; i < 81; i++) {
+                    out[i] = '\0';
+                }
+                oldlength = 0;
+                length = 0;
+                //Serial.println("clearing");
+                panel.clearBuffer(bgcolor);
+                panel.displayBuffer();
+            }
+            else
             if (t < 32) {
                 if (t < 10) {
                     fcolor = t; //r>= 0, < 8
                 }
-                else {
-                    bgcolor = t - 10;
+                else if(t >= 20){
+                    bgcolor = t - 20;
                 }
+                else {}
             }
             else {
                 out[strlen(out)] = t;
@@ -61,14 +73,39 @@ void loop() {
         length = strlen(out);
 
         if (length >= 80 && Serial.available()) {
-            for (uint8_t i = 0; i < 81; i++) {
-                out[i] = '\0';
+            t = (char)Serial.read();
+            if (t < 32) {
+                if (t == 12) {
+                    for (uint8_t i = 0; i < 81; i++) {
+                        out[i] = '\0';
+                    }
+                    oldlength = 0;
+                    length = 0;
+                    //Serial.println("clearing");
+                    panel.clearBuffer(bgcolor);
+                    panel.displayBuffer();
+                }
+                else {
+                    //get rid of all non text chars
+                    while (t > 10 && t < 20){
+                        t = (char)Serial.read();
+                    }
+                    //save first text char
+                    out[0] = t;
+                }
+                
             }
-            oldlength = 0;
-            length = 0;
-            //Serial.println("clearing");
-            panel.clearBuffer(bgcolor);
-            panel.displayBuffer();
+            else {
+                for (uint8_t i = 0; i < 81; i++) {
+                    out[i] = '\0';
+                }
+                oldlength = 0;
+                length = 0;
+                //Serial.println("clearing");
+                panel.clearBuffer(bgcolor);
+                panel.displayBuffer();
+            }
+            
         }
 
         for (uint8_t i = oldlength; i < length;i++) {
