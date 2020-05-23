@@ -5,9 +5,12 @@ Panel panel(32, 64, true);
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
+uint8_t fcolor = 3;
+uint8_t bgcolor = 2;
+char t;
 
 void setup(){
-    panel.createBufferBG(panel.BLUE);
+    panel.createBufferBG(bgcolor);
     /*
     panel.drawChar(0 * 4, 0 * 6, 'A', panel.WHITE);
     panel.drawChar(1 * 4, 0 * 6, 'B', panel.WHITE);
@@ -35,10 +38,23 @@ void setup(){
 //
 //Lorem ipsum dolor sit amet, consectetur adipisici elit,
 // sed eiusmod tempor inci
+//
 void loop() {
     if (Serial.available()) {
-        while (Serial.available() && strlen(out) < 80) {
-            out[strlen(out)] = (char)Serial.read();
+        if(Serial.available() && strlen(out) < 80) {
+            t = (char)Serial.read();
+            Serial.print(t);
+            if (t < 32) {
+                if (t < 10) {
+                    fcolor = t; //r>= 0, < 8
+                }
+                else {
+                    bgcolor = t - 10;
+                }
+            }
+            else {
+                out[strlen(out)] = t;
+            }
             panel.displayBuffer();
         }
         oldlength = length;
@@ -51,7 +67,7 @@ void loop() {
             oldlength = 0;
             length = 0;
             //Serial.println("clearing");
-            panel.clearBuffer(panel.BLUE);
+            panel.clearBuffer(bgcolor);
             panel.displayBuffer();
         }
 
@@ -63,7 +79,7 @@ void loop() {
                     out[j] == ' ';
                 }
             }*/
-            panel.drawChar((i % 16) * 4, (i / 16) * 6 + 1, out[i], panel.WHITE);
+            panel.drawChar((i % 16) * 4, (i / 16) * 6 + 1, out[i], fcolor);
             panel.displayBuffer();
         }
         panel.displayBuffer();

@@ -23,7 +23,7 @@ void setup() {
 
 void loop() {
     //panel.test();
-
+    
     //this example iterates through all available colors in the panel
     for (long i = 0; i < 26000; i++) {
         panel.fillScreenColor(i/1000);//changes after some time 
@@ -58,4 +58,6 @@ void loop() {
     FLESH,
     LIGHTPINK,
     */
+
+   // panel.fillScreenColor(panel.RED);
 }
