@@ -36,19 +36,20 @@ CLK 8,
 OE 9,
 GND GND
 */
-//#include "../../../../../../../Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h"
-#include <arduino.h>
+#include "../../../../../../../Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h"
+//#include <arduino.h>
 
 #ifndef Panel_h
 #define Panel_h
 
 class Panel{
     private:
+        uint8_t l;
+        uint8_t k;
         const uint8_t font4x6[96][2];
         void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
     public:
         Panel(uint8_t height, uint8_t width, bool usebuffer);
-        void emptyLine();
         void selectLine(uint8_t c);
         void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
         void fillScreenColor(uint8_t c);

@@ -43,7 +43,7 @@ void loop() {
     if (Serial.available()) {
         if(Serial.available() && strlen(out) < 80) {
             t = (char)Serial.read();
-            Serial.print(t);
+            //Serial.print(t);
             if (t == 12) {
                 for (uint8_t i = 0; i < 81; i++) {
                     out[i] = '\0';
