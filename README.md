@@ -15,6 +15,8 @@ For the Pixels, do the same with
 	
 There is also the Buffer example, which is an implementation of these librarys
 
+I made a write up [here](https://create.arduino.cc/projecthub/CamelCaseName/running-a-32x64-rgb-led-panel-with-only-an-arduino-nano-c19385).
+
 # Which cable goes where
 <img src="https://hackster.imgix.net/uploads/image/file/146124/DisplayPinout.jpg?auto=compress%2Cformat&w=740&h=555" alt="HUB75 Pinout" width="200"/>
 
