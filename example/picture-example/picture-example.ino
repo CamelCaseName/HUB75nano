@@ -31,7 +31,7 @@ struct LEDx8 {
     uint8_t : 0;
 };
 
-Panel panel(32, 64, true);
+Panel panel(32, 64);
 
 static LEDx8 f[256];
 

@@ -1,7 +1,6 @@
 #include <Panel.h>
 
 //which cable goes where
-
 #define RA 14 //register selector a
 #define RB 15 //register selector b
 #define RC 16 //register selector c
@@ -16,20 +15,23 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-Panel panel(32,64, false);
+Panel panel(32,64);
 
 void setup() {
 }
 
 void loop() {
-    //panel.test();
-    
-    //this example iterates through all available colors in the panel
-    for (long i = 0; i < 26000; i++) {
-        panel.fillScreenColor(i/1000);//changes after some time 
-    }
     /*
-    |||ALL COLORS|||
+    //this example iterates through ALL available colors in the panel
+    for (uint16_t i = 0; i < 65536; i++) {
+        panel.fillScreenColor(i / 4);//changes after some time (fast time)
+    }
+    */
+
+    panel.test();
+
+    /*
+    |||ALL NAMED COLORS|||
 
     RED, 
     GREEN, 

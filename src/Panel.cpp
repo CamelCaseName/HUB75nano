@@ -14,30 +14,11 @@
 #define CLK 8 //clock signal
 #define OE 9 //output enable
 
-uint8_t rows;
-uint8_t cols;
-uint16_t bsize;
-uint8_t l;
-uint8_t k;
+uint8_t rows, cols, bsize, l, k, r, g, b;
 
-//color values
-uint8_t rc1;
-uint8_t gc1;
-uint8_t bc1;
-uint8_t rc2;
-uint8_t gc2;
-uint8_t bc2;
-
-//register for string pin status
-bool r1;
-bool g1;
-bool b1;
-bool r2;
-bool g2;
-bool b2;
-
+#ifndef BIG
 #pragma pack(1)
-struct LED{//3 bytes long, contains 8 leds
+struct LED{//3 bytes long, contains 8 leds at 1 bit color depth
     uint8_t rc1 : 1;
     uint8_t gc1 : 1;
     uint8_t bc1 : 1;  
@@ -66,6 +47,43 @@ struct LED{//3 bytes long, contains 8 leds
     uint8_t bc8 : 1; 
     uint8_t :0;
 };
+
+#else
+
+#pragma pack(1)
+struct LED {//6 bytes long, contains 8 leds at 2 bit color depth
+    uint8_t rc1 : 2;
+    uint8_t gc1 : 2;
+    uint8_t bc1 : 2;
+    uint8_t rc2 : 2;
+    uint8_t : 0;
+    uint8_t gc2 : 2;
+    uint8_t bc2 : 2;
+    uint8_t rc3 : 2;
+    uint8_t gc3 : 2;
+    uint8_t : 0;
+    uint8_t bc3 : 2;
+    uint8_t rc4 : 2;
+    uint8_t gc4 : 2;
+    uint8_t bc4 : 2;
+    uint8_t : 0;
+    uint8_t rc5 : 2;
+    uint8_t gc5 : 2;
+    uint8_t bc5 : 2;
+    uint8_t rc6 : 2;
+    uint8_t : 0;
+    uint8_t gc6 : 2;
+    uint8_t bc6 : 2;
+    uint8_t rc7 : 2;
+    uint8_t gc7 : 2;
+    uint8_t : 0;
+    uint8_t bc7 : 2;
+    uint8_t rc8 : 2;
+    uint8_t gc8 : 2;
+    uint8_t bc8 : 2;
+    uint8_t : 0;
+};
+#endif
 
 //Copyright <2010> <Robey Pointer, https://robey.lag.net/> =========>
 // 
@@ -234,7 +252,7 @@ enum Colors {
     LIGHTPINK,
 };
 
-Panel::Panel(uint8_t height,uint8_t width, bool usebuffer){
+Panel::Panel(uint8_t height,uint8_t width){
     rows = height;
     cols = width;
     /*
@@ -248,7 +266,7 @@ Panel::Panel(uint8_t height,uint8_t width, bool usebuffer){
     B1 4,
     B2 7,
     G1 3,
-    G2 6,
+    G2 66,
     LAT A3,
     CLK 8,
     OE 9,
@@ -270,16 +288,14 @@ Panel::Panel(uint8_t height,uint8_t width, bool usebuffer){
     
     //primarily used for debugging
     Serial.begin(112500);
+ 
+    //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
+    bsize = rows * (cols / 8) - 1;
+    LED buffer[bsize + 1];
     
-    
-    if (usebuffer) {
-        //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
-        bsize = rows * (cols / 8);
-        LED buffer[bsize];
-    }
 }
 
-void cnvColor(uint8_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, get converted color by reference
+void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, get converted color by reference
     switch (c){
         case RED:
             *rt = 1;
@@ -321,22 +337,112 @@ void cnvColor(uint8_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, 
             *gt = 1;
             *bt = 1;
             break;
-
-        default:
+        case LIGHTRED:
+            *rt = 2;
+            *gt = 0;
+            *bt = 0;
+            break;
+        case LIGHTGREEN:
+            *rt = 0;
+            *gt = 2;
+            *bt = 0;
+            break;
+        case LIGHTBLUE:
+            *rt = 0;
+            *gt = 0;
+            *bt = 2;
+            break;
+        case LIGHTWHITE:
+            *rt = 2;
+            *gt = 2;
+            *bt = 2;
+            break;
+        case LIGHTCYAN:
+            *rt = 0;
+            *gt = 2;
+            *bt = 2;
+            break;
+        case DARKYELLOW:
             *rt = 1;
+            *gt = 2;
+            *bt = 0;
+            break;
+        case LIGHTPURPLE:
+            *rt = 2;
+            *gt = 0;
+            *bt = 2;
+            break;
+        case LIGHTYELLOW:
+            *rt = 2;
+            *gt = 2;
+            *bt = 0;
+            break;
+        case TURQUOISE:
+            *rt = 0;
+            *gt = 1;
+            *bt = 2;
+            break;
+        case PINK:
+            *rt = 1;
+            *gt = 0;
+            *bt = 2;
+            break;
+        case DARKPURPLE:
+            *rt = 2;
+            *gt = 0;
+            *bt = 1;
+            break;
+        case BRIGHTGREEN:
+            *rt = 2;
+            *gt = 1;
+            *bt = 0;
+            break;
+        case BRIGHTCYAN:
+            *rt = 2;
             *gt = 1;
             *bt = 1;
+            break;
+        case MEDIUMGREEN:
+            *rt = 2;
+            *gt = 1;
+            *bt = 2;
+            break;
+        case DEEPPURPLE:
+            *rt = 2;
+            *gt = 2;
+            *bt = 1;
+            break;
+        case OCEANBLUE:
+            *rt = 0;
+            *gt = 2;
+            *bt = 1;
+            break;
+        case FLESH:
+            *rt = 1;
+            *gt = 2;
+            *bt = 2;
+            break;
+        case LIGHTPINK:
+            *rt = 1;
+            *gt = 2;
+            *bt = 1;
+            break;
+
+        default:
+            *rt = (c >> 11) & B00001111;//in binary: RRRRRGGGGGGBBBBB >> 11 = 00000000000RRRRR
+            *gt = (c >> 5) & B00001111; //in binary RRRRRGGGGGGBBBBB >> 5 = RRRRRGGGGGG, & B00111111(63) = 0000000000GGGGGG
+            *bt = c & B00001111;  //in binary RRRRRGGGGGGBBBBB & 31(B00011111) = 00000000000BBBBB
             break;
     }
 }
 
-void Panel::createBufferBG(uint8_t c){//creates a buffer used to display stuff
+void Panel::createBufferBG(uint16_t c){//creates a buffer used to display stuff
     //get colors
     uint8_t rt, gt, bt;
     cnvColor(c, &rt, &gt, &bt);
 
     //initiates buffer accordingly
-    for(uint16_t x = 0; x < bsize; x++){
+    for(uint16_t x = 0; x < bsize + 1; x++){
         buffer[x].rc1 = rt;
         buffer[x].gc1 = gt;
         buffer[x].bc1 = bt;
@@ -400,394 +506,38 @@ void Panel::selectLine(uint8_t i) {//selects one of the 16 lines, 0 based
     }
 }
 
-void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset)
+void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset) | I honestly dont know what it does, @hxchen made this
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
     for (uint8_t r = 0; r < rows / 2; r++) {
         //switch through all rows
         selectLine(r);
 
         for (uint8_t c = 0; c<cols; c++) {
             //c = coloumn r = row s = shift for moving fist number is offset for color, second for overall
-            rc1 =  ((c + 0 + r + s*1 + o) % f) == 0;
-            bc1 =  ((c + 1 + r + s*2 + o) % f) == 0;
-            gc1 =  ((c + 2 + r + s*3 + o) % f) == 0;
-            rc1 ^= ((c + 3 - r + s*1 + o) % f) == 0;
-            gc1 ^= ((c + 4 - r + s*2 + o) % f) == 0;
-            bc1 ^= ((c + 5 - r + s*3 + o) % f) == 0;
-            sendTwoPixels(rc1,gc1,bc1,rc1,gc1,bc1);
+            r =  ((c + 0 + r + s*1 + o) % f) == 0;
+            b =  ((c + 1 + r + s*2 + o) % f) == 0;
+            g =  ((c + 2 + r + s*3 + o) % f) == 0;
+            r ^= ((c + 3 - r + s*1 + o) % f) == 0;
+            g ^= ((c + 4 - r + s*2 + o) % f) == 0;
+            b ^= ((c + 5 - r + s*3 + o) % f) == 0;
+            sendTwoPixels(r,g,b,r,g,b);
         }       
         latch(); //general latch to get rid of ghosting, or so i thought
     }
 }
 
-void Panel::fillScreenColor(uint8_t c){//fills the screeen with the set color
-    //switches all the colrs and sets the values depending on colors
-    switch (c)
-    {
-        case RED:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
+void Panel::fillScreenColor(uint16_t c){//fills the screeen with the set color
+    //switches all the colors and sets the values depending on colors
+    cnvColor(c, &r, &g, &b);//gets first couple colors
 
-                rc1 = 1;
-                gc1 = 0;
-                bc1 = 0;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case GREEN:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 0;
-                gc1 = 1;
-                bc1 = 0;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case BLUE:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 0;
-                gc1 = 0;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case WHITE:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 1;
-                gc1 = 1;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case BLACK:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                //output off
-                digitalWrite(OE, LOW);
-                //address zero
-                digitalWrite(RA, LOW);
-                digitalWrite(RB, LOW);
-                digitalWrite(RC, LOW);
-                digitalWrite(RD, LOW);
-                for (size_t i = 0; i < cols; i++)
-                {
-                    clock();
-                }
-            }
-            break;
-        
-        case PURPLE:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 1;
-                gc1 = 0;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case YELLOW:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 1;
-                gc1 = 1;
-                bc1 = 0;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        
-        case CYAN:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 0;
-                gc1 = 1;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
-        case LIGHTRED:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 0;
-                bc1 = 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case LIGHTGREEN:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 0;
-                gc1 = (i % 2) == 0;
-                bc1 = 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case LIGHTBLUE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 0; 
-                gc1 = 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case LIGHTWHITE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = (i % 2) == 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case LIGHTCYAN:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 0;
-                gc1 = (i % 2) == 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case DARKYELLOW:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 1;
-                gc1 = (i % 2) == 0;
-                bc1 = 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case LIGHTPURPLE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case LIGHTYELLOW:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = (i % 2) == 0;
-                bc1 = 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case TURQUOISE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 0;
-                gc1 = 1;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case PINK:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 1;
-                gc1 = 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-        
-        case DARKPURPLE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 0;
-                bc1 = 1;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case BRIGHTGREEN:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 1;
-                bc1 = 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case BRIGHTCYAN:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 1;
-                bc1 = 1;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case MEDIUMGREEN:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = 1;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case DEEPPURPLE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = (i % 2) == 0;
-                gc1 = (i % 2) == 0;
-                bc1 = 1;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case OCEANBLUE:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 0;
-                gc1 = (i % 2) == 0;
-                bc1 = 1;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case FLESH:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 1;
-                gc1 = (i % 2) == 0;
-                bc1 = (i % 2) == 0;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        case LIGHTPINK:
-            for (uint8_t i = 0; i < 32; i++){//for loop to do pwm
-                //depending on wether to switch led fast or not
-                rc1 = 1;
-                gc1 = (i % 2) == 0;
-                bc1 = 1;
-                for (uint8_t r = 0; r < rows / 2; r++) {
-                    //switch through all rows
-                    selectLine(r);
-                    sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-                }
-            }
-            break;
-
-        default:
-            for (uint8_t r = 0; r < rows / 2; r++) {
-                //switch through all rows
-                selectLine(r);
-
-                rc1 = 1;
-                gc1 = 1;
-                bc1 = 1;
-                sendWholeRow(rc1,gc1,bc1,rc1,gc1,bc1);
-            }
-            break;
+    for (uint8_t i = 0; i < 16; i++) {
+        for (uint8_t row = 0; row < rows / 2; row++) {
+            //switch through all rows
+            selectLine(row);
+            sendWholeRow(i % r == 0, i % g == 0, i % b == 0, i % r == 0, i % g == 0, i % b == 0);
+        }
     }
 }
 
@@ -896,9 +646,9 @@ void Panel::clock() {//clock function for data entry
 }
 
 void Panel::displayBuffer() {//puts the  buffer contents onto the display
-    for (uint8_t i = 0; i < 128; i++) {
+    for (uint8_t i = 0; i < bsize + 1 / 2; i++) {
         //i += 127;
-        l = i + 128;
+        l = i + bsize + 1 / 2;
         k = i / 8;
         // selectLine(i / 8);
         //select current row (and adjust for row drift with the buffer)
@@ -1326,13 +1076,13 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
     }
 }
 
-void Panel::clearBuffer(uint8_t c) {
+void Panel::clearBuffer(uint16_t c) {
     //get colors
     uint8_t rt, gt, bt;
     cnvColor(c, &rt, &gt, &bt);
 
         //fills the buffer
-    for (uint16_t x = 0; x < bsize; x++) {
+    for (uint16_t x = 0; x < bsize + 1; x++) {
         buffer[x].rc1 = rt;
         buffer[x].gc1 = gt;
         buffer[x].bc1 = bt;
@@ -1361,8 +1111,8 @@ void Panel::clearBuffer(uint8_t c) {
 }
 
 void Panel::test(){
-    //fills entire screen somehow
     fillScreenColor(OCEANBLUE);
+    //fillScreenColor(2047);
 }
 
 void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i) {
@@ -1412,9 +1162,8 @@ void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i) 
     }
 }
 
-void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, bool fill) { //draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
+void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c, bool fill) { //draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     //get colors
-    uint8_t r, g, b;
     cnvColor(c, &r, &g, &b);
 
     if (fill) {
@@ -1452,9 +1201,9 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c, 
     }
 }
 
-void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c) { //draws a line with color at coords given, must be left to right
+void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c) { //draws a line with color at coords given, must be left to right
     //get colors
-    uint8_t r, g, b;
+    
     cnvColor(c, &r, &g, &b);
 
     //  f(x) = m*x+t
@@ -1477,9 +1226,9 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c) 
     }
 }
 
-void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fill) { //draws a circle at the coords with radius and color
+void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fill) { //draws a circle at the coords with radius and color
     //get colors
-    uint8_t r, g, b;
+    
     cnvColor(c, &r, &g, &b);
     uint8_t temp = 0;
     int xC;
@@ -1517,9 +1266,9 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t c, bool fil
     }
 }
 
-void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint8_t c) {
+void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {
     //color for the char
-    uint8_t r, g, b;
+    
     cnvColor(c, &r, &g, &b);
     //iterate through the character line by line
     uint8_t temp = 0;

@@ -1,7 +1,7 @@
 #include <Panel.h>
 
 //create an instance of the panel
-Panel panel(32, 64, true);
+Panel panel(32, 64);
 
 
 void setup() {
