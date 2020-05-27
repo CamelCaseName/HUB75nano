@@ -38,7 +38,7 @@ GND GND
 */
 
 #define DEBUG //[if you're reading this its already too late :)]
-#define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
+//#define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
 
 #ifdef DEBUG
     #include "../../../../../../../Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h"
@@ -55,7 +55,6 @@ class Panel{
         uint8_t k;
         const uint8_t font4x6[96][2];
         void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i); 
-        unsigned char getFontLine(unsigned char data, int line_num);
     public:
         Panel(uint8_t height, uint8_t width);
         void selectLine(uint8_t i);

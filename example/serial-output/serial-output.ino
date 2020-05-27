@@ -1,10 +1,16 @@
 #include "Panel.h"
 //this sketch should ouptut serial input to the panel
 
+
 //          IMPORTANT!!
 //
 //in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
+//The library will very likely be in your arduino libary folder
+//C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
+//go in there, and do as said above. please.
 //
+
+#ifndef BIG
 
 const Panel panel(32, 64);
 char out[81];
@@ -107,3 +113,15 @@ void loop() {
     }
     panel.displayBuffer();
 }
+
+//"error handleing"
+#else
+void setup() {
+    Serial.begin(115200);
+}
+void loop() {
+    Serial.println("It will not work!!!!!!");
+    Serial.println("you will see ram blinking around, and you will write  wrong adresses");
+    Serial.println("in order to run this sketch, you must go into panel.h and remove \"#define BIG\", or comment it. (line 41)");
+}
+#endif //BIG
