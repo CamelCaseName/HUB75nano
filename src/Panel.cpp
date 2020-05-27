@@ -49,7 +49,6 @@ struct LED{//3 bytes long, contains 8 leds at 1 bit color depth
 };
 
 #else
-
 #pragma pack(1)
 struct LED {//6 bytes long, contains 8 leds at 2 bit color depth
     uint8_t rc1 : 2;
@@ -646,9 +645,12 @@ void Panel::clock() {//clock function for data entry
 }
 
 void Panel::displayBuffer() {//puts the  buffer contents onto the display
-    for (uint8_t i = 0; i < bsize + 1 / 2; i++) {
+    //for (uint8_t m = 1; m < 3; m++) {
+    //uint8_t m;
+    for (uint8_t i = 0; i < (bsize + 1) / 2; i++) {
+        //m = i % 3;
         //i += 127;
-        l = i + bsize + 1 / 2;
+        l = i + (bsize + 1) / 2;
         k = i / 8;
         // selectLine(i / 8);
         //select current row (and adjust for row drift with the buffer)
@@ -686,6 +688,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         //Serial.println(buffer[i].gc1);
         //first red pin
         if (buffer[i].rc1) {
+            //Serial.println("1st part");
             PORTD |= B00000100;
         }
         else {
@@ -1074,39 +1077,900 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             PORTB &= B11111101; //OE LOW
         }
     }
+    //to sort out half colors
+    for (uint8_t i = 0; i < (bsize + 1) / 2; i++) {
+        //m = i % 3;
+        //i += 127;
+        l = i + (bsize + 1) / 2;
+        k = i / 8;
+        // selectLine(i / 8);
+        //select current row (and adjust for row drift with the buffer)
+
+        if (k > 0) {
+            --k;
+            if (k & B0000) {
+                PORTC &= B11111110; //RA LOW
+                PORTC &= B11111101; //RB LOW
+                PORTC &= B11111011; //RC LOW
+                PORTC &= B11101111; //RD LOW
+            }
+            if (k & B0001) {
+                PORTC |= B00000001; //RA HIGH
+            }
+            if (k & B0010) {
+                PORTC |= B00000010; //RB HIGH
+            }
+            if (k & B0100) {
+                PORTC |= B00000100; //RC HIGH
+            }
+            if (k & B1000) {
+                PORTC |= B00010000; //RD HIGH
+            }
+        }
+        else {//select line 15 cuz i dont know but works
+            PORTC |= B00000001; //RA HIGH
+            PORTC |= B00000010; //RB HIGH
+            PORTC |= B00000100; //RC HIGH
+            PORTC |= B00010000; //RD HIGH
+        }
+
+        //first pixels
+        //and checks wether pixel set in buffer, therefor deciding the voltage to give
+        //Serial.println(buffer[i].gc1);
+        //first red pin
+        if (buffer[i].rc1 == 1) {
+            //Serial.println("2nd part");
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc1 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc1 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc1 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc1 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc1 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        //sets clock high low very fast
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //second pixels
+
+        //first red pin
+        if (buffer[i].rc2 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc2 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc2 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc2 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc2 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc2 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //3rd pixels
+        //first red pin
+        if (buffer[i].rc3 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc3 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc3 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc3 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc3 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc3 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //4th pixels
+        //first red pin
+        if (buffer[i].rc4 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc4 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc4 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc4 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc4 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc4 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //5th pixels
+        //first red pin
+        if (buffer[i].rc5 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc5 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc5 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc5 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc5 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc5 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //6th pixels
+        //first red pin
+        if (buffer[i].rc6 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc6 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc6 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc6 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc6 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc6 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //7th pixels
+        //first red pin
+        if (buffer[i].rc7 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc7 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc7 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc7 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc7 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc7 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //8th pixels
+        //first red pin
+        if (buffer[i].rc8 == 1) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc8 == 1) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc8 == 1) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc8 == 1) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc8 == 1) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc8 == 1) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        if ((i + 1) % 8 == 0) {
+            PORTC |= B00001000; //LAT HIGH
+            PORTC &= B11110111; //LAT LOW
+            PORTB |= B00000010; //OE HIGH
+
+            PORTC &= B11111110; //RA LOW
+            PORTC &= B11111101; //RB LOW
+            PORTC &= B11111011; //RC LOW
+            PORTC &= B11101111; //RD LOW
+
+            PORTB &= B11111101; //OE LOW
+        }
+    }
+    //to sort out third colors, which doesnt work sadly
+    /*
+    for (uint8_t i = 0; i < (bsize + 1) / 2; i++) {
+        //m = i % 3;
+        //i += 127;
+        l = i + (bsize + 1) / 2;
+        k = i / 8;
+
+        //select current row (and adjust for row drift with the buffer)
+        if (k > 0) {
+            --k;
+            if (k & B0000) {
+                PORTC &= B11111110; //RA LOW
+                PORTC &= B11111101; //RB LOW
+                PORTC &= B11111011; //RC LOW
+                PORTC &= B11101111; //RD LOW
+            }
+            if (k & B0001) {
+                PORTC |= B00000001; //RA HIGH
+            }
+            if (k & B0010) {
+                PORTC |= B00000010; //RB HIGH
+            }
+            if (k & B0100) {
+                PORTC |= B00000100; //RC HIGH
+            }
+            if (k & B1000) {
+                PORTC |= B00010000; //RD HIGH
+            }
+        }
+        else {//select line 15 cuz i dont know but works
+            PORTC |= B00000001; //RA HIGH
+            PORTC |= B00000010; //RB HIGH
+            PORTC |= B00000100; //RC HIGH
+            PORTC |= B00010000; //RD HIGH
+        }
+
+        //first pixels
+        //and checks wether pixel set in buffer, therefor deciding the voltage to give
+        //Serial.println(buffer[i].gc1);
+        //first red pin
+        if (buffer[i].rc1 - 1 < 2) {
+            //Serial.println("3rd part");
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc1 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc1 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc1 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc1 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc1 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        //sets clock high low very fast
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //second pixels
+
+        //first red pin
+        if (buffer[i].rc2 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc2 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc2 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc2 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc2 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc2 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //3rd pixels
+        //first red pin
+        if (buffer[i].rc3 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc3 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc3 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc3 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc3 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc3 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //4th pixels
+        //first red pin
+        if (buffer[i].rc4 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc4 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc4 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc4 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc4 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc4 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //5th pixels
+        //first red pin
+        if (buffer[i].rc5 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc5 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc5 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc5 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc5 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc5 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //6th pixels
+        //first red pin
+        if (buffer[i].rc6 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc6 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc6 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc6 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc6 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc6 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //7th pixels
+        //first red pin
+        if (buffer[i].rc7 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc7 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc7 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc7 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc7 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc7 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        //8th pixels
+        //first red pin
+        if (buffer[i].rc8 - 1 < 2) {
+            PORTD |= B00000100;
+        }
+        else {
+            PORTD &= B11111011;
+        }
+        //first green pin
+        if (buffer[i].gc8 - 1 < 2) {
+            PORTD |= B00001000;
+        }
+        else {
+            PORTD &= B11110111;
+        }
+        //first blue pin
+        if (buffer[i].bc8 - 1 < 2) {
+            PORTD |= B00010000;
+        }
+        else {
+            PORTD &= B11101111;
+        }
+        //second red pin
+        if (buffer[l].rc8 - 1 < 2) {
+            PORTD |= B00100000;
+        }
+        else {
+            PORTD &= B11011111;
+        }
+        //second green pin
+        if (buffer[l].gc8 - 1 < 2) {
+            PORTD |= B01000000;
+        }
+        else {
+            PORTD &= B10111111;
+        }
+        //second blue pin
+        if (buffer[l].bc8 - 1 < 2) {
+            PORTD |= B10000000;
+        }
+        else {
+            PORTD &= B01111111;
+        }
+
+        PORTB |= B00000001; //CLK HIGH
+        PORTB &= B11111110; //CLK LOW
+
+        if ((i + 1) % 8 == 0) {
+            PORTC |= B00001000; //LAT HIGH
+            PORTC &= B11110111; //LAT LOW
+            PORTB |= B00000010; //OE HIGH
+
+            PORTC &= B11111110; //RA LOW
+            PORTC &= B11111101; //RB LOW
+            PORTC &= B11111011; //RC LOW
+            PORTC &= B11101111; //RD LOW
+
+            PORTB &= B11111101; //OE LOW
+        }
+    }*/
 }
 
 void Panel::clearBuffer(uint16_t c) {
     //get colors
-    uint8_t rt, gt, bt;
-    cnvColor(c, &rt, &gt, &bt);
+    cnvColor(c, &r, &g, &b);
 
         //fills the buffer
     for (uint16_t x = 0; x < bsize + 1; x++) {
-        buffer[x].rc1 = rt;
-        buffer[x].gc1 = gt;
-        buffer[x].bc1 = bt;
-        buffer[x].rc2 = rt;
-        buffer[x].gc2 = gt;
-        buffer[x].bc2 = bt;
-        buffer[x].rc3 = rt;
-        buffer[x].gc3 = gt;
-        buffer[x].bc3 = bt;
-        buffer[x].rc4 = rt;
-        buffer[x].gc4 = gt;
-        buffer[x].bc4 = bt;
-        buffer[x].rc5 = rt;
-        buffer[x].gc5 = gt;
-        buffer[x].bc5 = bt;
-        buffer[x].rc6 = rt;
-        buffer[x].gc6 = gt;
-        buffer[x].bc6 = bt;
-        buffer[x].rc7 = rt;
-        buffer[x].gc7 = gt;
-        buffer[x].bc7 = bt;
-        buffer[x].rc8 = rt;
-        buffer[x].gc8 = gt;
-        buffer[x].bc8 = bt;
+        buffer[x].rc1 = r;
+        buffer[x].gc1 = g;
+        buffer[x].bc1 = b;
+        buffer[x].rc2 = r;
+        buffer[x].gc2 = g;
+        buffer[x].bc2 = b;
+        buffer[x].rc3 = r;
+        buffer[x].gc3 = g;
+        buffer[x].bc3 = b;
+        buffer[x].rc4 = r;
+        buffer[x].gc4 = g;
+        buffer[x].bc4 = b;
+        buffer[x].rc5 = r;
+        buffer[x].gc5 = g;
+        buffer[x].bc5 = b;
+        buffer[x].rc6 = r;
+        buffer[x].gc6 = g;
+        buffer[x].bc6 = b;
+        buffer[x].rc7 = r;
+        buffer[x].gc7 = g;
+        buffer[x].bc7 = b;
+        buffer[x].rc8 = r;
+        buffer[x].gc8 = g;
+        buffer[x].bc8 = b;
     }
 }
 

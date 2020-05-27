@@ -54,7 +54,8 @@ class Panel{
         uint8_t l;
         uint8_t k;
         const uint8_t font4x6[96][2];
-        void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
+        void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i); 
+        unsigned char getFontLine(unsigned char data, int line_num);
     public:
         Panel(uint8_t height, uint8_t width);
         void selectLine(uint8_t i);
@@ -140,7 +141,35 @@ class Panel{
             uint8_t : 0;
         };
 #endif
+        enum Colors{
+            RED,
+            GREEN,
+            BLUE,
+            WHITE,
+            BLACK,
+            PURPLE,
+            YELLOW,
+            CYAN,
+            LIGHTRED,
+            LIGHTGREEN,
+            LIGHTBLUE,
+            LIGHTWHITE,
+            LIGHTCYAN,
+            DARKYELLOW,
+            LIGHTPURPLE,
+            LIGHTYELLOW,
+            TURQUOISE,
+            PINK,
+            DARKPURPLE,
+            BRIGHTGREEN,
+            BRIGHTCYAN,
+            MEDIUMGREEN,
+            DEEPPURPLE,
+            OCEANBLUE,
+            FLESH,
+            LIGHTPINK,
+        };
         uint8_t rows,cols,halfbsize,bsize;
-        LED buffer[256];//uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2000bytes of ram used
+        LED buffer[256];//uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
 #endif
