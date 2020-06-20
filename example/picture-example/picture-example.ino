@@ -1,6 +1,8 @@
 #include <Panel.h>
 
-#pragma pack(1);
+//it does work with the 1,5 bit buffer, but not the tool!
+
+#pragma pack(1)
 struct LEDx8 {
     uint8_t rc1 : 1;
     uint8_t gc1 : 1;
