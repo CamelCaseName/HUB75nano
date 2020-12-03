@@ -188,39 +188,6 @@ const uint8_t font4x6[96][2] PROGMEM = {
  {  0x54  ,  0x00  },   /*'~'*/
  {  0x56  ,  0xe2  }    /*''*/
 };
-//<=============================================================================
-// 
-//  
-// 
-//Copyright <2015> <https://hackaday.io/PK.3>========================>
-// 
-//Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
-//The above copyright noticeand this permission notice shall be included in all copies or substantial portions of the Software.
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//Font retreival function - ugly, but needed. 
-//kindly stolen from https://hackaday.io/project/6309-vga-graphics-over-spi-and-serial-vgatonic/log/20759-a-tiny-4x6-pixel-font-that-will-fit-on-almost-any-microcontroller-license-mit#header
-unsigned char getFontLine(unsigned char data, int line_num) {
-    const uint8_t index = (data - 32);
-    unsigned char pixel = 0;
-    if (pgm_read_byte(&font4x6[index][1]) & 1 == 1) line_num -= 1;
-    if (line_num == 0) {
-        pixel = (pgm_read_byte(&font4x6[index][0])) >> 4;
-    }
-    else if (line_num == 1) {
-        pixel = (pgm_read_byte(&font4x6[index][0])) >> 1;
-    }
-    else if (line_num == 2) {
-        // Split over 2 bytes
-        return (((pgm_read_byte(&font4x6[index][0])) & 0x03) << 2) | (((pgm_read_byte(&font4x6[index][1])) & 0x02));
-    }
-    else if (line_num == 3) {
-        pixel = (pgm_read_byte(&font4x6[index][1])) >> 4;
-    }
-    else if (line_num == 4) {
-        pixel = (pgm_read_byte(&font4x6[index][1])) >> 1;
-    }
-    return pixel & 0xE;
-}//<=============================================================================
 
 enum Colors { 
     RED, 
@@ -285,6 +252,8 @@ Panel::Panel(uint8_t height,uint8_t width){
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
     
+
+
     //primarily used for debugging
 #ifdef DEBUG
     Serial.begin(112500);
@@ -295,6 +264,41 @@ Panel::Panel(uint8_t height,uint8_t width){
     LED buffer[bsize + 1];
     
 }
+
+//<=============================================================================
+// 
+//  
+// 
+//Copyright <2015> <https://hackaday.io/PK.3>========================>
+// 
+//Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
+//The above copyright noticeand this permission notice shall be included in all copies or substantial portions of the Software.
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//Font retreival function - ugly, but needed. 
+//kindly stolen from https://hackaday.io/project/6309-vga-graphics-over-spi-and-serial-vgatonic/log/20759-a-tiny-4x6-pixel-font-that-will-fit-on-almost-any-microcontroller-license-mit#header
+unsigned char getFontLine(unsigned char data, int line_num) {
+    const uint8_t index = (data - 32);
+    unsigned char pixel = 0;
+    if (pgm_read_byte(&font4x6[index][1]) & 1 == 1) line_num -= 1;
+    if (line_num == 0) {
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> 4;
+    }
+    else if (line_num == 1) {
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> 1;
+    }
+    else if (line_num == 2) {
+        // Split over 2 bytes
+        return (((pgm_read_byte(&font4x6[index][0])) & 0x03) << 2) | (((pgm_read_byte(&font4x6[index][1])) & 0x02));
+    }
+    else if (line_num == 3) {
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> 4;
+    }
+    else if (line_num == 4) {
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> 1;
+    }
+    return pixel & 0xE;
+}//<=============================================================================
+
 
 void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, get converted color by reference
     switch (c){
@@ -488,10 +492,7 @@ void Panel::latch() {//this function cleans up and latches the data, so diplays 
 void Panel::selectLine(uint8_t i) {//selects one of the 16 lines, 0 based
     //Serial.println(i);
     if (i & B0000) {
-        PORTC &= B11111110; //RA LOW
-        PORTC &= B11111101; //RB LOW
-        PORTC &= B11111011; //RC LOW
-        PORTC &= B11101111; //RD LOW
+        PORTC &= B11101000; //RA LOW
     }
     if (i & B0001) {
         PORTC |= B00000001; //RA HIGH
@@ -507,7 +508,7 @@ void Panel::selectLine(uint8_t i) {//selects one of the 16 lines, 0 based
     }
 }
 
-void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset) | I honestly dont know what it does, @hxchen made this
+void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset) | I honestly dont know what it does, @hexchen made this
     uint8_t r = 0;
     uint8_t g = 0;
     uint8_t b = 0;
@@ -660,10 +661,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         if (k > 0) {
             --k;
             if (k & B0000) {
-                PORTC &= B11111110; //RA LOW
-                PORTC &= B11111101; //RB LOW
-                PORTC &= B11111011; //RC LOW
-                PORTC &= B11101111; //RD LOW
+                PORTC &= B11101000; //RA LOW
             }
             if (k & B0001) {
                 PORTC |= B00000001; //RA HIGH
@@ -679,10 +677,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             }
         }
         else {//select line 15 cuz i dont know but works
-            PORTC |= B00000001; //RA HIGH
-            PORTC |= B00000010; //RB HIGH
-            PORTC |= B00000100; //RC HIGH
-            PORTC |= B00010000; //RD HIGH
+            PORTC |= B00010111; //RA HIGH
         }
         
         //first pixels
@@ -1071,10 +1066,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             PORTC &= B11110111; //LAT LOW
             PORTB |= B00000010; //OE HIGH
 
-            PORTC &= B11111110; //RA LOW
-            PORTC &= B11111101; //RB LOW
-            PORTC &= B11111011; //RC LOW
-            PORTC &= B11101111; //RD LOW
+            PORTC &= B11101000; //RA LOW
 
             PORTB &= B11111101; //OE LOW
         }
@@ -1093,10 +1085,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             if (k > 0) {
                 --k;
                 if (k & B0000) {
-                    PORTC &= B11111110; //RA LOW
-                    PORTC &= B11111101; //RB LOW
-                    PORTC &= B11111011; //RC LOW
-                    PORTC &= B11101111; //RD LOW
+                    PORTC &= B11101000; //RA LOW
                 }
                 if (k & B0001) {
                     PORTC |= B00000001; //RA HIGH
@@ -1112,10 +1101,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
                 }
             }
             else {//select line 15 cuz i dont know but works
-                PORTC |= B00000001; //RA HIGH
-                PORTC |= B00000010; //RB HIGH
-                PORTC |= B00000100; //RC HIGH
-                PORTC |= B00010000; //RD HIGH
+                PORTC |= B00010111; //RA HIGH
             }
 
             //first pixels
@@ -1504,11 +1490,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
                 PORTC &= B11110111; //LAT LOW
                 PORTB |= B00000010; //OE HIGH
 
-                PORTC &= B11111110; //RA LOW
-                PORTC &= B11111101; //RB LOW
-                PORTC &= B11111011; //RC LOW
-                PORTC &= B11101111; //RD LOW
-
+                PORTC &= B11101000; //RA LOW
                 PORTB &= B11111101; //OE LOW
             }
         }
@@ -2135,7 +2117,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fi
     }
 }
 
-void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {
+void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {//deprecated, but probably faster
     //color for the char
     
     cnvColor(c, &r, &g, &b);
@@ -2151,6 +2133,28 @@ void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {
             if (out & (1 << j)) {
                 //set pixel at i and j
                 setBuffer(r, g, b, temp, x + 4 - j);
+            }
+        }
+    }
+}
+
+void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier) {//new with scaling, but may be slower
+    //color for the char
+    
+    cnvColor(c, &r, &g, &b);
+    //iterate through the character line by line
+    uint8_t temp = 0;
+    char out;
+    for (uint8_t i = 0; i < 5*size_modifier; i++){
+        out = getFontLine(ch, i/size_modifier);
+        Serial.println(out);
+        //iterate through the character bit by bit
+        for (uint8_t j = 4*size_modifier; j > 0; --j) {
+            temp = ((y + i) * (cols / 8) + (x + 4*size_modifier - j) / 8);
+                //shift by j and check for bit set
+            if (out & (1 << j/size_modifier)) {
+                //set pixel at i and j
+                setBuffer(r, g, b, temp, x + 4*size_modifier - j);
             }
         }
     }
