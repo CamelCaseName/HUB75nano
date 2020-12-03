@@ -1,10 +1,8 @@
-//#include "../../src/Panel.h"
-#include "F:/Lenny/Documents/HUB75nano-1/src/Panel.h"
-#include "F:/Lenny/Documents/HUB75nano-1/src/Panel.cpp"
+#include "Panel.h"
 
 //create an instance of the panel
 Panel panel(32, 64);
-
+//String test = "23.576%";
 
 void setup() {
 	panel.createBufferBG(panel.BLACK);//background black
@@ -38,6 +36,25 @@ void setup() {
 	panel.drawBigChar(16,17,'m',0,3);
 	panel.drawBigChar(32,17,'N',1,3);
 	panel.drawBigChar(48,17,'n',2,3);
+
+	/*
+	panel.drawBigChar(0,7,'2',0,3);
+	panel.drawBigChar(10,7,'3',0,3);
+	panel.drawBigChar(17,7,'.',0,3);
+	panel.drawBigChar(24,7,'5',0,3);
+	panel.drawBigChar(34,7,'7',2,3);
+	panel.drawBigChar(44,7,'6',2,3);
+	panel.drawBigChar(54,7,'%',2,3);
+
+	
+	panel.drawBigChar(0,7,test[0],0,3);
+	panel.drawBigChar(10,7,test[1],0,3);
+	panel.drawBigChar(17,7,test[2],0,3);
+	panel.drawBigChar(24,7,test[3],0,3);
+	panel.drawBigChar(34,7,test[4],2,3);
+	panel.drawBigChar(44,7,test[5],2,3);
+	panel.drawBigChar(54,7,test[6],2,3);
+	*/
 }
 
 
