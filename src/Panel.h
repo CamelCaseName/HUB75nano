@@ -37,7 +37,7 @@ OE 9,
 GND GND
 */
 
-#define DEBUG //[if you're reading this its already too late :)]
+//#define DEBUG //[if you're reading this its already too late :)]
 #define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
 
 #ifdef DEBUG
@@ -50,13 +50,12 @@ GND GND
 #define Panel_h
 
 class Panel{
-    private:
+    public:
         uint8_t l;
         uint8_t k;
-        const uint8_t font4x6[96][2];
         void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i); 
-    public:
         Panel(uint8_t height, uint8_t width);
+        const uint8_t font4x6[96][2];
         void selectLine(uint8_t i);
         void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
         void fillScreenColor(uint16_t c);
@@ -73,6 +72,7 @@ class Panel{
         void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c);
         void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fill);
         void drawChar(uint8_t x, uint8_t y, char ch, uint16_t c);
+        void drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c,uint8_t size_modifier);
 #ifndef BIG
 #pragma pack(1)
         struct LED {//3 bytes long, contains 8 leds at 1 bit color depth
