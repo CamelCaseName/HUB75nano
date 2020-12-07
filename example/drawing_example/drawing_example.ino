@@ -1,4 +1,4 @@
-#include <Panel.h>
+#include "Panel.h"
 
 //create an instance of the panel
 Panel panel(32, 64);
