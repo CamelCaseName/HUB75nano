@@ -679,7 +679,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         else {//select line 15 cuz i dont know but works
             PORTC |= B00010111; //RA HIGH
         }
-        
+
         //first pixels
         //and checks wether pixel set in buffer, therefor deciding the voltage to give
         //Serial.println(buffer[i].gc1);
