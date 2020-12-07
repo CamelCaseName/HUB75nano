@@ -657,7 +657,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         k = i / 8;
         // selectLine(i / 8);
         //select current row (and adjust for row drift with the buffer)
-        
+        /*
         if (k > 0) {
             --k;
             if (k & B0000) {
@@ -678,6 +678,23 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         }
         else {//select line 15 cuz i dont know but works
             PORTC |= B00010111; //RA HIGH
+        }*/
+
+        --k;
+        if (k & B0000) {
+            PORTC &= B11101000; //RABCD LOW
+        }
+        if (k & B0001) {
+            PORTC |= B00000001; //RA HIGH
+        }
+        if (k & B0010) {
+            PORTC |= B00000010; //RB HIGH
+        }
+        if (k & B0100) {
+            PORTC |= B00000100; //RC HIGH
+        }
+        if (k & B1000) {
+            PORTC |= B00010000; //RD HIGH
         }
 
         //first pixels
@@ -1081,7 +1098,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             k = i / 8;
             // selectLine(i / 8);
             //select current row (and adjust for row drift with the buffer)
-
+            /*
             if (k > 0) {
                 --k;
                 if (k & B0000) {
@@ -1102,6 +1119,23 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             }
             else {//select line 15 cuz i dont know but works
                 PORTC |= B00010111; //RA HIGH
+            }
+            */
+            --k;
+            if (k & B0000) {
+                PORTC &= B11101000; //RABCD LOW
+            }
+            if (k & B0001) {
+                PORTC |= B00000001; //RA HIGH
+            }
+            if (k & B0010) {
+                PORTC |= B00000010; //RB HIGH
+            }
+            if (k & B0100) {
+                PORTC |= B00000100; //RC HIGH
+            }
+            if (k & B1000) {
+                PORTC |= B00010000; //RD HIGH
             }
 
             //first pixels

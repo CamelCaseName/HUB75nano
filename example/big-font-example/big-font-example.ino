@@ -1,13 +1,13 @@
 #include "Panel.h"
 
 //create an instance of the panel
-Panel panel(32, 64);/*
+Panel panel(32, 64);
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
 uint8_t fcolor = 3;
 uint8_t bgcolor = 2;
-char t;*/
+char t;
 //String test = "23.576%";
 
 // I M P O R T A N T
@@ -16,8 +16,8 @@ char t;*/
 
 
 void setup() {
-	//panel.createBufferBG(bgcolor);
-	
+	panel.createBufferBG(bgcolor);
+	/*
 	panel.createBufferBG(panel.BLACK);//background black
 	//panel.createBufferBG(26);//background red
 	
@@ -68,11 +68,12 @@ void setup() {
 	panel.drawBigChar(44,7,test[5],2,3);
 	panel.drawBigChar(54,7,test[6],2,3);
 	*/
-	//String test = "23.576%";
+	
 }
 
 
 void loop() {
-	//panel.drawBigChar(5,10,'2',0,3);
+	String test = "23.576%";
+	panel.drawBigChar(5,10,'2',0,3);
 	panel.displayBuffer(); //makes the buffer visible and the leds all blinky blinky
 }
