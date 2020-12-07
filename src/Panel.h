@@ -38,7 +38,7 @@ GND GND
 */
 
 //#define DEBUG //[if you're reading this its already too late :)]
-#define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
+//#define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
 
 #ifdef DEBUG
     #include "../../../../../../../Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h"
