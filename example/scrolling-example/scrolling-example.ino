@@ -22,6 +22,9 @@ struct coords
 
 //in panel.h, you should comment out line Nr. 41 for this to work
 
+//this also doesnt really work yet, many things look weird, are extremely weird
+// + ugly programming
+
 //create an instance of the panel
 Panel panel(32, 64);
 
