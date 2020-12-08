@@ -16,8 +16,8 @@ char t;
 
 
 void setup() {
-	panel.createBufferBG(bgcolor);
-	/*
+	//panel.createBufferBG(bgcolor);
+	
 	panel.createBufferBG(panel.BLACK);//background black
 	//panel.createBufferBG(26);//background red
 	
@@ -73,7 +73,7 @@ void setup() {
 
 
 void loop() {
-	String test = "23.576%";
-	panel.drawBigChar(5,10,'2',0,3);
+	//String test = "23.576%";
+	//panel.drawBigChar(5,10,'2',0,3);
 	panel.displayBuffer(); //makes the buffer visible and the leds all blinky blinky
 }

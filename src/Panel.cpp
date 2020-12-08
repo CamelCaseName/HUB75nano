@@ -2174,8 +2174,10 @@ void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {//deprecated, b
 
 void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier) {//new with scaling, but may be slower
     //color for the char
-    
     cnvColor(c, &r, &g, &b);
+
+   // x = (x>64)*(x-64)+(x<64)*(x);
+
     //iterate through the character line by line
     uint8_t temp = 0;
     char out;
