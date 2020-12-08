@@ -25,17 +25,17 @@ struct coords
 //go in there, and do as said above. please.
 //
 
-//this also doesnt really work yet, many things look weird, are extremely weird
+//this also doesnt really work yet, its too blinky
 // + ugly programming
 
 //create an instance of the panel
 Panel panel(32, 64);
 
-String srcText = "Hello, World";
+String srcText = "     Hello, World!     ";
 coords cords;
 
 void setup() {
-	panel.createBufferBG(panel.BLACK);//background COLOR
+	panel.createBufferBG(panel.RED);//background COLOR
 }
 
 
@@ -44,9 +44,9 @@ void loop() {
     {
         for (uint8_t i = 0; i < 10; i++)
         {
-            panel.clearBuffer(panel.BLACK);
+            panel.drawRect(0,7,63,23,panel.BLACK,true);
             cords.x1 = 0-i;
-            panel.drawBigChar(cords.x1,8,srcText[j],panel.WHITE,3);
+            panel.drawBigChar(cords.x1,7+(i==0),srcText[j],panel.WHITE,3);
             cords.x2 = 10-i;
             panel.drawBigChar(cords.x2,8,srcText[j+1],panel.WHITE,3);
             cords.x3 = 20-i;
@@ -58,11 +58,10 @@ void loop() {
             cords.x6 = 50-i;
             panel.drawBigChar(cords.x6,8,srcText[j+5],panel.WHITE,3);
             
-            for (uint8_t k = 0; k < 50; k++)
-            {
+            for (uint8_t l = 0; l < 50; l++)
+            {  
                 panel.displayBuffer(); //makes the buffer visible and the leds all blinky blinky
             }
-            
         }
     }
 }
