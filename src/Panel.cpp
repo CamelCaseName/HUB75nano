@@ -258,11 +258,10 @@ Panel::Panel(uint8_t height,uint8_t width){
 #ifdef DEBUG
     Serial.begin(112500);
 #endif // DEBUG
-
+    
     //each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
     bsize = rows * (cols / 8) - 1;
     LED buffer[bsize + 1];
-    
 }
 
 //<=============================================================================
@@ -298,7 +297,6 @@ unsigned char getFontLine(unsigned char data, int line_num) {
     }
     return pixel & 0xE;
 }//<=============================================================================
-
 
 void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt ){//input color, get converted color by reference
     switch (c){
@@ -490,7 +488,9 @@ void Panel::latch() {//this function cleans up and latches the data, so diplays 
 }
 
 void Panel::selectLine(uint8_t i) {//selects one of the 16 lines, 0 based
-    //Serial.println(i);
+
+    PORTC = (k + (k > 7) * 8) + (k > 15); //sets all rows 
+    /*
     if (i & B0000) {
         PORTC &= B11101000; //RA LOW
     }
@@ -505,7 +505,8 @@ void Panel::selectLine(uint8_t i) {//selects one of the 16 lines, 0 based
     }
     if (i & B1000) {
         PORTC |= B00010000; //RD HIGH
-    }
+    }*/
+
 }
 
 void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o) {//creates interesting patterns (shift, factor, offset) | I honestly dont know what it does, @hexchen made this
@@ -648,15 +649,11 @@ void Panel::clock() {//clock function for data entry
 }
 
 void Panel::displayBuffer() {//puts the  buffer contents onto the display
-    //for (uint8_t m = 1; m < 3; m++) {
-    //uint8_t m;
     for (uint8_t i = 0; i < (bsize + 1) / 2; i++) {
-        //m = i % 3;
-        //i += 127;
         l = i + (bsize + 1) / 2;
         k = i / 8;
-        // selectLine(i / 8);
         //select current row (and adjust for row drift with the buffer)
+        
         /*
         if (k > 0) {
             --k;
@@ -680,6 +677,8 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             PORTC |= B00010111; //RA HIGH
         }*/
 
+        /*
+
         --k;
         if (k & B0000) {
             PORTC &= B11101000; //RABCD LOW
@@ -696,7 +695,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         if (k & B1000) {
             PORTC |= B00010000; //RD HIGH
         }
-
+        */
         //first pixels
         //and checks wether pixel set in buffer, therefor deciding the voltage to give
         //Serial.println(buffer[i].gc1);
@@ -1078,14 +1077,30 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
         PORTB |= B00000001; //CLK HIGH
         PORTB &= B11111110; //CLK LOW
 
+//(k < 16) * 
+// + (k & B00010000) * B00010111
+
         if ((i + 1) % 8 == 0) {
+        
+        
+            //--k;
+            //delay(30);
+
+            //PORTC &= (k & 0) * B11101000 ;//+ (k & 15) * B11101000; //RABCD LOW
+            
+            PORTC = (k + (k > 7) * 8) + (k > 15); //sets all rows 
+        
+            
+            //PORTC = B00010111;
+
             PORTC |= B00001000; //LAT HIGH
-            PORTC &= B11110111; //LAT LOW
-            PORTB |= B00000010; //OE HIGH
+            PORTC &= B11110111; //LAT LOW 
 
-            PORTC &= B11101000; //RA LOW
-
+            PORTB |= B00000010; //OE HIGH  
             PORTB &= B11111101; //OE LOW
+            
+            //PORTC |= B00010111;
+            //PORTC &= B11101000; //RA LOW
         }
     }
 
@@ -1103,24 +1118,16 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
                 --k;
                 if (k & B0000) {
                     PORTC &= B11101000; //RA LOW
+                }else
+                {
+                    PORTC |= k + (k>7)*8; //sets all rows but 0 and 15
                 }
-                if (k & B0001) {
-                    PORTC |= B00000001; //RA HIGH
-                }
-                if (k & B0010) {
-                    PORTC |= B00000010; //RB HIGH
-                }
-                if (k & B0100) {
-                    PORTC |= B00000100; //RC HIGH
-                }
-                if (k & B1000) {
-                    PORTC |= B00010000; //RD HIGH
-                }
+                
             }
             else {//select line 15 cuz i dont know but works
                 PORTC |= B00010111; //RA HIGH
             }
-            */
+            /*
             --k;
             if (k & B0000) {
                 PORTC &= B11101000; //RABCD LOW
@@ -1137,7 +1144,7 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             if (k & B1000) {
                 PORTC |= B00010000; //RD HIGH
             }
-
+*/
             //first pixels
             //and checks wether pixel set in buffer, therefor deciding the voltage to give
             //Serial.println(buffer[i].gc1);
@@ -1520,12 +1527,17 @@ void Panel::displayBuffer() {//puts the  buffer contents onto the display
             PORTB &= B11111110; //CLK LOW
 
             if ((i + 1) % 8 == 0) {
-                PORTC |= B00001000; //LAT HIGH
-                PORTC &= B11110111; //LAT LOW
-                PORTB |= B00000010; //OE HIGH
 
-                PORTC &= B11101000; //RA LOW
+                PORTC = (k + (k > 7) * 8) + (k > 15); //sets all rows 
+
+                PORTC |= B00001000; //LAT HIGH
+                PORTC &= B11110111; //LAT LOW 
+                
+                PORTB |= B00000010; //OE HIGH  
                 PORTB &= B11111101; //OE LOW
+                
+                //PORTC |= B00010111;
+                //PORTC &= B11101000; //RA LOW
             }
         }
         //to sort out third colors, which doesnt work sadly
@@ -2051,6 +2063,11 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c,
     //get colors
     cnvColor(c, &r, &g, &b);
 
+
+        
+            Serial.println("drawing rect");
+
+
     if (fill) {
         for (uint8_t i = x1; i <= x2; i++) {
             for (uint8_t j = y1; j <= y2; j++) {
@@ -2175,6 +2192,12 @@ void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c) {//deprecated, b
 void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier) {//new with scaling, but may be slower
     //color for the char
     cnvColor(c, &r, &g, &b);
+
+
+
+            Serial.println("drawing char");
+
+
 
    // x = (x>64)*(x-64)+(x<64)*(x);
 
