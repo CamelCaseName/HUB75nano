@@ -17,10 +17,13 @@ struct coords
 };
 
 
-
-// I M P O R T A N T
-
-//in panel.h, you should comment out line Nr. 41 for this to work
+//          IMPORTANT!!
+//
+//in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
+//The library will very likely be in your arduino libary folder
+//C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
+//go in there, and do as said above. please.
+//
 
 //this also doesnt really work yet, many things look weird, are extremely weird
 // + ugly programming
