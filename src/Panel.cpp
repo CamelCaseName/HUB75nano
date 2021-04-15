@@ -2065,7 +2065,7 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c,
 
 
         
-            Serial.println("drawing rect");
+          //  Serial.println("drawing rect");
 
 
     if (fill) {
@@ -2195,7 +2195,7 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_
 
 
 
-            Serial.println("drawing char");
+          //  Serial.println("drawing char");
 
 
 
