@@ -232,7 +232,7 @@ Panel::Panel(uint8_t height,uint8_t width){
     B1 4,
     B2 7,
     G1 3,
-    G2 66,
+    G2 6,
     LAT A3,
     CLK 8,
     OE 9,
