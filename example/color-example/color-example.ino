@@ -1,41 +1,64 @@
 #include "Panel.h"
 
-//which cable goes where
-#define RA 14 //register selector a
-#define RB 15 //register selector b
-#define RC 16 //register selector c
-#define RD 18 //register selector d
-#define RF 2 //red first byte
-#define RS 5 //red second byte
-#define BF 4 //blue first byte
-#define BS 7 //blue second byte
-#define GF 3 //green first byte
-#define GS 6 //green second byte
-#define LAT 17 //data latch
-#define CLK 8 //clock signal
-#define OE 9 //output enable
+Panel panel(32, 64);
+float Hue = 0.0f;
+#define MAX_COLOR 16
+uint8_t r = MAX_COLOR, g = MAX_COLOR, b = MAX_COLOR;
+#define MAX_HUE 120
+#define SIXTH_HUE static_cast<uint16_t>(MAX_HUE * 0.17)
 
-Panel panel(32,64);
-
-void setup() {
+void setup()
+{
 }
 
-void loop() {
-    /*
-    //this example iterates through ALL available colors in the panel
-    for (uint16_t i = 0; i < 65536; i++) {
-        panel.fillScreenColor(i / 4);//changes after some time (fast time)
-    }
-    */
+void loop()
+{
+    // this example iterates through ALL available colors in the panel
+    for (uint16_t i = 0; i < MAX_HUE; i++)
+    {
+        Hue = 1.0f - ((MAX_HUE + 1.0f) / (i + 1.0f));
+        if (Hue < 0.33333333f)
+        {
+            r = (2.0f - Hue * 6.0f) * MAX_COLOR;
+            g = (Hue * 6.0f) * MAX_COLOR;
+            b = 0;
+        }
+        else if (Hue < 0.6666666f)
+        {
+            r = 0;
+            g = (4.0f - Hue * 6.0f) * MAX_COLOR;
+            b = (Hue * 6.0f - 2.0f) * MAX_COLOR;
+        }
+        else
+        {
+            r = (Hue * 6.0f - 4.0f) * MAX_COLOR;
+            g = 0;
+            b = ((1.0f - Hue) * 6.0f) * MAX_COLOR;
+        }
+        r > MAX_COLOR ? r = MAX_COLOR : r = r;
+        g > MAX_COLOR ? g = MAX_COLOR : g = g;
+        b > MAX_COLOR ? b = MAX_COLOR : b = b;
+        //         _    _
+        //   Red: | \__/ |
+        //        0 __   1
+        // Green: |/  \__|
+        //        0   __ 1
+        //  Blue: |__/  \|
+        //        0 |  | 1
+        //         1/3 2/3
 
-    panel.test();
+        // panel.fillScreenColor(i / 4); // changes after some time (fast time)
+        panel.fillScreenColor(FULL_TO_HIGH_COLOR(r, g, b));
+    }
+
+    // panel.test();
 
     /*
     |||ALL NAMED COLORS|||
 
-    RED, 
-    GREEN, 
-    BLUE, 
+    RED,
+    GREEN,
+    BLUE,
     WHITE,
     BLACK,
     PURPLE,
@@ -61,5 +84,5 @@ void loop() {
     LIGHTPINK,
     */
 
-   // panel.fillScreenColor(panel.RED);
+    // panel.fillScreenColor(panel.RED);
 }

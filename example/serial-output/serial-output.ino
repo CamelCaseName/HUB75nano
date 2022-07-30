@@ -1,18 +1,17 @@
 #include "Panel.h"
-//this sketch should ouptut serial input to the panel
-
+// this sketch should ouptut serial input to the panel
 
 //          IMPORTANT!!
 //
-//in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
-//The library will very likely be in your arduino libary folder
-//C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
-//go in there, and do as said above. please.
+// in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
+// The library will very likely be in your arduino libary folder
+// C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
+// go in there, and do as said above. please.
 //
 
 #ifndef BIG
 
-const Panel panel(32, 64);
+Panel panel(32, 64);
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
@@ -20,41 +19,53 @@ uint8_t fcolor = 3;
 uint8_t bgcolor = 2;
 char t;
 
-void setup(){
+void setup()
+{
+    Serial.begin(115200);
     panel.createBufferBG(bgcolor);
 }
 
-//example text to send in two parts, because murphys law:
+// example text to send in two parts, because murphys law:
 //
-//Lorem ipsum dolor sit amet, consectetur adipisici elit,
-// sed eiusmod tempor inci
+// Lorem ipsum dolor sit amet, consectetur adipisici elit,
+//  sed eiusmod tempor inci
 //
-void loop() {
-    if (Serial.available()) {
-        if(Serial.available() && strlen(out) < 80) {
+void loop()
+{
+    if (Serial.available())
+    {
+        if (strlen(out) < 80)
+        {
             t = (char)Serial.read();
-            //Serial.print(t);
-            if (t == 12) {
-                for (uint8_t i = 0; i < 81; i++) {
+            // Serial.print(t);
+            if (t == 12)
+            {
+                for (uint8_t i = 0; i < 81; i++)
+                {
                     out[i] = '\0';
                 }
                 oldlength = 0;
                 length = 0;
-                //Serial.println("clearing");
+                // Serial.println("clearing");
                 panel.clearBuffer(bgcolor);
                 panel.displayBuffer();
             }
-            else
-            if (t < 32) {
-                if (t < 10) {
-                    fcolor = t; //r>= 0, < 8
+            else if (t < 32)
+            {
+                if (t < 10)
+                {
+                    fcolor = t; // r>= 0, < 8
                 }
-                else if(t >= 20){
+                else if (t >= 20)
+                {
                     bgcolor = t - 20;
                 }
-                else {}
+                else
+                {
+                }
             }
-            else {
+            else
+            {
                 out[strlen(out)] = t;
             }
             panel.displayBuffer();
@@ -62,43 +73,50 @@ void loop() {
         oldlength = length;
         length = strlen(out);
 
-        if (length >= 80 && Serial.available()) {
+        if (length >= 80 && Serial.available())
+        {
             t = (char)Serial.read();
-            if (t < 32) {
-                if (t == 12) {
-                    for (uint8_t i = 0; i < 81; i++) {
+            if (t < 32)
+            {
+                if (t == 12)
+                {
+                    for (uint8_t i = 0; i < 81; i++)
+                    {
                         out[i] = '\0';
                     }
                     oldlength = 0;
                     length = 0;
-                    //Serial.println("clearing");
+                    // Serial.println("clearing");
                     panel.clearBuffer(bgcolor);
                     panel.displayBuffer();
                 }
-                else {
-                    //get rid of all non text chars
-                    while (t > 10 && t < 20){
+                else
+                {
+                    // get rid of all non text chars
+                    while (t > 10 && t < 20)
+                    {
                         t = (char)Serial.read();
                     }
-                    //save first text char
+                    // save first text char
                     out[0] = t;
                 }
-                
             }
-            else {
-                for (uint8_t i = 0; i < 81; i++) {
+            else
+            {
+                for (uint8_t i = 0; i < 81; i++)
+                {
                     out[i] = '\0';
                 }
                 oldlength = 0;
                 length = 0;
-                //Serial.println("clearing");
+                // Serial.println("clearing");
                 panel.clearBuffer(bgcolor);
                 panel.displayBuffer();
             }
-            
         }
 
-        for (uint8_t i = oldlength; i < length;i++) {
+        for (uint8_t i = oldlength; i < length; i++)
+        {
             /*if (out[i] == '\n') {
                 out[i] == ' ';
                 for (uint8_t j = i + 1; j < length; j++) {
@@ -116,12 +134,14 @@ void loop() {
 
 //"error handleing"
 #else
-void setup() {
+void setup()
+{
     Serial.begin(115200);
 }
-void loop() {
+void loop()
+{
     Serial.println("It will not work!!!!!!");
     Serial.println("you will see ram blinking around, and you will write  wrong adresses");
     Serial.println("in order to run this sketch, you must go into panel.h and remove \"#define BIG\", or comment it. (line 41)");
 }
-#endif //BIG
+#endif // BIG
