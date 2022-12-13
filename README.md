@@ -10,6 +10,7 @@ Then just put
 	`#import <Panel.h>`
 and everything should work.
 	
+You can use `#define PANEL_BIG` to enable the 2 bit buffer for the matrix.
 There are also numerous examples, which are implementations of this library.
 
 I made a write up [here](https://create.arduino.cc/projecthub/CamelCaseName/running-a-32x64-rgb-led-panel-with-only-an-arduino-nano-c19385).
