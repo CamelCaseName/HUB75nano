@@ -12,6 +12,7 @@
 
 scripts/
 dev/
+.output/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

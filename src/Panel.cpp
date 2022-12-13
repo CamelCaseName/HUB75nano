@@ -20,12 +20,13 @@ Panel::Panel(uint8_t height, uint8_t width)
 
     // primarily used for debugging
 #ifdef DEBUG
-    Serial.begin(112500);
+    Serial.begin(38400);
+    // Serial.println("pinmode set");
 #endif // DEBUG
 
     // each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
     bsize = rows * (coloumns / 8);
-    buffer = new LED[bsize];
+    buffer = (LED *)malloc(sizeof(LED) * (bsize));
 }
 
 void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
@@ -291,81 +292,44 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 }
 
 void Panel::displayBuffer()
-{ // puts the  buffer contents onto the display
-    for (uint8_t i = 0; i < (bsize) / 2; i++)
+{ // puts the  buffer contents onto the
+    for (uint8_t i = 0; i < (bsize / 2); i++)
     {
-        l = i + (bsize) / 2;
+        l = i + (bsize / 2);
         k = i / 8;
         // first pixels
         // and checks wether pixel set in buffer, therefor deciding the pin level
-        SET_RF(buffer[i].rc1);
-        SET_GF(buffer[i].gc1);
-        SET_BF(buffer[i].bc1);
-        SET_RS(buffer[l].rc1);
-        SET_GS(buffer[l].gc1);
-        SET_BS(buffer[l].bc1);
+        SETCOLOR((*(uint8_t *)(void *)(&buffer[i]) & 0b111) | ((*(uint8_t *)(void *)(&buffer[l]) & 0b111) << 3));
         CLOCK;
         // second pixels
-        SET_RF(buffer[i].rc2);
-        SET_GF(buffer[i].gc2);
-        SET_BF(buffer[i].bc2);
-        SET_RS(buffer[l].rc2);
-        SET_GS(buffer[l].gc2);
-        SET_BS(buffer[l].bc2);
+        SETCOLOR(((*(uint8_t *)(void *)(&buffer[i]) & 0b111000) >> 3) | (*(uint8_t *)(void *)(&buffer[l]) & 0b111000));
         CLOCK;
 
         // 3rd pixels
-        SET_RF(buffer[i].rc3);
-        SET_GF(buffer[i].gc3);
-        SET_BF(buffer[i].bc3);
-        SET_RS(buffer[l].rc3);
-        SET_GS(buffer[l].gc3);
-        SET_BS(buffer[l].bc3);
+        SETCOLOR(buffer[i].rc3 | buffer[i].gc3 << 1 | buffer[i].bc3 << 2 | buffer[l].rc3 << 3 | buffer[l].gc3 << 4 | buffer[l].bc3 << 5);
+
+        // TODO
+        // SETCOLOR(((*(uint8_t *)(void *)(&buffer[i]) & 56) >> 3) | (*(uint8_t *)(void *)(&buffer[l]) & 56));
         CLOCK;
 
         // 4th pixels
-        SET_RF(buffer[i].rc4);
-        SET_GF(buffer[i].gc4);
-        SET_BF(buffer[i].bc4);
-        SET_RS(buffer[l].rc4);
-        SET_GS(buffer[l].gc4);
-        SET_BS(buffer[l].bc4);
+        SETCOLOR(buffer[i].rc4 | buffer[i].gc4 << 1 | buffer[i].bc4 << 2 | buffer[l].rc4 << 3 | buffer[l].gc4 << 4 | buffer[l].bc4 << 5);
         CLOCK;
 
         // 5th pixels
-        SET_RF(buffer[i].rc5);
-        SET_GF(buffer[i].gc5);
-        SET_BF(buffer[i].bc5);
-        SET_RS(buffer[l].rc5);
-        SET_GS(buffer[l].gc5);
-        SET_BS(buffer[l].bc5);
+        SETCOLOR(buffer[i].rc5 | buffer[i].gc5 << 1 | buffer[i].bc5 << 2 | buffer[l].rc5 << 3 | buffer[l].gc5 << 4 | buffer[l].bc5 << 5);
         CLOCK;
 
         // 6th pixels
-        SET_RF(buffer[i].rc6);
-        SET_GF(buffer[i].gc6);
-        SET_BF(buffer[i].bc6);
-        SET_RS(buffer[l].rc6);
-        SET_GS(buffer[l].gc6);
-        SET_BS(buffer[l].bc6);
+        SETCOLOR(buffer[i].rc6 | buffer[i].gc6 << 1 | buffer[i].bc6 << 2 | buffer[l].rc6 << 3 | buffer[l].gc6 << 4 | buffer[l].bc6 << 5);
         CLOCK;
 
         // 7th pixels
-        SET_RF(buffer[i].rc7);
-        SET_GF(buffer[i].gc7);
-        SET_BF(buffer[i].bc7);
-        SET_RS(buffer[l].rc7);
-        SET_GS(buffer[l].gc7);
-        SET_BS(buffer[l].bc7);
+        SETCOLOR(buffer[i].rc7 | buffer[i].gc7 << 1 | buffer[i].bc7 << 2 | buffer[l].rc7 << 3 | buffer[l].gc7 << 4 | buffer[l].bc7 << 5);
         CLOCK;
 
         // 8th pixels
-        SET_RF(buffer[i].rc8);
-        SET_GF(buffer[i].gc8);
-        SET_BF(buffer[i].bc8);
-        SET_RS(buffer[l].rc8);
-        SET_GS(buffer[l].gc8);
-        SET_BS(buffer[l].bc8);
+        SETCOLOR(buffer[i].rc8 | buffer[i].gc8 << 1 | buffer[i].bc8 << 2 | buffer[l].rc8 << 3 | buffer[l].gc8 << 4 | buffer[l].bc8 << 5);
         CLOCK;
 
         if ((i + 1) % 8 == 0)
@@ -375,11 +339,11 @@ void Panel::displayBuffer()
         }
     }
 
-#ifdef BIG // only use when big buffer is wanted
+#ifdef PANEL_BIG // only use when big buffer is wanted
     // to sort out half colors
     for (uint8_t i = 0; i < (bsize) / 2; i++)
     {
-        l = i + (bsize) / 2;
+        l = i + (bsize / 2);
         k = i / 8;
         // first pixels
         // and checks wether pixel set in buffer, therefor deciding the pin level

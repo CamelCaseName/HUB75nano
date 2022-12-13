@@ -92,9 +92,9 @@ GND GND
 #define HIGH_RC high_pin(PORTC, 2)
 #define CLEAR_RC clear_pin(PORTC, 2)
 #define SET_RC(value) set_pin(PORTC, 2, value)
-#define HIGH_RD high_pin(PORTC, 4)
-#define CLEAR_RD clear_pin(PORTC, 4)
-#define SET_RD(value) set_pin(PORTC, 4, value)
+#define HIGH_RD high_pin(PORTC, 3)
+#define CLEAR_RD clear_pin(PORTC, 3)
+#define SET_RD(value) set_pin(PORTC, 3, value)
 
 // pin access defines, color
 #define HIGH_RF high_pin(PORTD, 2)
@@ -120,20 +120,21 @@ GND GND
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
 // set 6 color pins and keep the rx tx pins as are
 #define SETCOLOR(value) \
-    PORTD = ((value & 63) << 2) || PORTD & 3
+    PORTD = ((value & 63) << 2) | PORTD & 3
 #endif
 
 // pin access defines, rest
-#define HIGH_LAT high_pin(PORTC, 3)
-#define CLEAR_LAT clear_pin(PORTC, 3)
-#define SET_LAT(value) set_pin(PORTC, 3, value)
+#define HIGH_LAT high_pin(PORTC, 4)
+#define CLEAR_LAT clear_pin(PORTC, 4)
+#define SET_LAT(value) set_pin(PORTC, 4, value)
 #define HIGH_CLK high_pin(PORTB, 0)
 #define CLEAR_CLK clear_pin(PORTB, 0)
 #define SET_CLK(value) set_pin(PORTB, 0, value)
 #define HIGH_OE high_pin(PORTB, 1)
 #define CLEAR_OE clear_pin(PORTB, 1)
 #define SET_OE(value) set_pin(PORTB, 1, value)
-#define SET_ROW_PINS(row) PORTC = (row + (row > 7) * 8) + (row > 15)
+// #define SET_ROW_PINS(row) PORTC = (row + (row > 7) * 8) + (row > 15)
+#define SET_ROW_PINS(row) PORTC = row | PORTC & 240
 #define LATCH \
     HIGH_LAT; \
     CLEAR_LAT
@@ -279,7 +280,8 @@ public:
         FLESH,
         LIGHTPINK,
     };
-    uint8_t rows = 0, coloumns = 0, halfbsize = 0, bsize = 0;
+    uint8_t rows = 0, coloumns = 0, halfbsize = 0;
+    uint16_t bsize = 0;
     uint8_t l = 0, k = 0, r = 0, g = 0, b = 0;
     LED *buffer = nullptr; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };

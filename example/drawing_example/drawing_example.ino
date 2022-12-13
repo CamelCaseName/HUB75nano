@@ -1,4 +1,4 @@
-#define BIG
+#define PANEL_BIG
 #include "Panel.h"
 
 // create an instance of the panel
@@ -6,6 +6,7 @@ Panel panel(32, 64);
 
 void setup()
 {
+
 	panel.createBufferBG(panel.LIGHTRED); // background red
 	// panel.createBufferBG(26);//background red
 
@@ -14,14 +15,14 @@ void setup()
 	panel.drawLine(6, 0, 63, 31, panel.WHITE);			// white diagonal through nearly the whole frame
 	panel.drawCircle(50, 10, 9, panel.BLUE, false);		// hollow blue circle top right
 	panel.drawCircle(11, 25, 5, panel.OCEANBLUE, true); // filled cyan circle bottom left
-	/*
-	panel.drawRect(0, 0, 7, 7, panel.YELLOW, true); //yellow filled rectangle top left
-	panel.drawRect(8, 0, 15, 7, panel.BLUE, true); //yellow filled rectangle top left
-	panel.drawRect(16, 0, 23, 7, panel.CYAN, true); //yellow filled rectangle top left
-	panel.drawRect(24, 0, 31, 7, panel.GREEN, true); //yellow filled rectangle top left
-	panel.drawRect(32, 0, 39, 7, panel.PURPLE, true); //yellow filled rectangle top left
-	panel.drawRect(40, 0, 47, 7, panel.WHITE, true); //yellow filled rectangle top left
-	*/
+														/*
+														panel.drawRect(0, 0, 7, 7, panel.YELLOW, true); //yellow filled rectangle top left
+														panel.drawRect(8, 0, 15, 7, panel.BLUE, true); //yellow filled rectangle top left
+														panel.drawRect(16, 0, 23, 7, panel.CYAN, true); //yellow filled rectangle top left
+														panel.drawRect(24, 0, 31, 7, panel.GREEN, true); //yellow filled rectangle top left
+														panel.drawRect(32, 0, 39, 7, panel.PURPLE, true); //yellow filled rectangle top left
+														panel.drawRect(40, 0, 47, 7, panel.WHITE, true); //yellow filled rectangle top left
+														*/
 }
 
 void loop()
