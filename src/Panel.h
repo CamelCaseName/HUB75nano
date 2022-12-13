@@ -37,8 +37,6 @@ OE 9,
 GND GND
 */
 
-//#define BIG //uncomment this line when you need more ram, but not as much color. i might find a smaller way to store this, but i dont think there is one
-
 #include <Arduino.h>
 
 #ifndef Panel_h
@@ -168,6 +166,7 @@ public:
     void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fill);
     void drawChar(uint8_t x, uint8_t y, char ch, uint16_t c);
     void drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier);
+
 #ifndef BIG
 #pragma pack(1)
     struct LED
@@ -271,6 +270,7 @@ public:
     LED *buffer = nullptr; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
 
+#pragma region font
 // Copyright <2010> <Robey Pointer, https://robey.lag.net/> =========>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
@@ -414,5 +414,5 @@ inline unsigned char getFontLine(unsigned char data, int line_num)
     }
     return pixel & 0xE;
 } //<=============================================================================
-
+#pragma endregion
 #endif

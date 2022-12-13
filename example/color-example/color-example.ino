@@ -35,9 +35,10 @@ void loop()
             g = 0;
             b = ((1.0f - Hue) * 6.0f) * MAX_COLOR;
         }
-        r > MAX_COLOR ? r = MAX_COLOR : r = r;
-        g > MAX_COLOR ? g = MAX_COLOR : g = g;
-        b > MAX_COLOR ? b = MAX_COLOR : b = b;
+        r = r < MAX_COLOR ?: MAX_COLOR;
+        g = g < MAX_COLOR ?: MAX_COLOR;
+        b = b < MAX_COLOR ?: MAX_COLOR;
+
         //         _    _
         //   Red: | \__/ |
         //        0 __   1
