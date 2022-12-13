@@ -24,14 +24,14 @@ Pin mapping:
 A A0,
 B A1,
 C A2,
-D A4,
+D A3,
+LAT A4,
 R1 2,
-R2 5,
-B1 4,
-B2 7,
 G1 3,
+B1 4,
+R2 5,
 G2 6,
-LAT A3,
+B2 7,
 CLK 8,
 OE 9,
 GND GND
@@ -41,6 +41,8 @@ GND GND
 
 #ifndef Panel_h
 #define Panel_h
+
+// ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
 
 // helper definitions
 #define high_pin(port, number) port |= 1UL << number
@@ -69,18 +71,18 @@ GND GND
 #define RA 14  // register selector a
 #define RB 15  // register selector b
 #define RC 16  // register selector c
-#define RD 18  // register selector d
+#define RD 17  // register selector d
 #define RF 2   // red first byte
 #define RS 5   // red second byte
 #define BF 4   // blue first byte
 #define BS 7   // blue second byte
 #define GF 3   // green first byte
 #define GS 6   // green second byte
-#define LAT 17 // data latch
+#define LAT 18 // data latch
 #define CLK 8  // clock signal
 #define OE 9   // output enable
 
-// setter defines
+// pin access defines, rows
 #define HIGH_RA high_pin(PORTC, 0)
 #define CLEAR_RA clear_pin(PORTC, 0)
 #define SET_RA(value) set_pin(PORTC, 0, value)
@@ -93,9 +95,8 @@ GND GND
 #define HIGH_RD high_pin(PORTC, 4)
 #define CLEAR_RD clear_pin(PORTC, 4)
 #define SET_RD(value) set_pin(PORTC, 4, value)
-#define HIGH_LAT high_pin(PORTC, 3)
-#define CLEAR_LAT clear_pin(PORTC, 3)
-#define SET_LAT(value) set_pin(PORTC, 3, value)
+
+// pin access defines, color
 #define HIGH_RF high_pin(PORTD, 2)
 #define CLEAR_RF clear_pin(PORTD, 2)
 #define SET_RF(value) set_pin(PORTD, 2, value)
@@ -114,6 +115,18 @@ GND GND
 #define HIGH_BS high_pin(PORTD, 7)
 #define CLEAR_BS clear_pin(PORTD, 7)
 #define SET_BS(value) set_pin(PORTD, 7, value)
+
+// bulk pin access color, only good if pins are in right order
+#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
+// set 6 color pins and keep the rx tx pins as are
+#define SETCOLOR(value) \
+    PORTD = ((value & 63) << 2) || PORTD & 3
+#endif
+
+// pin access defines, rest
+#define HIGH_LAT high_pin(PORTC, 3)
+#define CLEAR_LAT clear_pin(PORTC, 3)
+#define SET_LAT(value) set_pin(PORTC, 3, value)
 #define HIGH_CLK high_pin(PORTB, 0)
 #define CLEAR_CLK clear_pin(PORTB, 0)
 #define SET_CLK(value) set_pin(PORTB, 0, value)
@@ -167,7 +180,7 @@ public:
     void drawChar(uint8_t x, uint8_t y, char ch, uint16_t c);
     void drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier);
 
-#ifndef BIG
+#ifndef PANEL_BIG
 #pragma pack(1)
     struct LED
     { // 3 bytes long, contains 8 leds at 1 bit color depth
@@ -236,6 +249,7 @@ public:
         uint8_t : 0;
     };
 #endif
+
     enum Colors
     {
         RED,
@@ -265,7 +279,7 @@ public:
         FLESH,
         LIGHTPINK,
     };
-    uint8_t rows = 0, cols = 0, halfbsize = 0, bsize = 0;
+    uint8_t rows = 0, coloumns = 0, halfbsize = 0, bsize = 0;
     uint8_t l = 0, k = 0, r = 0, g = 0, b = 0;
     LED *buffer = nullptr; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };

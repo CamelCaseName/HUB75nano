@@ -3,7 +3,7 @@
 Panel::Panel(uint8_t height, uint8_t width)
 {
     rows = height;
-    cols = width;
+    coloumns = width;
     pinMode(RA, OUTPUT);
     pinMode(RB, OUTPUT);
     pinMode(RC, OUTPUT);
@@ -24,8 +24,8 @@ Panel::Panel(uint8_t height, uint8_t width)
 #endif // DEBUG
 
     // each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
-    bsize = rows * (cols / 8) - 1;
-    buffer = new LED[bsize + 1];
+    bsize = rows * (coloumns / 8);
+    buffer = new LED[bsize];
 }
 
 void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
@@ -175,7 +175,7 @@ void Panel::createBufferBG(uint16_t c)
     cnvColor(c, &r, &g, &b);
 
     // initiates buffer accordingly
-    for (uint16_t x = 0; x < bsize + 1; x++)
+    for (uint16_t x = 0; x < bsize; x++)
     {
         buffer[x].rc1 = r;
         buffer[x].gc1 = g;
@@ -220,7 +220,7 @@ void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o)
         // switch through all rows
         selectLine(r);
 
-        for (uint8_t c = 0; c < cols; c++)
+        for (uint8_t c = 0; c < coloumns; c++)
         {
             // c = coloumn r = row s = shift for moving fist number is offset for color, second for overall
             r = ((c + 0 + r + s * 1 + o) % f) == 0;
@@ -283,7 +283,7 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
     // second blue pin
     SET_BS(bl);
 
-    for (uint8_t i = 0; i < cols; i++)
+    for (uint8_t i = 0; i < coloumns; i++)
     {
         CLOCK;
     }
@@ -292,9 +292,9 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 
 void Panel::displayBuffer()
 { // puts the  buffer contents onto the display
-    for (uint8_t i = 0; i < (bsize + 1) / 2; i++)
+    for (uint8_t i = 0; i < (bsize) / 2; i++)
     {
-        l = i + (bsize + 1) / 2;
+        l = i + (bsize) / 2;
         k = i / 8;
         // first pixels
         // and checks wether pixel set in buffer, therefor deciding the pin level
@@ -377,9 +377,9 @@ void Panel::displayBuffer()
 
 #ifdef BIG // only use when big buffer is wanted
     // to sort out half colors
-    for (uint8_t i = 0; i < (bsize + 1) / 2; i++)
+    for (uint8_t i = 0; i < (bsize) / 2; i++)
     {
-        l = i + (bsize + 1) / 2;
+        l = i + (bsize) / 2;
         k = i / 8;
         // first pixels
         // and checks wether pixel set in buffer, therefor deciding the pin level
@@ -468,7 +468,7 @@ void Panel::clearBuffer(uint16_t c)
     cnvColor(c, &r, &g, &b);
 
     // fills the buffer
-    for (uint16_t x = 0; x < bsize + 1; x++)
+    for (uint16_t x = 0; x < bsize; x++)
     {
         buffer[x].rc1 = r;
         buffer[x].gc1 = g;
@@ -565,7 +565,7 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c,
         {
             for (uint8_t j = y1; j <= y2; j++)
             {
-                uint8_t temp = (j * cols / 8) + (i / 8);
+                uint8_t temp = (j * coloumns / 8) + (i / 8);
                 setBuffer(r, g, b, temp, i);
             }
         }
@@ -575,28 +575,28 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c,
         // left line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            uint8_t temp = (j * cols / 8) + (x1 / 8);
+            uint8_t temp = (j * coloumns / 8) + (x1 / 8);
             setBuffer(r, g, b, temp, x1);
         }
 
         // right line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            uint8_t temp = (j * cols / 8) + (x2 / 8);
+            uint8_t temp = (j * coloumns / 8) + (x2 / 8);
             setBuffer(r, g, b, temp, x2);
         }
 
         // top line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            uint8_t temp = (y1 * cols / 8) + (i / 8);
+            uint8_t temp = (y1 * coloumns / 8) + (i / 8);
             setBuffer(r, g, b, temp, i);
         }
 
         // bottom line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            uint8_t temp = (y2 * cols / 8) + (i / 8);
+            uint8_t temp = (y2 * coloumns / 8) + (i / 8);
             setBuffer(r, g, b, temp, i);
         }
     }
@@ -624,7 +624,7 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c)
         // Serial.print(" ");
         // Serial.println(x + x1);
         uint8_t y = (uint8_t)(m * x + y1) + 0.5f;
-        temp = (uint8_t)(y * cols / 8) + ((x + x1) / 8);
+        temp = (uint8_t)(y * coloumns / 8) + ((x + x1) / 8);
         setBuffer(r, g, b, temp, x + x1);
     }
 }
@@ -645,7 +645,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fi
         {
             xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
             yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
-            temp = (uint8_t)(yC * cols / 8) + xC / 8;
+            temp = (uint8_t)(yC * coloumns / 8) + xC / 8;
             setBuffer(r, g, b, temp, xC);
         }
         // check if point in circle, then fill
@@ -655,7 +655,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fi
             {
                 if ((x - i) * (x - i) + (y - j) * (y - j) < ((radius - 0.5) * (radius - 0.5)))
                 {
-                    temp = (j * cols / 8) + i / 8;
+                    temp = (j * coloumns / 8) + i / 8;
                     setBuffer(r, g, b, temp, i);
                 }
             }
@@ -671,7 +671,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fi
             xC = x + radius * cos(i * 0.035) + 0.5;
             yC = y + radius * sin(i * 0.035) + 0.5;
             // create index
-            temp = (uint8_t)(yC * cols / 8) + xC / 8;
+            temp = (uint8_t)(yC * coloumns / 8) + xC / 8;
             setBuffer(r, g, b, temp, xC);
         }
     }
@@ -691,7 +691,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c)
         // iterate through the character bit by bit
         for (uint8_t j = 4; j > 0; --j)
         {
-            temp = ((y + i) * (cols / 8) + (x + 4 - j) / 8);
+            temp = ((y + i) * (coloumns / 8) + (x + 4 - j) / 8);
             // shift by j and check for bit set
             if (out & (1 << j))
             {
@@ -721,7 +721,7 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_
         // iterate through the character bit by bit
         for (uint8_t j = 4 * size_modifier; j > 0; --j)
         {
-            temp = ((y + i) * (cols / 8) + (x + 4 * size_modifier - j) / 8);
+            temp = ((y + i) * (coloumns / 8) + (x + 4 * size_modifier - j) / 8);
             // shift by j and check for bit set
             if (out & (1 << j / size_modifier))
             {
