@@ -42,6 +42,8 @@ GND GND
 #ifndef Panel_h
 #define Panel_h
 
+// #define PANEL_BIG
+
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
 
 // helper definitions
