@@ -254,35 +254,14 @@ void Panel::fillScreenColor(uint16_t c)
 
 void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
 { // sends two pixels, one in upper half, one in lower half to display | first upper half values, the lower half
-    // first red pin
-    SET_RF(ru);
-    // first green pin
-    SET_GF(gu);
-    // first blue pin
-    SET_BF(bu);
-    // second red pin
-    SET_RS(rl);
-    // second green pin
-    SET_GS(gl);
-    // second blue pin
-    SET_BS(bl);
+    // set all pins at once
+    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | b << 5);
     CLOCK;
 }
 
 void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
 { // sends two rows of pixels to display | first upper half values, the lower half
-    // first red pin
-    SET_RF(ru);
-    // first green pin
-    SET_GF(gu);
-    // first blue pin
-    SET_BF(bu);
-    // second red pin
-    SET_RS(rl);
-    // second green pin
-    SET_GS(gl);
-    // second blue pin
-    SET_BS(bl);
+    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | b << 5);
 
     for (uint8_t i = 0; i < coloumns; i++)
     {
@@ -292,44 +271,45 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 }
 
 void Panel::displayBuffer()
-{ // puts the  buffer contents onto the
+{ // puts the  buffer contents onto the panel
     for (uint8_t i = 0; i < (bsize >> 1); i++)
     {
         l = i + (bsize >> 1); // ^= / 2
         k = i >> 3;           // ^= / 8
         // first pixels
-        // and checks wether pixel set in buffer, therefor deciding the pin level
-        SETCOLOR((*(uint8_t *)(void *)(&buffer[i]) & 0b00000111) | ((*(uint8_t *)(void *)(&buffer[l]) & 0b000000111) << 3));
+        // one led struct contains bits in 3 bytes:
+        // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
+        // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
+
+        // checks wether pixel set in buffer, therefor deciding the pin level
+        SET_COLOR((*(uint8_t *)(void *)(&buffer[i]) & 0b00000111) | ((*(uint8_t *)(void *)(&buffer[l]) & 0b000000111) << 3));
         CLOCK;
         // second pixels
-        SETCOLOR(((*(uint8_t *)(void *)(&buffer[i]) & 0b00111000) >> 3) | (*(uint8_t *)(void *)(&buffer[l]) & 0b00111000));
+        SET_COLOR(((*(uint8_t *)(void *)(&buffer[i]) & 0b00111000) >> 3) | (*(uint8_t *)(void *)(&buffer[l]) & 0b00111000));
         CLOCK;
 
         // 3rd pixels
-        SETCOLOR(buffer[i].rc3 | buffer[i].gc3 << 1 | buffer[i].bc3 << 2 | buffer[l].rc3 << 3 | buffer[l].gc3 << 4 | buffer[l].bc3 << 5);
-
-        // TODO
-        // SETCOLOR((*((uint8_t *)(void *)(&buffer[i])) >> 6) | (((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t))) & 0b00000001) << 2) | (((*(uint8_t *)(void *)(&buffer[i])) & 0b11000000) >> 3) | (((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t))) & 0b00000001) << 5));
+        SET_COLOR(((uint8_t)((*((uint16_t *)(void *)(&buffer[i])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(void *)(&buffer[l])) >> 3) & 0b00111000)));
         CLOCK;
 
         // 4th pixels
-        SETCOLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) & 0b00001110) >> 1) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) & 0b000001110) << 2));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) & 0b00001110) >> 1) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) & 0b000001110) << 2));
         CLOCK;
 
         // 5th pixels
-        SETCOLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) & 0b01110000) >> 4) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) & 0b01110000) >> 1));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) & 0b01110000) >> 4) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) & 0b01110000) >> 1));
         CLOCK;
 
         // 6th pixels
-        SETCOLOR(buffer[i].rc6 | buffer[i].gc6 << 1 | buffer[i].bc6 << 2 | buffer[l].rc6 << 3 | buffer[l].gc6 << 4 | buffer[l].bc6 << 5);
+        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
         CLOCK;
 
         // 7th pixels
-        SETCOLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) & 0b00011100) >> 2) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) & 0b00011100) << 1));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) & 0b00011100) >> 2) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) & 0b00011100) << 1));
         CLOCK;
 
         // 8th pixels
-        SETCOLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) & 0b11100000) >> 5) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) & 0b11100000) >> 2));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) & 0b11100000) >> 5) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) & 0b11100000) >> 2));
         CLOCK;
 
         if ((i + 1) % 8 == 0)

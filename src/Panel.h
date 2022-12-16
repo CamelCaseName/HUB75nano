@@ -121,7 +121,7 @@ GND GND
 // bulk pin access color, only good if pins are in right order
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
 // set 6 color pins and keep the rx tx pins as are
-#define SETCOLOR(value) \
+#define SET_COLOR(value) \
     PORTD = ((value & 63) << 2) | PORTD & 3
 #endif
 
