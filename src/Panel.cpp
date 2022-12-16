@@ -2,8 +2,8 @@
 
 Panel::Panel()
 {
-    rows = PANEL_X;
-    coloumns = PANEL_Y;
+    coloumns = PANEL_X;
+    rows = PANEL_Y;
     pinMode(RA, OUTPUT);
     pinMode(RB, OUTPUT);
     pinMode(RC, OUTPUT);
