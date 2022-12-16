@@ -47,7 +47,7 @@ void loop()
                 oldlength = 0;
                 length = 0;
                 // Serial.println("clearing");
-                panel.clearBuffer(bgcolor);
+                panel.fillBuffer(bgcolor);
                 panel.displayBuffer();
             }
             else if (t < 32)
@@ -87,7 +87,7 @@ void loop()
                     oldlength = 0;
                     length = 0;
                     // Serial.println("clearing");
-                    panel.clearBuffer(bgcolor);
+                    panel.fillBuffer(bgcolor);
                     panel.displayBuffer();
                 }
                 else
@@ -110,7 +110,7 @@ void loop()
                 oldlength = 0;
                 length = 0;
                 // Serial.println("clearing");
-                panel.clearBuffer(bgcolor);
+                panel.fillBuffer(bgcolor);
                 panel.displayBuffer();
             }
         }

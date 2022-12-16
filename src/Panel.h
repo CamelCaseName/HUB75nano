@@ -44,6 +44,15 @@ GND GND
 
 // #define PANEL_BIG
 
+#ifndef PANEL_X
+#define PANEL_X 64
+#endif
+#ifndef PANEL_Y
+#define PANEL_Y 32
+#endif
+
+#define PANEL_BUFFERSIZE PANEL_X *PANEL_Y / 8
+
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
 
 // helper definitions
@@ -165,7 +174,7 @@ class Panel
 {
 public:
     void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
-    Panel(uint8_t height, uint8_t width);
+    Panel();
     const uint8_t font4x6[96][2] = {};
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
@@ -175,8 +184,7 @@ public:
     void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void displayBuffer();
     void test();
-    void createBufferBG(uint16_t color);
-    void clearBuffer(uint16_t color);
+    void fillBuffer(uint16_t color);
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
     void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill);
     void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
@@ -264,29 +272,32 @@ public:
         PURPLE,
         YELLOW,
         CYAN,
-        LIGHTRED,
-        LIGHTGREEN,
-        LIGHTBLUE,
-        LIGHTWHITE,
-        LIGHTCYAN,
+#ifdef PANEL_BIG
+        DEEPRED,
+        DEEPGREEN,
+        DEEPBLUE,
+        DEEPWHITE,
+        DEEPCYAN,
         DARKYELLOW,
-        LIGHTPURPLE,
-        LIGHTYELLOW,
+        DEEPPURPLE,
+        DEEPYELLOW,
         TURQUOISE,
         PINK,
         DARKPURPLE,
         BRIGHTGREEN,
         BRIGHTCYAN,
         MEDIUMGREEN,
-        DEEPPURPLE,
+        DEEPERPURPLE,
         OCEANBLUE,
         FLESH,
         LIGHTPINK,
+        DEEPERWHITE
+#endif
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
     uint16_t bsize = 0;
     uint8_t lower = 0, row = 0, r = 0, g = 0, b = 0;
-    LED *buffer = nullptr; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
+    LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
 
 #pragma region font

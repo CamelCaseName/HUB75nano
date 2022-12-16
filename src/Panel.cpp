@@ -1,9 +1,9 @@
 #include "Panel.h"
 
-Panel::Panel(uint8_t height, uint8_t width)
+Panel::Panel()
 {
-    rows = height;
-    coloumns = width;
+    rows = PANEL_X;
+    coloumns = PANEL_Y;
     pinMode(RA, OUTPUT);
     pinMode(RB, OUTPUT);
     pinMode(RC, OUTPUT);
@@ -26,7 +26,6 @@ Panel::Panel(uint8_t height, uint8_t width)
 
     // each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
     bsize = rows * (coloumns / 8);
-    buffer = (LED *)malloc(sizeof(LED) * (bsize));
 }
 
 void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
@@ -73,27 +72,32 @@ void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
         *gt = 1;
         *bt = 1;
         break;
-    case Panel::LIGHTRED:
+#ifdef PANEL_BIG
+    case Panel::DEEPRED:
         *rt = 2;
         *gt = 0;
         *bt = 0;
         break;
-    case Panel::LIGHTGREEN:
+    case Panel::DEEPGREEN:
         *rt = 0;
         *gt = 2;
         *bt = 0;
         break;
-    case Panel::LIGHTBLUE:
+    case Panel::DEEPBLUE:
         *rt = 0;
         *gt = 0;
         *bt = 2;
         break;
-    case Panel::LIGHTWHITE:
+    case Panel::DEEPWHITE:
         *rt = 2;
         *gt = 2;
         *bt = 2;
+    case Panel::DEEPERWHITE:
+        *rt = 3;
+        *gt = 3;
+        *bt = 3;
         break;
-    case Panel::LIGHTCYAN:
+    case Panel::DEEPCYAN:
         *rt = 0;
         *gt = 2;
         *bt = 2;
@@ -103,12 +107,12 @@ void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
         *gt = 2;
         *bt = 0;
         break;
-    case Panel::LIGHTPURPLE:
+    case Panel::DEEPPURPLE:
         *rt = 2;
         *gt = 0;
         *bt = 2;
         break;
-    case Panel::LIGHTYELLOW:
+    case Panel::DEEPYELLOW:
         *rt = 2;
         *gt = 2;
         *bt = 0;
@@ -143,7 +147,7 @@ void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
         *gt = 1;
         *bt = 2;
         break;
-    case Panel::DEEPPURPLE:
+    case Panel::DEEPERPURPLE:
         *rt = 2;
         *gt = 2;
         *bt = 1;
@@ -163,45 +167,10 @@ void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
         *gt = 2;
         *bt = 1;
         break;
-
+#endif
     default:
         HIGH_TO_FULL_COLOR(c, rt, gt, bt);
         break;
-    }
-}
-
-void Panel::createBufferBG(uint16_t c)
-{ // creates a buffer used to display stuff
-    // get colors
-    cnvColor(c, &r, &g, &b);
-
-    // initiates buffer accordingly
-    for (uint16_t x = 0; x < bsize; x++)
-    {
-        buffer[x].rc1 = r;
-        buffer[x].gc1 = g;
-        buffer[x].bc1 = b;
-        buffer[x].rc2 = r;
-        buffer[x].gc2 = g;
-        buffer[x].bc2 = b;
-        buffer[x].rc3 = r;
-        buffer[x].gc3 = g;
-        buffer[x].bc3 = b;
-        buffer[x].rc4 = r;
-        buffer[x].gc4 = g;
-        buffer[x].bc4 = b;
-        buffer[x].rc5 = r;
-        buffer[x].gc5 = g;
-        buffer[x].bc5 = b;
-        buffer[x].rc6 = r;
-        buffer[x].gc6 = g;
-        buffer[x].bc6 = b;
-        buffer[x].rc7 = r;
-        buffer[x].gc7 = g;
-        buffer[x].bc7 = b;
-        buffer[x].rc8 = r;
-        buffer[x].gc8 = g;
-        buffer[x].bc8 = b;
     }
 }
 
@@ -321,10 +290,56 @@ void Panel::displayBuffer()
     }
 
 #else
-  // only use when big buffer is wanted
-    // to sort out half colors
+  // only use when big buffer is wanted and we need the expanded color palette
+    // for second bit
+    for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
+    {
+        lower = upper + (bsize >> 1); // ^= / 2
+        // first pixels
+        // one led struct contains bits in 3 bytes:
+        // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
+        // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
 
-    // do 0th bit , then do 1st bit and so on
+        // checks wether pixel set in buffer, therefor deciding the pin level
+        SET_COLOR((buffer[upper].rc1 >> 1) | (buffer[upper].gc1 >> 1) << 1 | (buffer[upper].bc1 >> 1) << 2 | (buffer[lower].rc1 >> 1) << 3 | (buffer[lower].gc1 >> 1) << 4 | (buffer[lower].bc1 >> 1) << 5);
+        CLOCK;
+
+        // second pixels
+        SET_COLOR((buffer[upper].rc2 >> 1) | (buffer[upper].gc2 >> 1) << 1 | (buffer[upper].bc2 >> 1) << 2 | (buffer[lower].rc2 >> 1) << 3 | (buffer[lower].gc2 >> 1) << 4 | (buffer[lower].bc2 >> 1) << 5);
+        CLOCK;
+
+        // 3rd pixels
+        SET_COLOR((buffer[upper].rc3 >> 1) | (buffer[upper].gc3 >> 1) << 1 | (buffer[upper].bc3 >> 1) << 2 | (buffer[lower].rc3 >> 1) << 3 | (buffer[lower].gc3 >> 1) << 4 | (buffer[lower].bc3 >> 1) << 5);
+        CLOCK;
+
+        // 4th pixels
+        SET_COLOR((buffer[upper].rc4 >> 1) | (buffer[upper].gc4 >> 1) << 1 | (buffer[upper].bc4 >> 1) << 2 | (buffer[lower].rc4 >> 1) << 3 | (buffer[lower].gc4 >> 1) << 4 | (buffer[lower].bc4 >> 1) << 5);
+        CLOCK;
+
+        // 5th pixels
+        SET_COLOR((buffer[upper].rc5 >> 1) | (buffer[upper].gc5 >> 1) << 1 | (buffer[upper].bc5 >> 1) << 2 | (buffer[lower].rc5 >> 1) << 3 | (buffer[lower].gc5 >> 1) << 4 | (buffer[lower].bc5 >> 1) << 5);
+        CLOCK;
+
+        // 6th pixels
+        SET_COLOR((buffer[upper].rc6 >> 1) | (buffer[upper].gc6 >> 1) << 1 | (buffer[upper].bc6 >> 1) << 2 | (buffer[lower].rc6 >> 1) << 3 | (buffer[lower].gc6 >> 1) << 4 | (buffer[lower].bc6 >> 1) << 5);
+        CLOCK;
+
+        // 7th pixels
+        SET_COLOR((buffer[upper].rc7 >> 1) | (buffer[upper].gc7 >> 1) << 1 | (buffer[upper].bc7 >> 1) << 2 | (buffer[lower].rc7 >> 1) << 3 | (buffer[lower].gc7 >> 1) << 4 | (buffer[lower].bc7 >> 1) << 5);
+        CLOCK;
+
+        // 8th pixels
+        SET_COLOR((buffer[upper].rc8 >> 1) | (buffer[upper].gc8 >> 1) << 1 | (buffer[upper].bc8 >> 1) << 2 | (buffer[lower].rc8 >> 1) << 3 | (buffer[lower].gc8 >> 1) << 4 | (buffer[lower].bc8 >> 1) << 5);
+        CLOCK;
+
+        if ((upper + 1) % 8 == 0)
+        {
+            SET_ROW_PINS(upper / 8);
+            LATCH_DATA;
+        }
+    }
+
+    // do first bit
     for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
     {
         lower = upper + (bsize >> 1); // ^= / 2
@@ -371,10 +386,58 @@ void Panel::displayBuffer()
             LATCH_DATA;
         }
     }
+
+    // for second bit second run
+    for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
+    {
+        lower = upper + (bsize >> 1); // ^= / 2
+        // first pixels
+        // one led struct contains bits in 3 bytes:
+        // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
+        // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
+
+        // checks wether pixel set in buffer, therefor deciding the pin level
+        SET_COLOR((buffer[upper].rc1 >> 1) | (buffer[upper].gc1 >> 1) << 1 | (buffer[upper].bc1 >> 1) << 2 | (buffer[lower].rc1 >> 1) << 3 | (buffer[lower].gc1 >> 1) << 4 | (buffer[lower].bc1 >> 1) << 5);
+        CLOCK;
+
+        // second pixels
+        SET_COLOR((buffer[upper].rc2 >> 1) | (buffer[upper].gc2 >> 1) << 1 | (buffer[upper].bc2 >> 1) << 2 | (buffer[lower].rc2 >> 1) << 3 | (buffer[lower].gc2 >> 1) << 4 | (buffer[lower].bc2 >> 1) << 5);
+        CLOCK;
+
+        // 3rd pixels
+        SET_COLOR((buffer[upper].rc3 >> 1) | (buffer[upper].gc3 >> 1) << 1 | (buffer[upper].bc3 >> 1) << 2 | (buffer[lower].rc3 >> 1) << 3 | (buffer[lower].gc3 >> 1) << 4 | (buffer[lower].bc3 >> 1) << 5);
+        CLOCK;
+
+        // 4th pixels
+        SET_COLOR((buffer[upper].rc4 >> 1) | (buffer[upper].gc4 >> 1) << 1 | (buffer[upper].bc4 >> 1) << 2 | (buffer[lower].rc4 >> 1) << 3 | (buffer[lower].gc4 >> 1) << 4 | (buffer[lower].bc4 >> 1) << 5);
+        CLOCK;
+
+        // 5th pixels
+        SET_COLOR((buffer[upper].rc5 >> 1) | (buffer[upper].gc5 >> 1) << 1 | (buffer[upper].bc5 >> 1) << 2 | (buffer[lower].rc5 >> 1) << 3 | (buffer[lower].gc5 >> 1) << 4 | (buffer[lower].bc5 >> 1) << 5);
+        CLOCK;
+
+        // 6th pixels
+        SET_COLOR((buffer[upper].rc6 >> 1) | (buffer[upper].gc6 >> 1) << 1 | (buffer[upper].bc6 >> 1) << 2 | (buffer[lower].rc6 >> 1) << 3 | (buffer[lower].gc6 >> 1) << 4 | (buffer[lower].bc6 >> 1) << 5);
+        CLOCK;
+
+        // 7th pixels
+        SET_COLOR((buffer[upper].rc7 >> 1) | (buffer[upper].gc7 >> 1) << 1 | (buffer[upper].bc7 >> 1) << 2 | (buffer[lower].rc7 >> 1) << 3 | (buffer[lower].gc7 >> 1) << 4 | (buffer[lower].bc7 >> 1) << 5);
+        CLOCK;
+
+        // 8th pixels
+        SET_COLOR((buffer[upper].rc8 >> 1) | (buffer[upper].gc8 >> 1) << 1 | (buffer[upper].bc8 >> 1) << 2 | (buffer[lower].rc8 >> 1) << 3 | (buffer[lower].gc8 >> 1) << 4 | (buffer[lower].bc8 >> 1) << 5);
+        CLOCK;
+
+        if ((upper + 1) % 8 == 0)
+        {
+            SET_ROW_PINS(upper / 8);
+            LATCH_DATA;
+        }
+    }
 #endif // BIG
 }
 
-void Panel::clearBuffer(uint16_t color)
+void Panel::fillBuffer(uint16_t color)
 {
     // get colors
     cnvColor(color, &r, &g, &b);
@@ -411,7 +474,7 @@ void Panel::clearBuffer(uint16_t color)
 
 void Panel::test()
 {
-    fillScreenColor(OCEANBLUE);
+    fillScreenColor(BLUE);
     // fillScreenColor(2047);
 }
 

@@ -6,7 +6,7 @@ Panel panel(32, 64);
 void setup()
 {
 
-	panel.createBufferBG(panel.LIGHTRED); // background red
+	panel.createBufferBG(panel.DEEPRED); // background red
 	// panel.createBufferBG(26);//background red
 
 	panel.drawRect(0, 0, 5, 10, panel.YELLOW, true);	// yellow filled rectangle top left
