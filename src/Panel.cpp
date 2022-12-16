@@ -205,7 +205,7 @@ void Panel::createBufferBG(uint16_t c)
     }
 }
 
-void Panel::selectLine(uint8_t lineIndex)
+inline void Panel::selectLine(uint8_t lineIndex)
 { // selects one of the 16 lines, 0 based
     SET_ROW_PINS(lineIndex);
     LATCH_DATA;
@@ -252,7 +252,7 @@ void Panel::fillScreenColor(uint16_t c)
     }
 }
 
-void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
+inline void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
 { // sends two pixels, one in upper half, one in lower half to display | first upper half values, the lower half
     // set all pins at once
     SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | b << 5);
@@ -272,6 +272,7 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 
 void Panel::displayBuffer()
 { // puts the  buffer contents onto the panel
+#ifndef PANEL_BIG
     for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
     {
         lower = upper + (bsize >> 1); // ^= / 2
@@ -281,34 +282,35 @@ void Panel::displayBuffer()
         // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
 
         // checks wether pixel set in buffer, therefor deciding the pin level
-        SET_COLOR((*(uint8_t *)(void *)(&buffer[upper]) & 0b00000111) | ((*(uint8_t *)(void *)(&buffer[lower]) << 3) & 0b00111000));
+        SET_COLOR((*(uint8_t *)(&buffer[upper]) & 0b00000111) | ((*(uint8_t *)(&buffer[lower]) << 3) & 0b00111000));
+        // SET_COLOR(((reinterpret_cast<uint8_t>(buffer[upper])) & 0b00000111) | ((*(uint8_t *)(&buffer[lower]) << 3) & 0b00111000));
         CLOCK;
         // second pixels
-        SET_COLOR(((*(uint8_t *)(void *)(&buffer[upper]) >> 3) & 0b00000111) | (*(uint8_t *)(void *)(&buffer[lower]) & 0b00111000));
+        SET_COLOR(((*(uint8_t *)(&buffer[upper]) >> 3) & 0b00000111) | (*(uint8_t *)(&buffer[lower]) & 0b00111000));
         CLOCK;
 
         // 3rd pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)(void *)(&buffer[upper])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(void *)(&buffer[lower])) >> 3) & 0b00111000)));
+        SET_COLOR(((uint8_t)((*((uint16_t *)(&buffer[upper])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(&buffer[lower])) >> 3) & 0b00111000)));
         CLOCK;
 
         // 4th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t)) >> 1) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t)) << 2) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t)) >> 1) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t)) << 2) & 0b00111000));
         CLOCK;
 
         // 5th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t)) >> 4) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t)) >> 1) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t)) >> 4) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t)) >> 1) & 0b00111000));
         CLOCK;
 
         // 6th pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
+        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(&buffer[upper]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(&buffer[lower]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
         CLOCK;
 
         // 7th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 2) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t) * 2) << 1) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 2) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t) * 2) << 1) & 0b00111000));
         CLOCK;
 
         // 8th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 5) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t) * 2) >> 2) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 5) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t) * 2) >> 2) & 0b00111000));
         CLOCK;
 
         if ((upper + 1) % 8 == 0)
@@ -318,87 +320,54 @@ void Panel::displayBuffer()
         }
     }
 
-#ifdef PANEL_BIG // only use when big buffer is wanted
+#else
+  // only use when big buffer is wanted
     // to sort out half colors
-    for (uint8_t i = 0; i < (bsize) / 2; i++)
+
+    // do 0th bit , then do 1st bit and so on
+    for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
     {
-        l = i + (bsize / 2);
-        k = i / 8;
+        lower = upper + (bsize >> 1); // ^= / 2
         // first pixels
-        // and checks wether pixel set in buffer, therefor deciding the pin level
-        SET_RF(buffer[i].rc1 == 1);
-        SET_GF(buffer[i].gc1 == 1);
-        SET_BF(buffer[i].bc1 == 1);
-        SET_RS(buffer[l].rc1 == 1);
-        SET_GS(buffer[l].gc1 == 1);
-        SET_BS(buffer[l].bc1 == 1);
+        // one led struct contains bits in 3 bytes:
+        // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
+        // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
+
+        // checks wether pixel set in buffer, therefor deciding the pin level
+        SET_COLOR((buffer[upper].rc1 & 1) | (buffer[upper].gc1 & 1) << 1 | (buffer[upper].bc1 & 1) << 2 | (buffer[lower].rc1 & 1) << 3 | (buffer[lower].gc1 & 1) << 4 | (buffer[lower].bc1 & 1) << 5);
         CLOCK;
+
         // second pixels
-        SET_RF(buffer[i].rc2 == 1);
-        SET_GF(buffer[i].gc2 == 1);
-        SET_BF(buffer[i].bc2 == 1);
-        SET_RS(buffer[l].rc2 == 1);
-        SET_GS(buffer[l].gc2 == 1);
-        SET_BS(buffer[l].bc2 == 1);
+        SET_COLOR((buffer[upper].rc2 & 1) | (buffer[upper].gc2 & 1) << 1 | (buffer[upper].bc2 & 1) << 2 | (buffer[lower].rc2 & 1) << 3 | (buffer[lower].gc2 & 1) << 4 | (buffer[lower].bc2 & 1) << 5);
         CLOCK;
 
         // 3rd pixels
-        SET_RF(buffer[i].rc3 == 1);
-        SET_GF(buffer[i].gc3 == 1);
-        SET_BF(buffer[i].bc3 == 1);
-        SET_RS(buffer[l].rc3 == 1);
-        SET_GS(buffer[l].gc3 == 1);
-        SET_BS(buffer[l].bc3 == 1);
+        SET_COLOR((buffer[upper].rc3 & 1) | (buffer[upper].gc3 & 1) << 1 | (buffer[upper].bc3 & 1) << 2 | (buffer[lower].rc3 & 1) << 3 | (buffer[lower].gc3 & 1) << 4 | (buffer[lower].bc3 & 1) << 5);
         CLOCK;
 
         // 4th pixels
-        SET_RF(buffer[i].rc4 == 1);
-        SET_GF(buffer[i].gc4 == 1);
-        SET_BF(buffer[i].bc4 == 1);
-        SET_RS(buffer[l].rc4 == 1);
-        SET_GS(buffer[l].gc4 == 1);
-        SET_BS(buffer[l].bc4 == 1);
+        SET_COLOR((buffer[upper].rc4 & 1) | (buffer[upper].gc4 & 1) << 1 | (buffer[upper].bc4 & 1) << 2 | (buffer[lower].rc4 & 1) << 3 | (buffer[lower].gc4 & 1) << 4 | (buffer[lower].bc4 & 1) << 5);
         CLOCK;
 
         // 5th pixels
-        SET_RF(buffer[i].rc5 == 1);
-        SET_GF(buffer[i].gc5 == 1);
-        SET_BF(buffer[i].bc5 == 1);
-        SET_RS(buffer[l].rc5 == 1);
-        SET_GS(buffer[l].gc5 == 1);
-        SET_BS(buffer[l].bc5 == 1);
+        SET_COLOR((buffer[upper].rc5 & 1) | (buffer[upper].gc5 & 1) << 1 | (buffer[upper].bc5 & 1) << 2 | (buffer[lower].rc5 & 1) << 3 | (buffer[lower].gc5 & 1) << 4 | (buffer[lower].bc5 & 1) << 5);
         CLOCK;
 
         // 6th pixels
-        SET_RF(buffer[i].rc6 == 1);
-        SET_GF(buffer[i].gc6 == 1);
-        SET_BF(buffer[i].bc6 == 1);
-        SET_RS(buffer[l].rc6 == 1);
-        SET_GS(buffer[l].gc6 == 1);
-        SET_BS(buffer[l].bc6 == 1);
+        SET_COLOR((buffer[upper].rc6 & 1) | (buffer[upper].gc6 & 1) << 1 | (buffer[upper].bc6 & 1) << 2 | (buffer[lower].rc6 & 1) << 3 | (buffer[lower].gc6 & 1) << 4 | (buffer[lower].bc6 & 1) << 5);
         CLOCK;
 
         // 7th pixels
-        SET_RF(buffer[i].rc7 == 1);
-        SET_GF(buffer[i].gc7 == 1);
-        SET_BF(buffer[i].bc7 == 1);
-        SET_RS(buffer[l].rc7 == 1);
-        SET_GS(buffer[l].gc7 == 1);
-        SET_BS(buffer[l].bc7 == 1);
+        SET_COLOR((buffer[upper].rc7 & 1) | (buffer[upper].gc7 & 1) << 1 | (buffer[upper].bc7 & 1) << 2 | (buffer[lower].rc7 & 1) << 3 | (buffer[lower].gc7 & 1) << 4 | (buffer[lower].bc7 & 1) << 5);
         CLOCK;
 
         // 8th pixels
-        SET_RF(buffer[i].rc8 == 1);
-        SET_GF(buffer[i].gc8 == 1);
-        SET_BF(buffer[i].bc8 == 1);
-        SET_RS(buffer[l].rc8 == 1);
-        SET_GS(buffer[l].gc8 == 1);
-        SET_BS(buffer[l].bc8 == 1);
+        SET_COLOR((buffer[upper].rc8 & 1) | (buffer[upper].gc8 & 1) << 1 | (buffer[upper].bc8 & 1) << 2 | (buffer[lower].rc8 & 1) << 3 | (buffer[lower].gc8 & 1) << 4 | (buffer[lower].bc8 & 1) << 5);
         CLOCK;
 
-        if ((i + 1) % 8 == 0)
+        if ((upper + 1) % 8 == 0)
         {
-            SET_ROW_PINS(k);
+            SET_ROW_PINS(upper / 8);
             LATCH_DATA;
         }
     }

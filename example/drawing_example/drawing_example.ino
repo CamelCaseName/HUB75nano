@@ -1,4 +1,3 @@
-#define PANEL_BIG
 #include "Panel.h"
 
 // create an instance of the panel
