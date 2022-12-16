@@ -167,21 +167,22 @@ public:
     void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
     Panel(uint8_t height, uint8_t width);
     const uint8_t font4x6[96][2] = {};
-    void selectLine(uint8_t i);
+    void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
-    void fillScreenColor(uint16_t c);
+    void fillScreenColor(uint16_t color);
     // void cnvColor(uint16_t c, uint8_t* rt, uint8_t* gt, uint8_t* bt); //somehow doesnt work when not commented out
     void sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
     void displayBuffer();
     void test();
-    void createBufferBG(uint16_t c);
-    void clearBuffer(uint16_t c);
-    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c, bool fill);
-    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c);
-    void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fill);
-    void drawChar(uint8_t x, uint8_t y, char ch, uint16_t c);
-    void drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier);
+    void createBufferBG(uint16_t color);
+    void clearBuffer(uint16_t color);
+    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
+    void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill);
+    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
+    void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill);
+    void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
+    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier);
 
 #ifndef PANEL_BIG
 #pragma pack(1)
@@ -284,7 +285,7 @@ public:
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
     uint16_t bsize = 0;
-    uint8_t l = 0, k = 0, r = 0, g = 0, b = 0;
+    uint8_t lower = 0, row = 0, r = 0, g = 0, b = 0;
     LED *buffer = nullptr; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
 

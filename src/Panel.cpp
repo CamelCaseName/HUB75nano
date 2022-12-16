@@ -205,9 +205,9 @@ void Panel::createBufferBG(uint16_t c)
     }
 }
 
-void Panel::selectLine(uint8_t i)
+void Panel::selectLine(uint8_t lineIndex)
 { // selects one of the 16 lines, 0 based
-    SET_ROW_PINS(i);
+    SET_ROW_PINS(lineIndex);
     LATCH_DATA;
 }
 
@@ -241,7 +241,7 @@ void Panel::fillScreenColor(uint16_t c)
     // switches all the colors and sets the values depending on colors
     cnvColor(c, &r, &g, &b); // gets first couple colors
 
-    for (uint8_t i = 0; i < 20; i++)
+    for (uint8_t i = 0; i < 16; i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
@@ -272,49 +272,48 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 
 void Panel::displayBuffer()
 { // puts the  buffer contents onto the panel
-    for (uint8_t i = 0; i < (bsize >> 1); i++)
+    for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
     {
-        l = i + (bsize >> 1); // ^= / 2
-        k = i >> 3;           // ^= / 8
+        lower = upper + (bsize >> 1); // ^= / 2
         // first pixels
         // one led struct contains bits in 3 bytes:
         // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
         // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
 
         // checks wether pixel set in buffer, therefor deciding the pin level
-        SET_COLOR((*(uint8_t *)(void *)(&buffer[i]) & 0b00000111) | ((*(uint8_t *)(void *)(&buffer[l]) << 3) & 0b00111000));
+        SET_COLOR((*(uint8_t *)(void *)(&buffer[upper]) & 0b00000111) | ((*(uint8_t *)(void *)(&buffer[lower]) << 3) & 0b00111000));
         CLOCK;
         // second pixels
-        SET_COLOR(((*(uint8_t *)(void *)(&buffer[i]) >> 3) & 0b00000111) | (*(uint8_t *)(void *)(&buffer[l]) & 0b00111000));
+        SET_COLOR(((*(uint8_t *)(void *)(&buffer[upper]) >> 3) & 0b00000111) | (*(uint8_t *)(void *)(&buffer[lower]) & 0b00111000));
         CLOCK;
 
         // 3rd pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)(void *)(&buffer[i])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(void *)(&buffer[l])) >> 3) & 0b00111000)));
+        SET_COLOR(((uint8_t)((*((uint16_t *)(void *)(&buffer[upper])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(void *)(&buffer[lower])) >> 3) & 0b00111000)));
         CLOCK;
 
         // 4th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) >> 1) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) << 2) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t)) >> 1) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t)) << 2) & 0b00111000));
         CLOCK;
 
         // 5th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t)) >> 4) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t)) >> 1) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t)) >> 4) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t)) >> 1) & 0b00111000));
         CLOCK;
 
         // 6th pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
+        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
         CLOCK;
 
         // 7th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) >> 2) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) << 1) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 2) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t) * 2) << 1) & 0b00111000));
         CLOCK;
 
         // 8th pixels
-        SET_COLOR(((*((uint8_t *)(void *)(&buffer[i]) + sizeof(uint8_t) * 2) >> 5) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[l]) + sizeof(uint8_t) * 2) >> 2) & 0b00111000));
+        SET_COLOR(((*((uint8_t *)(void *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 5) & 0b00000111) | ((*((uint8_t *)(void *)(&buffer[lower]) + sizeof(uint8_t) * 2) >> 2) & 0b00111000));
         CLOCK;
 
-        if ((i + 1) % 8 == 0)
+        if ((upper + 1) % 8 == 0)
         {
-            SET_ROW_PINS(k);
+            SET_ROW_PINS(upper / 8);
             LATCH_DATA;
         }
     }
@@ -406,10 +405,10 @@ void Panel::displayBuffer()
 #endif // BIG
 }
 
-void Panel::clearBuffer(uint16_t c)
+void Panel::clearBuffer(uint16_t color)
 {
     // get colors
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
 
     // fills the buffer
     for (uint16_t x = 0; x < bsize; x++)
@@ -496,10 +495,10 @@ void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t sector, uint8_t i
     }
 }
 
-void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c, bool fill)
+void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     // get colors
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
 
     //  Serial.println("drawing rect");
 
@@ -546,11 +545,16 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c,
     }
 }
 
-void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c)
+void Panel::drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill)
+{
+    drawRect(x, y, x + size, y + size, color, fill);
+}
+
+void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
 { // draws a line with color at coords given, must be left to right
     // get colors
 
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
 
     //  f(x) = m*x+t
     //  t = f(0) = y1
@@ -573,11 +577,11 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t c)
     }
 }
 
-void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fill)
+void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill)
 { // draws a circle at the coords with radius and color
     // get colors
 
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
     uint8_t temp = 0;
     int xC;
     int yC;
@@ -621,17 +625,17 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t c, bool fi
     }
 }
 
-void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c)
+void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 { // deprecated, but probably faster
     // color for the char
 
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
     // iterate through the character line by line
     uint8_t temp = 0;
     char out;
     for (uint8_t i = 0; i < 5; i++)
     {
-        out = getFontLine(ch, i);
+        out = getFontLine(letter, i);
         // iterate through the character bit by bit
         for (uint8_t j = 4; j > 0; --j)
         {
@@ -646,10 +650,10 @@ void Panel::drawChar(uint8_t x, uint8_t y, char ch, uint16_t c)
     }
 }
 
-void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_modifier)
+void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
-    cnvColor(c, &r, &g, &b);
+    cnvColor(color, &r, &g, &b);
 
     //  Serial.println("drawing char");
 
@@ -660,7 +664,7 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char ch, uint16_t c, uint8_t size_
     char out;
     for (uint8_t i = 0; i < 5 * size_modifier; i++)
     {
-        out = getFontLine(ch, i / size_modifier);
+        out = getFontLine(letter, i / size_modifier);
         Serial.println(out);
         // iterate through the character bit by bit
         for (uint8_t j = 4 * size_modifier; j > 0; --j)
