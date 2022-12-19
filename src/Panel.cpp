@@ -18,12 +18,6 @@ Panel::Panel()
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
 
-    // primarily used for debugging
-#ifdef DEBUG
-    Serial.begin(38400);
-    // Serial.println("pinmode set");
-#endif // DEBUG
-
     // each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
     bsize = rows * (coloumns / 8);
 }
@@ -537,8 +531,6 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
     // get colors
     convertColor(color, &r, &g, &b);
 
-    //  Serial.println("drawing rect");
-
     if (fill)
     {
         for (uint8_t i = x1; i <= x2; i++)
@@ -602,12 +594,8 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
     float dy = y2 + 1 - y1; // delta y
     float m = dy / (x2 + 1 - x1);
     uint8_t temp = 0;
-    // Serial.println(m);
     for (uint8_t x = 0; x <= (x2 - x1); x++)
     {
-        // Serial.print((m * x + y1) + 0.5f);
-        // Serial.print(" ");
-        // Serial.println(x + x1);
         uint8_t y = (uint8_t)(m * x + y1) + 0.5f;
         temp = (uint8_t)(y * coloumns / 8) + ((x + x1) / 8);
         setBuffer(r, g, b, temp, x + x1);
@@ -691,9 +679,6 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
 { // new with scaling, but may be slower
     // color for the char
     convertColor(color, &r, &g, &b);
-
-    //  Serial.println("drawing char");
-
     // x = (x>64)*(x-64)+(x<64)*(x);
 
     // iterate through the character line by line
@@ -702,7 +687,6 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
     for (uint8_t i = 0; i < 5 * size_modifier; i++)
     {
         out = getFontLine(letter, i / size_modifier);
-        Serial.println(out);
         // iterate through the character bit by bit
         for (uint8_t j = 4 * size_modifier; j > 0; --j)
         {
