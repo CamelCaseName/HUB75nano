@@ -241,49 +241,31 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 void Panel::displayBuffer()
 { // puts the  buffer contents onto the panel
 #ifndef PANEL_BIG
-    for (uint8_t upper = 0; upper < (bsize >> 1); upper++)
+    for (uint8_t index = 0; index < bsize; index++)
     {
-        lower = upper + (bsize >> 1); // ^= / 2
-        // first pixels
         // one led struct contains bits in 3 bytes:
-        // |23 22 21 20 19 18 17 16|15 14 13 12 11 10 9  8 |7  6  5  4  3  2  1  0 |
-        // |b8:g8:r8:b7:g7:r7:b6:g6|r6:b5:g5:r5:b4:g4:r4:b3|g3:r3:b2:g2:r2:b1:g1:r1|
+        // |23  22  21  20  19  18  17  16 |15  14  13  12  11  10  9   8  |7   6   5   4   3   2   1   0  |
+        // |bl4:gl4:rl4:bu4:gu4:ru4:bl3:gl3|rl3:bu3:gu3:ru3:bl2:gl2:rl2:bu2|gu2:ru2:bl1:gl1:rl1:bu1:gu1:ru1|
 
-        // checks wether pixel set in buffer, therefor deciding the pin level
-        SET_COLOR((*(uint8_t *)(&buffer[upper]) & 0b00000111) | ((*(uint8_t *)(&buffer[lower]) << 3) & 0b00111000));
-        // SET_COLOR(((reinterpret_cast<uint8_t>(buffer[upper])) & 0b00000111) | ((*(uint8_t *)(&buffer[lower]) << 3) & 0b00111000));
+        // first pixels
+        SET_COLOR(*(uint8_t *)(&buffer[index]));
         CLOCK;
+
         // second pixels
-        SET_COLOR(((*(uint8_t *)(&buffer[upper]) >> 3) & 0b00000111) | (*(uint8_t *)(&buffer[lower]) & 0b00111000));
+        SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
         CLOCK;
 
         // 3rd pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)(&buffer[upper])) >> 6) & 0b00000111)) | ((uint8_t)((*((uint16_t *)(&buffer[lower])) >> 3) & 0b00111000)));
+        SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index]) + sizeof(uint8_t))))) >> 4));
         CLOCK;
 
         // 4th pixels
-        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t)) >> 1) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t)) << 2) & 0b00111000));
+        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
         CLOCK;
 
-        // 5th pixels
-        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t)) >> 4) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t)) >> 1) & 0b00111000));
-        CLOCK;
-
-        // 6th pixels
-        SET_COLOR(((uint8_t)((*((uint16_t *)((uint8_t *)(&buffer[upper]) + sizeof(uint8_t))) >> 7) & 0b00000111)) | ((uint8_t)((*((uint16_t *)((uint8_t *)(&buffer[lower]) + sizeof(uint8_t))) >> 4) & 0b00111000)));
-        CLOCK;
-
-        // 7th pixels
-        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 2) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t) * 2) << 1) & 0b00111000));
-        CLOCK;
-
-        // 8th pixels
-        SET_COLOR(((*((uint8_t *)(&buffer[upper]) + sizeof(uint8_t) * 2) >> 5) & 0b00000111) | ((*((uint8_t *)(&buffer[lower]) + sizeof(uint8_t) * 2) >> 2) & 0b00111000));
-        CLOCK;
-
-        if ((upper + 1) % 8 == 0)
+        if ((index + 1) % 16 == 0) /*16 = 64 / 4 for 4 pixels per loop iteration*/
         {
-            SET_ROW_PINS(upper / 8);
+            SET_ROW_PINS(index / 16);
             LATCH_DATA;
         }
     }
@@ -478,53 +460,70 @@ void Panel::test()
 }
 
 #ifndef PANEL_BIG
-void Panel::setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
+void Panel::setBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
 {
-    uint8_t sector = (y * coloumns / 8) + (x / 8);
-    switch (x % 8)
+    if (y < (PANEL_Y / 2))
     {
-    case 0:
-        buffer[sector].redUpper1 = r;
-        buffer[sector].greenUpper1 = g;
-        buffer[sector].blueUpper1 = b;
-        break;
-    case 1:
-        buffer[sector].redLower1 = r;
-        buffer[sector].greenLower1 = g;
-        buffer[sector].blueLower1 = b;
-        break;
-    case 2:
-        buffer[sector].redUpper2 = r;
-        buffer[sector].greenUpper2 = g;
-        buffer[sector].blueUpper2 = b;
-        break;
-    case 3:
-        buffer[sector].redLower2 = r;
-        buffer[sector].greenLower2 = g;
-        buffer[sector].blueLower2 = b;
-        break;
-    case 4:
-        buffer[sector].redUpper3 = r;
-        buffer[sector].greenUpper3 = g;
-        buffer[sector].blueUpper3 = b;
-        break;
-    case 5:
-        buffer[sector].redLower3 = r;
-        buffer[sector].greenLower3 = g;
-        buffer[sector].blueLower3 = b;
-        break;
-    case 6:
-        buffer[sector].redUpper4 = r;
-        buffer[sector].greenUpper4 = g;
-        buffer[sector].blueUpper4 = b;
-        break;
-    case 7:
-        buffer[sector].redLower4 = r;
-        buffer[sector].greenLower4 = g;
-        buffer[sector].blueLower4 = b;
-        break;
-    default:
-        break;
+        // we are in upper half of pixels
+        uint8_t index = (y * coloumns + x) / 4;
+        switch (x % 4)
+        {
+        case 0: /*first pixel*/
+            buffer[index].redUpper1 = red;
+            buffer[index].greenUpper1 = green;
+            buffer[index].blueUpper1 = blue;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redUpper2 = red;
+            buffer[index].greenUpper2 = green;
+            buffer[index].blueUpper2 = blue;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redUpper3 = red;
+            buffer[index].greenUpper3 = green;
+            buffer[index].blueUpper3 = blue;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redUpper4 = red;
+            buffer[index].greenUpper4 = green;
+            buffer[index].blueUpper4 = blue;
+            break;
+
+        default:
+            break;
+        }
+    }
+    else
+    {
+        y -= (PANEL_Y / 2);
+        // we are in lower half of pixels
+        uint8_t index = (y * coloumns + x) / 4;
+        switch (x % 4)
+        {
+        case 0: /*first pixel*/
+            buffer[index].redLower1 = red;
+            buffer[index].greenLower1 = green;
+            buffer[index].blueLower1 = blue;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redLower2 = red;
+            buffer[index].greenLower2 = green;
+            buffer[index].blueLower2 = blue;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redLower3 = red;
+            buffer[index].greenLower3 = green;
+            buffer[index].blueLower3 = blue;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redLower4 = red;
+            buffer[index].greenLower4 = green;
+            buffer[index].blueLower4 = blue;
+            break;
+
+        default:
+            break;
+        }
     }
 }
 #endif
@@ -549,29 +548,25 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
         // left line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            uint8_t temp = (j * coloumns / 8) + (x1 / 8);
-            setBuffer(r, g, b, temp, x1);
+            setBuffer(x1, j, r, g, b);
         }
 
         // right line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            uint8_t temp = (j * coloumns / 8) + (x2 / 8);
-            setBuffer(r, g, b, temp, x2);
+            setBuffer(x2, j, r, g, b);
         }
 
         // top line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            uint8_t temp = (y1 * coloumns / 8) + (i / 8);
-            setBuffer(r, g, b, temp, i);
+            setBuffer(i, y1, r, g, b);
         }
 
         // bottom line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            uint8_t temp = (y2 * coloumns / 8) + (i / 8);
-            setBuffer(r, g, b, temp, i);
+            setBuffer(i, y2, r, g, b);
         }
     }
 }
@@ -599,17 +594,15 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
     for (uint8_t x = 0; x <= (x2 - x1); x++)
     {
         uint8_t y = (uint8_t)(m * x + y1) + 0.5f;
-        temp = (uint8_t)(y * coloumns / 8) + ((x + x1) / 8);
-        setBuffer(r, g, b, temp, x + x1);
+        setBuffer(x + x1, y, r, g, b);
     }
 }
 
 void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill)
-{ // draws a circle at the coords with radius and color
+{
+    // draws a circle at the coords with radius and color
     // get colors
-
     convertColor(color, &r, &g, &b);
-    uint8_t temp = 0;
     int xC;
     int yC;
 
@@ -620,8 +613,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, boo
         {
             xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
             yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
-            temp = (uint8_t)(yC * coloumns / 8) + xC / 8;
-            setBuffer(r, g, b, temp, xC);
+            setBuffer(xC, yC, r, g, b);
         }
         // check if point in circle, then fill
         for (uint8_t i = x - radius; i < x + radius; i++)
@@ -630,24 +622,19 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, boo
             {
                 if ((x - i) * (x - i) + (y - j) * (y - j) < ((radius - 0.5) * (radius - 0.5)))
                 {
-                    temp = (j * coloumns / 8) + i / 8;
-                    setBuffer(r, g, b, temp, i);
+                    setBuffer(i, j, r, g, b);
                 }
             }
         }
-        // todo learn for finals
     }
     else
     {
         // draw circle outline
         for (uint8_t i = 1; i < 180; i++)
         {
-            // draws a circle using trigonomic formulas
-            xC = x + radius * cos(i * 0.035) + 0.5;
-            yC = y + radius * sin(i * 0.035) + 0.5;
-            // create index
-            temp = (uint8_t)(yC * coloumns / 8) + xC / 8;
-            setBuffer(r, g, b, temp, xC);
+            xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
+            yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
+            setBuffer(xC, yC, r, g, b);
         }
     }
 }
@@ -658,7 +645,6 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 
     convertColor(color, &r, &g, &b);
     // iterate through the character line by line
-    uint8_t temp = 0;
     char out;
     for (uint8_t i = 0; i < 5; i++)
     {
@@ -666,12 +652,11 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
         // iterate through the character bit by bit
         for (uint8_t j = 4; j > 0; --j)
         {
-            temp = ((y + i) * (coloumns / 8) + (x + 4 - j) / 8);
             // shift by j and check for bit set
             if (out & (1 << j))
             {
                 // set pixel at i and j
-                setBuffer(r, g, b, temp, x + 4 - j);
+                setBuffer(x + 4 - j, y + i, r, g, b);
             }
         }
     }
@@ -684,7 +669,6 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
     // x = (x>64)*(x-64)+(x<64)*(x);
 
     // iterate through the character line by line
-    uint8_t temp = 0;
     char out;
     for (uint8_t i = 0; i < 5 * size_modifier; i++)
     {
@@ -692,12 +676,11 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
         // iterate through the character bit by bit
         for (uint8_t j = 4 * size_modifier; j > 0; --j)
         {
-            temp = ((y + i) * (coloumns / 8) + (x + 4 * size_modifier - j) / 8);
             // shift by j and check for bit set
             if (out & (1 << j / size_modifier))
             {
                 // set pixel at i and j
-                setBuffer(r, g, b, temp, x + 4 * size_modifier - j);
+                setBuffer(x + 4 * size_modifier - j, y + i, r, g, b);
             }
         }
     }
