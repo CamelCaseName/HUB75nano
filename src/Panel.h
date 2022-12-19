@@ -42,7 +42,7 @@ GND GND
 #ifndef Panel_h
 #define Panel_h
 /////////////////////
-#define PANEL_BIG
+// #define PANEL_BIG
 /////////////////////
 #ifndef PANEL_X
 #define PANEL_X 64
@@ -163,25 +163,24 @@ constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
 {
     return ((int)(((double)(r * 31) / 255.0) + 0.5) << 11) | ((int)(((double)(g * 63) / 255.0) + 0.5) << 5) | (int)(((double)(b * 31) / 255.0) + 0.5);
 }
-inline void HIGH_TO_FULL_COLOR(uint16_t c, uint8_t *r, uint8_t *g, uint8_t *b)
+inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 {
-    *r = (c >> 11) & 31;
-    *g = (c >> 5) & 63;
-    *b = c & 31;
+    *red = (color >> 11) & 31;
+    *green = (color >> 5) & 63;
+    *blue = color & 31;
 }
 
 class Panel
 {
 public:
-    void setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t temp, uint8_t i);
+    void setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b);
     Panel();
-    const uint8_t font4x6[96][2] = {};
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
     void fillScreenColor(uint16_t color);
     // void cnvColor(uint16_t c, uint8_t* rt, uint8_t* gt, uint8_t* bt); //somehow doesnt work when not commented out
-    void sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
-    void sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl);
+    void sendTwoPixels(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
+    void sendWholeRow(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
     void displayBuffer();
     void test();
     void fillBuffer(uint16_t color);
@@ -196,32 +195,32 @@ public:
 #pragma pack(1)
     struct LED
     { // 3 bytes long, contains 8 leds at 1 bit color depth
-        uint8_t rc1 : 1;
-        uint8_t gc1 : 1;
-        uint8_t bc1 : 1;
-        uint8_t rc2 : 1;
-        uint8_t gc2 : 1;
-        uint8_t bc2 : 1;
-        uint8_t rc3 : 1;
-        uint8_t gc3 : 1;
+        uint8_t redUpper1 : 1;
+        uint8_t greenUpper1 : 1;
+        uint8_t blueUpper1 : 1;
+        uint8_t redLower1 : 1;
+        uint8_t greenLower1 : 1;
+        uint8_t blueLower1 : 1;
+        uint8_t redUpper2 : 1;
+        uint8_t greenUpper2 : 1;
         uint8_t : 0;
-        uint8_t bc3 : 1;
-        uint8_t rc4 : 1;
-        uint8_t gc4 : 1;
-        uint8_t bc4 : 1;
-        uint8_t rc5 : 1;
-        uint8_t gc5 : 1;
-        uint8_t bc5 : 1;
-        uint8_t rc6 : 1;
+        uint8_t blueUpper2 : 1;
+        uint8_t redLower2 : 1;
+        uint8_t greenLower2 : 1;
+        uint8_t blueLower2 : 1;
+        uint8_t redUpper3 : 1;
+        uint8_t greenUpper3 : 1;
+        uint8_t blueUpper3 : 1;
+        uint8_t redLower3 : 1;
         uint8_t : 0;
-        uint8_t gc6 : 1;
-        uint8_t bc6 : 1;
-        uint8_t rc7 : 1;
-        uint8_t gc7 : 1;
-        uint8_t bc7 : 1;
-        uint8_t rc8 : 1;
-        uint8_t gc8 : 1;
-        uint8_t bc8 : 1;
+        uint8_t greenLower3 : 1;
+        uint8_t blueLower3 : 1;
+        uint8_t redUpper4 : 1;
+        uint8_t greenUpper4 : 1;
+        uint8_t blueUpper4 : 1;
+        uint8_t redLower4 : 1;
+        uint8_t greenLower4 : 1;
+        uint8_t blueLower4 : 1;
         uint8_t : 0;
     };
 

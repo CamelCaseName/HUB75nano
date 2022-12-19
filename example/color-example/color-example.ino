@@ -1,6 +1,9 @@
+#define PANEL_X 64
+#define PANEL_Y 32
+
 #include "Panel.h"
 
-Panel panel(32, 64);
+Panel panel;
 float Hue = 0.0f;
 #define MAX_COLOR 16
 uint8_t r = MAX_COLOR, g = MAX_COLOR, b = MAX_COLOR;

@@ -444,30 +444,30 @@ void Panel::fillBuffer(uint16_t color)
     // fills the buffer
     for (uint16_t x = 0; x < bsize; x++)
     {
-        buffer[x].rc1 = r;
-        buffer[x].gc1 = g;
-        buffer[x].bc1 = b;
-        buffer[x].rc2 = r;
-        buffer[x].gc2 = g;
-        buffer[x].bc2 = b;
-        buffer[x].rc3 = r;
-        buffer[x].gc3 = g;
-        buffer[x].bc3 = b;
-        buffer[x].rc4 = r;
-        buffer[x].gc4 = g;
-        buffer[x].bc4 = b;
-        buffer[x].rc5 = r;
-        buffer[x].gc5 = g;
-        buffer[x].bc5 = b;
-        buffer[x].rc6 = r;
-        buffer[x].gc6 = g;
-        buffer[x].bc6 = b;
-        buffer[x].rc7 = r;
-        buffer[x].gc7 = g;
-        buffer[x].bc7 = b;
-        buffer[x].rc8 = r;
-        buffer[x].gc8 = g;
-        buffer[x].bc8 = b;
+        buffer[x].redUpper1 = r;
+        buffer[x].greenUpper1 = g;
+        buffer[x].blueUpper1 = b;
+        buffer[x].redLower1 = r;
+        buffer[x].greenLower1 = g;
+        buffer[x].blueLower1 = b;
+        buffer[x].redUpper2 = r;
+        buffer[x].greenUpper2 = g;
+        buffer[x].blueUpper2 = b;
+        buffer[x].redLower2 = r;
+        buffer[x].greenLower2 = g;
+        buffer[x].blueLower2 = b;
+        buffer[x].redUpper3 = r;
+        buffer[x].greenUpper3 = g;
+        buffer[x].blueUpper3 = b;
+        buffer[x].redLower3 = r;
+        buffer[x].greenLower3 = g;
+        buffer[x].blueLower3 = b;
+        buffer[x].redUpper4 = r;
+        buffer[x].greenUpper4 = g;
+        buffer[x].blueUpper4 = b;
+        buffer[x].redLower4 = r;
+        buffer[x].greenLower4 = g;
+        buffer[x].blueLower4 = b;
     }
 }
 
@@ -477,54 +477,57 @@ void Panel::test()
     // fillScreenColor(2047);
 }
 
-void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t sector, uint8_t i)
+#ifndef PANEL_BIG
+void Panel::setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
 {
-    switch (i % 8)
+    uint8_t sector = (y * coloumns / 8) + (x / 8);
+    switch (x % 8)
     {
     case 0:
-        buffer[sector].rc1 = r;
-        buffer[sector].gc1 = g;
-        buffer[sector].bc1 = b;
+        buffer[sector].redUpper1 = r;
+        buffer[sector].greenUpper1 = g;
+        buffer[sector].blueUpper1 = b;
         break;
     case 1:
-        buffer[sector].rc2 = r;
-        buffer[sector].gc2 = g;
-        buffer[sector].bc2 = b;
+        buffer[sector].redLower1 = r;
+        buffer[sector].greenLower1 = g;
+        buffer[sector].blueLower1 = b;
         break;
     case 2:
-        buffer[sector].rc3 = r;
-        buffer[sector].gc3 = g;
-        buffer[sector].bc3 = b;
+        buffer[sector].redUpper2 = r;
+        buffer[sector].greenUpper2 = g;
+        buffer[sector].blueUpper2 = b;
         break;
     case 3:
-        buffer[sector].rc4 = r;
-        buffer[sector].gc4 = g;
-        buffer[sector].bc4 = b;
+        buffer[sector].redLower2 = r;
+        buffer[sector].greenLower2 = g;
+        buffer[sector].blueLower2 = b;
         break;
     case 4:
-        buffer[sector].rc5 = r;
-        buffer[sector].gc5 = g;
-        buffer[sector].bc5 = b;
+        buffer[sector].redUpper3 = r;
+        buffer[sector].greenUpper3 = g;
+        buffer[sector].blueUpper3 = b;
         break;
     case 5:
-        buffer[sector].rc6 = r;
-        buffer[sector].gc6 = g;
-        buffer[sector].bc6 = b;
+        buffer[sector].redLower3 = r;
+        buffer[sector].greenLower3 = g;
+        buffer[sector].blueLower3 = b;
         break;
     case 6:
-        buffer[sector].rc7 = r;
-        buffer[sector].gc7 = g;
-        buffer[sector].bc7 = b;
+        buffer[sector].redUpper4 = r;
+        buffer[sector].greenUpper4 = g;
+        buffer[sector].blueUpper4 = b;
         break;
     case 7:
-        buffer[sector].rc8 = r;
-        buffer[sector].gc8 = g;
-        buffer[sector].bc8 = b;
+        buffer[sector].redLower4 = r;
+        buffer[sector].greenLower4 = g;
+        buffer[sector].blueLower4 = b;
         break;
     default:
         break;
     }
 }
+#endif
 
 void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
@@ -537,8 +540,7 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
         {
             for (uint8_t j = y1; j <= y2; j++)
             {
-                uint8_t temp = (j * coloumns / 8) + (i / 8);
-                setBuffer(r, g, b, temp, i);
+                setBuffer(i, j, r, g, b);
             }
         }
     }
