@@ -28,148 +28,153 @@ Panel::Panel()
     bsize = rows * (coloumns / 8);
 }
 
-void cnvColor(uint16_t c, uint8_t *rt, uint8_t *gt, uint8_t *bt)
+void convertColor(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 { // input color, get converted color by reference
-    switch (c)
+    switch (color)
     {
     case Panel::RED:
-        *rt = 1;
-        *gt = 0;
-        *bt = 0;
+        *red = 1;
+        *green = 0;
+        *blue = 0;
         break;
     case Panel::GREEN:
-        *rt = 0;
-        *gt = 1;
-        *bt = 0;
+        *red = 0;
+        *green = 1;
+        *blue = 0;
         break;
     case Panel::BLUE:
-        *rt = 0;
-        *gt = 0;
-        *bt = 1;
+        *red = 0;
+        *green = 0;
+        *blue = 1;
         break;
     case Panel::WHITE:
-        *rt = 1;
-        *gt = 1;
-        *bt = 1;
+        *red = 1;
+        *green = 1;
+        *blue = 1;
         break;
     case Panel::BLACK:
-        *rt = 0;
-        *gt = 0;
-        *bt = 0;
+        *red = 0;
+        *green = 0;
+        *blue = 0;
         break;
     case Panel::PURPLE:
-        *rt = 1;
-        *gt = 0;
-        *bt = 1;
+        *red = 1;
+        *green = 0;
+        *blue = 1;
         break;
     case Panel::YELLOW:
-        *rt = 1;
-        *gt = 1;
-        *bt = 0;
+        *red = 1;
+        *green = 1;
+        *blue = 0;
         break;
     case Panel::CYAN:
-        *rt = 0;
-        *gt = 1;
-        *bt = 1;
+        *red = 0;
+        *green = 1;
+        *blue = 1;
         break;
 #ifdef PANEL_BIG
     case Panel::DEEPRED:
-        *rt = 2;
-        *gt = 0;
-        *bt = 0;
+        *red = 2;
+        *green = 0;
+        *blue = 0;
         break;
     case Panel::DEEPGREEN:
-        *rt = 0;
-        *gt = 2;
-        *bt = 0;
+        *red = 0;
+        *green = 2;
+        *blue = 0;
         break;
     case Panel::DEEPBLUE:
-        *rt = 0;
-        *gt = 0;
-        *bt = 2;
+        *red = 0;
+        *green = 0;
+        *blue = 2;
         break;
     case Panel::DEEPWHITE:
-        *rt = 2;
-        *gt = 2;
-        *bt = 2;
+        *red = 2;
+        *green = 2;
+        *blue = 2;
     case Panel::DEEPERWHITE:
-        *rt = 3;
-        *gt = 3;
-        *bt = 3;
+        *red = 3;
+        *green = 3;
+        *blue = 3;
         break;
     case Panel::DEEPCYAN:
-        *rt = 0;
-        *gt = 2;
-        *bt = 2;
+        *red = 0;
+        *green = 2;
+        *blue = 2;
         break;
     case Panel::DARKYELLOW:
-        *rt = 1;
-        *gt = 2;
-        *bt = 0;
+        *red = 1;
+        *green = 2;
+        *blue = 0;
         break;
     case Panel::DEEPPURPLE:
-        *rt = 2;
-        *gt = 0;
-        *bt = 2;
+        *red = 2;
+        *green = 0;
+        *blue = 2;
         break;
     case Panel::DEEPYELLOW:
-        *rt = 2;
-        *gt = 2;
-        *bt = 0;
+        *red = 2;
+        *green = 2;
+        *blue = 0;
         break;
     case Panel::TURQUOISE:
-        *rt = 0;
-        *gt = 1;
-        *bt = 2;
+        *red = 0;
+        *green = 1;
+        *blue = 2;
         break;
     case Panel::PINK:
-        *rt = 1;
-        *gt = 0;
-        *bt = 2;
+        *red = 1;
+        *green = 0;
+        *blue = 2;
         break;
     case Panel::DARKPURPLE:
-        *rt = 2;
-        *gt = 0;
-        *bt = 1;
+        *red = 2;
+        *green = 0;
+        *blue = 1;
         break;
     case Panel::BRIGHTGREEN:
-        *rt = 2;
-        *gt = 1;
-        *bt = 0;
+        *red = 2;
+        *green = 1;
+        *blue = 0;
         break;
     case Panel::BRIGHTCYAN:
-        *rt = 2;
-        *gt = 1;
-        *bt = 1;
+        *red = 2;
+        *green = 1;
+        *blue = 1;
         break;
     case Panel::MEDIUMGREEN:
-        *rt = 2;
-        *gt = 1;
-        *bt = 2;
+        *red = 2;
+        *green = 1;
+        *blue = 2;
         break;
     case Panel::DEEPERPURPLE:
-        *rt = 2;
-        *gt = 2;
-        *bt = 1;
+        *red = 2;
+        *green = 2;
+        *blue = 1;
         break;
     case Panel::OCEANBLUE:
-        *rt = 0;
-        *gt = 2;
-        *bt = 1;
+        *red = 0;
+        *green = 2;
+        *blue = 1;
         break;
     case Panel::FLESH:
-        *rt = 1;
-        *gt = 2;
-        *bt = 2;
+        *red = 1;
+        *green = 2;
+        *blue = 2;
         break;
     case Panel::LIGHTPINK:
-        *rt = 1;
-        *gt = 2;
-        *bt = 1;
+        *red = 1;
+        *green = 2;
+        *blue = 1;
+        break;
+    case Panel::DEEPERBLUE:
+        *red = 0;
+        *green = 0;
+        *blue = 3;
         break;
 #endif
     default:
-        HIGH_TO_FULL_COLOR(c, rt, gt, bt);
+        HIGH_TO_FULL_COLOR(color, red, green, blue);
         break;
     }
 }
@@ -208,7 +213,7 @@ void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o)
 void Panel::fillScreenColor(uint16_t c)
 { // fills the screeen with the set color
     // switches all the colors and sets the values depending on colors
-    cnvColor(c, &r, &g, &b); // gets first couple colors
+    convertColor(c, &r, &g, &b); // gets first couple colors
 
     for (uint8_t i = 0; i < 16; i++)
     {
@@ -440,7 +445,7 @@ void Panel::displayBuffer()
 void Panel::fillBuffer(uint16_t color)
 {
     // get colors
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
 
     // fills the buffer
     for (uint16_t x = 0; x < bsize; x++)
@@ -530,7 +535,7 @@ void Panel::setBuffer(uint8_t r, uint8_t g, uint8_t b, uint8_t sector, uint8_t i
 void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     // get colors
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
 
     //  Serial.println("drawing rect");
 
@@ -586,7 +591,7 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
 { // draws a line with color at coords given, must be left to right
     // get colors
 
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
 
     //  f(x) = m*x+t
     //  t = f(0) = y1
@@ -613,7 +618,7 @@ void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, boo
 { // draws a circle at the coords with radius and color
     // get colors
 
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
     uint8_t temp = 0;
     int xC;
     int yC;
@@ -661,7 +666,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 { // deprecated, but probably faster
     // color for the char
 
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
     // iterate through the character line by line
     uint8_t temp = 0;
     char out;
@@ -685,7 +690,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
-    cnvColor(color, &r, &g, &b);
+    convertColor(color, &r, &g, &b);
 
     //  Serial.println("drawing char");
 

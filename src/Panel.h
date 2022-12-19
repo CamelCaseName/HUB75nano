@@ -41,9 +41,9 @@ GND GND
 
 #ifndef Panel_h
 #define Panel_h
-
-// #define PANEL_BIG
-
+/////////////////////
+#define PANEL_BIG
+/////////////////////
 #ifndef PANEL_X
 #define PANEL_X 64
 #endif
@@ -291,7 +291,8 @@ public:
         OCEANBLUE,
         FLESH,
         LIGHTPINK,
-        DEEPERWHITE
+        DEEPERWHITE,
+        DEEPERBLUE
 #endif
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
