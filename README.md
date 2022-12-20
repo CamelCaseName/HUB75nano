@@ -50,7 +50,7 @@ simply copy the generated text into your setup, it will take a while though. The
 
 <img src="https://i.imgur.com/Zr81xNZ.jpg" alt="smiley face" width="200"/>
 
-# current limitations:
+# Limitations:
 ### voltage issues
 - when running more than 800 LEDs on full white, the color starts to deterioate quickly. this happens because the blue LEDs need more voltage to run than the others, therefore it turns into an orange color. You can get more white LEDs when running them in coloumns (max about 25\*31) than rows (63\*23). With full white rows it starts to turn orange at about 4 to 5 rows. this can be helped by overvolting the panel supply voltage to above 5V, but it is not recommended. Tests have shown 6 full rows of white at 5.7V and no rows at 4.6V. 
 

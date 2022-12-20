@@ -42,7 +42,7 @@ GND GND
 #ifndef Panel_h
 #define Panel_h
 /////////////////////
-// #define PANEL_BIG
+#define PANEL_BIG
 /////////////////////
 #ifndef PANEL_X
 #define PANEL_X 64
@@ -52,6 +52,11 @@ GND GND
 #endif
 
 #define PANEL_BUFFERSIZE PANEL_X *PANEL_Y / 8
+#define PANEL_CHUNKSIZE (PANEL_X / 4)
+
+#define MAX_COLORDEPTH 2
+
+#define MAX_COLOR MAX_COLORDEPTH *MAX_COLORDEPTH - 1
 
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
 
@@ -144,7 +149,6 @@ GND GND
 #define HIGH_OE high_pin(PORTB, 1)
 #define CLEAR_OE clear_pin(PORTB, 1)
 #define SET_OE(value) set_pin(PORTB, 1, value)
-// #define SET_ROW_PINS(row) PORTC = (row + (row > 7) * 8) + (row > 15)
 #define SET_ROW_PINS(row) PORTC = row | PORTC & 240
 #define LATCH \
     HIGH_LAT; \
@@ -161,7 +165,11 @@ GND GND
 
 constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
 {
-    return ((int)(((double)(r * 31) / 255.0) + 0.5) << 11) | ((int)(((double)(g * 63) / 255.0) + 0.5) << 5) | (int)(((double)(b * 31) / 255.0) + 0.5);
+    return ((int)(((double)r / 255.0) + 0.5) << 11) | ((int)(((double)g / 255.0) + 0.5) << 5) | (int)(((double)b / 255.0) + 0.5);
+}
+constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
+{
+    return (((int)(r * MAX_COLOR + 0.5f)) << 11) | ((int)((g * MAX_COLOR + 0.5f)) << 5) | (int)((b * MAX_COLOR) + 0.5f);
 }
 inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 {
@@ -178,11 +186,9 @@ public:
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
     void fillScreenColor(uint16_t color);
-    // void cnvColor(uint16_t c, uint8_t* rt, uint8_t* gt, uint8_t* bt); //somehow doesnt work when not commented out
     void sendTwoPixels(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
     void sendWholeRow(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
     void displayBuffer();
-    void test();
     void fillBuffer(uint16_t color);
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
     void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill);
@@ -228,35 +234,59 @@ public:
 #pragma pack(1)
     struct LED
     { // 6 bytes long, contains 8 leds at 2 bit color depth
-        uint8_t rc1 : 2;
-        uint8_t gc1 : 2;
-        uint8_t bc1 : 2;
-        uint8_t rc2 : 2;
+        uint8_t redUpperBit1Led1 : 1;
+        uint8_t greenUpperBit1Led1 : 1;
+        uint8_t blueUpperBit1Led1 : 1;
+        uint8_t redLowerBit1Led1 : 1;
+        uint8_t greenLowerBit1Led1 : 1;
+        uint8_t blueLowerBit1Led1 : 1;
+        uint8_t redUpperBit2Led1 : 1;
+        uint8_t greenUpperBit2Led1 : 1;
         uint8_t : 0;
-        uint8_t gc2 : 2;
-        uint8_t bc2 : 2;
-        uint8_t rc3 : 2;
-        uint8_t gc3 : 2;
+        uint8_t blueUpperBit2Led1 : 1;
+        uint8_t redLowerBit2Led1 : 1;
+        uint8_t greenLowerBit2Led1 : 1;
+        uint8_t blueLowerBit2Led1 : 1;
+        uint8_t redUpperBit1Led2 : 1;
+        uint8_t greenUpperBit1Led2 : 1;
+        uint8_t blueUpperBit1Led2 : 1;
+        uint8_t redLowerBit1Led2 : 1;
         uint8_t : 0;
-        uint8_t bc3 : 2;
-        uint8_t rc4 : 2;
-        uint8_t gc4 : 2;
-        uint8_t bc4 : 2;
+        uint8_t greenLowerBit1Led2 : 1;
+        uint8_t blueLowerBit1Led2 : 1;
+        uint8_t redUpperBit2Led2 : 1;
+        uint8_t greenUpperBit2Led2 : 1;
+        uint8_t blueUpperBit2Led2 : 1;
+        uint8_t redLowerBit2Led2 : 1;
+        uint8_t greenLowerBit2Led2 : 1;
+        uint8_t blueLowerBit2Led2 : 1;
         uint8_t : 0;
-        uint8_t rc5 : 2;
-        uint8_t gc5 : 2;
-        uint8_t bc5 : 2;
-        uint8_t rc6 : 2;
+        uint8_t redUpperBit1Led3 : 1;
+        uint8_t greenUpperBit1Led3 : 1;
+        uint8_t blueUpperBit1Led3 : 1;
+        uint8_t redLowerBit1Led3 : 1;
+        uint8_t greenLowerBit1Led3 : 1;
+        uint8_t blueLowerBit1Led3 : 1;
+        uint8_t redUpperBit2Led3 : 1;
+        uint8_t greenUpperBit2Led3 : 1;
         uint8_t : 0;
-        uint8_t gc6 : 2;
-        uint8_t bc6 : 2;
-        uint8_t rc7 : 2;
-        uint8_t gc7 : 2;
+        uint8_t blueUpperBit2Led3 : 1;
+        uint8_t redLowerBit2Led3 : 1;
+        uint8_t greenLowerBit2Led3 : 1;
+        uint8_t blueLowerBit2Led3 : 1;
+        uint8_t redUpperBit1Led4 : 1;
+        uint8_t greenUpperBit1Led4 : 1;
+        uint8_t blueUpperBit1Led4 : 1;
+        uint8_t redLowerBit1Led4 : 1;
         uint8_t : 0;
-        uint8_t bc7 : 2;
-        uint8_t rc8 : 2;
-        uint8_t gc8 : 2;
-        uint8_t bc8 : 2;
+        uint8_t greenLowerBit1Led4 : 1;
+        uint8_t blueLowerBit1Led4 : 1;
+        uint8_t redUpperBit2Led4 : 1;
+        uint8_t greenUpperBit2Led4 : 1;
+        uint8_t blueUpperBit2Led4 : 1;
+        uint8_t redLowerBit2Led4 : 1;
+        uint8_t greenLowerBit2Led4 : 1;
+        uint8_t blueLowerBit2Led4 : 1;
         uint8_t : 0;
     };
 #endif
