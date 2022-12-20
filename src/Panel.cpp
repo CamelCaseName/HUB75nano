@@ -209,7 +209,7 @@ void Panel::fillScreenColor(uint16_t c)
     // switches all the colors and sets the values depending on colors
     convertColor(c, &r, &g, &b); // gets first couple colors
 
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint8_t i = 0; i < 22; i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
@@ -229,7 +229,7 @@ inline void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl,
 
 void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
 { // sends two rows of pixels to display | first upper half values, the lower half
-    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | b << 5);
+    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | bl << 5);
 
     for (uint8_t i = 0; i < coloumns; i++)
     {
