@@ -207,9 +207,9 @@ void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o)
 void Panel::fillScreenColor(uint16_t c)
 { // fills the screeen with the set color
     // switches all the colors and sets the values depending on colors
-    convertColor(c, &r, &g, &b); // gets first couple colors
+    HIGH_TO_FULL_COLOR(c, &r, &g, &b); // gets first couple colors
 
-    for (uint8_t i = 0; i < 22; i++)
+    for (uint8_t i = 0; i < 16; i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {

@@ -42,7 +42,8 @@ GND GND
 #ifndef Panel_h
 #define Panel_h
 /////////////////////
-#define PANEL_BIG
+#define PANEL_BIG  // use 2 bit rgb image buffer
+#define PANEL_CLUT // use 6 bit CLUT image buffer
 /////////////////////
 #ifndef PANEL_X
 #define PANEL_X 64
@@ -51,15 +52,14 @@ GND GND
 #define PANEL_Y 32
 #endif
 
-#define PANEL_BUFFERSIZE PANEL_X *PANEL_Y / 8
+#define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y / 8)
 #define PANEL_CHUNKSIZE (PANEL_X / 4)
 
 #define MAX_COLORDEPTH 2
 
-#define MAX_COLOR MAX_COLORDEPTH *MAX_COLORDEPTH - 1
+#define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH - 1)
 
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
-
 // helper definitions
 #define high_pin(port, number) port |= 1UL << number
 #define toggle_pin(port, number) port ^= 1UL << number
@@ -67,9 +67,7 @@ GND GND
 #define pulse_pin(port, number) \
     high_pin(port, number);     \
     clear_pin(port, number)
-#define set_pin(port, number, value) \
-    port |= (value > 0) << number;   \
-    port &= ~((value == 0) << number)
+#define set_pin(port, number, value) port = (value << number) | (port & ~(1UL << number))
 #define PORTA_high_pin(number) high_pin(PORTA, number)
 #define PORTB_high_pin(number) high_pin(PORTB, number)
 #define PORTC_high_pin(number) high_pin(PORTC, number)
