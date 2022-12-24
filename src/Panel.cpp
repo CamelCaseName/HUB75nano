@@ -535,6 +535,134 @@ void Panel::displayBuffer()
 #endif
 }
 
+void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
+{ // draws a line with color between the coords given
+    // get colors
+    convertColor(color, &r, &g, &b);
+
+    // calculate both gradients
+    int8_t dx = abs(x2 - x1);
+    int8_t dy = -abs(y2 - y1);
+    // create de-/increment values for walking the line
+    int8_t sx = x1 < x2 ? 1 : -1;
+    int8_t sy = y1 < y2 ? 1 : -1;
+    // error corerction
+    float err = dx + dy, e2;
+    while (1)
+    {
+        setBuffer(x1, y1, r, g, b);
+        e2 = 2 * err;
+        if (e2 >= dy)
+        {
+            if (x1 == x2)
+                break;
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx)
+        {
+            if (y1 == y2)
+                break;
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
+void Panel::drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill)
+{
+    // get colors
+    convertColor(color, &r, &g, &b);
+
+    // stepping values
+    int8_t x = -a;
+    int8_t y = 0;
+    int16_t e2 = b;
+    int16_t dx = (1 + 2 * x) * e2 * e2;
+    int16_t dy = x * x;
+    int16_t err = dx + dy;
+    // draw loop
+    while (x <= 0)
+    {
+        // 1. quadrant
+        setBuffer(xm - x, ym + y, r, g, b);
+        // 2. quadrant
+        setBuffer(xm + x, ym + y, r, g, b);
+        // 3. quadrant
+        setBuffer(xm + x, ym - y, r, g, b);
+        // 4. quadrant
+        setBuffer(xm - x, ym - y, r, g, b);
+        // recalculate error
+        e2 = 2 * err;
+
+        // step x
+        if (e2 >= dx)
+        {
+            ++x;
+            err += dx += 2 * b * b;
+        }
+        // step y
+        if (e2 <= dy)
+        {
+            ++y;
+            err += dy += 2 * a * a;
+        }
+    }
+    while (y++ < b)
+    {
+        // draw rest of ellipse
+        setBuffer(xm, ym + y, r, g, b);
+        setBuffer(xm, ym - y, r, g, b);
+    }
+}
+
+void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill)
+{
+    // draws a circle at the coords with radius and color
+    // get colors
+    convertColor(color, &r, &g, &b);
+    int8_t x = -radius;
+    int8_t y = 0;
+    int8_t err = 2 - 2 * radius;
+
+    // draw outline
+    while (x < 0)
+    {
+        // 1. quadrant
+        setBuffer(xm - x, ym + y, r, g, b);
+        // 2. quadrant
+        setBuffer(xm - x, ym - y, r, g, b);
+        // 3. quadrant
+        setBuffer(xm + x, ym - y, r, g, b);
+        // 4. quadrant
+        setBuffer(xm + x, ym + y, r, g, b);
+
+        // recalculate radius for next iteration
+        r = err;
+        // step y
+        if (r <= y)
+            err += ++y * 2 + 1;
+        // step x
+        if (r > x || err > y)
+            err += ++x * 2 + 1;
+    }
+
+    if (fill)
+    {
+        // check if point in circle, then fill
+        for (uint8_t i = xm - radius; i < xm + radius; i++)
+        {
+            for (uint8_t j = ym - radius; j < ym + radius; j++)
+            {
+                if ((xm - i) * (xm - i) + (ym - j) * (ym - j) < ((radius - 0.5) * (radius - 0.5)))
+                {
+                    setBuffer(i, j, r, g, b);
+                }
+            }
+        }
+    }
+}
+
 void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     // get colors
@@ -583,69 +711,6 @@ void Panel::drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool f
     drawRect(x, y, x + size, y + size, color, fill);
 }
 
-void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
-{ // draws a line with color at coords given, must be left to right
-    // get colors
-
-    convertColor(color, &r, &g, &b);
-
-    //  f(x) = m*x+t
-    //  t = f(0) = y1
-    //  m =(y2-y1)/(x2-x1)
-    //  ->iterate for each x from x1 to x2
-    //
-
-    float dy = y2 + 1 - y1; // delta y
-    float m = dy / (x2 + 1 - x1);
-    uint8_t temp = 0;
-    for (uint8_t x = 0; x <= (x2 - x1); x++)
-    {
-        uint8_t y = (uint8_t)(m * x + y1) + 0.5f;
-        setBuffer(x + x1, y, r, g, b);
-    }
-}
-
-void Panel::drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill)
-{
-    // draws a circle at the coords with radius and color
-    // get colors
-    convertColor(color, &r, &g, &b);
-    int xC;
-    int yC;
-
-    if (fill)
-    {
-        // draw outline
-        for (uint8_t i = 1; i < 180; i++)
-        {
-            xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
-            yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
-            setBuffer(xC, yC, r, g, b);
-        }
-        // check if point in circle, then fill
-        for (uint8_t i = x - radius; i < x + radius; i++)
-        {
-            for (uint8_t j = y - radius; j < y + radius; j++)
-            {
-                if ((x - i) * (x - i) + (y - j) * (y - j) < ((radius - 0.5) * (radius - 0.5)))
-                {
-                    setBuffer(i, j, r, g, b);
-                }
-            }
-        }
-    }
-    else
-    {
-        // draw circle outline
-        for (uint8_t i = 1; i < 180; i++)
-        {
-            xC = x + (radius - 0.1) * cos(i * 0.035) + 0.5;
-            yC = y + (radius - 0.1) * sin(i * 0.035) + 0.5;
-            setBuffer(xC, yC, r, g, b);
-        }
-    }
-}
-
 void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 { // deprecated, but probably faster
     // color for the char
@@ -673,7 +738,6 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
 { // new with scaling, but may be slower
     // color for the char
     convertColor(color, &r, &g, &b);
-    // x = (x>64)*(x-64)+(x<64)*(x);
 
     // iterate through the character line by line
     char out;

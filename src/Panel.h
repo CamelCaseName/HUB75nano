@@ -67,7 +67,7 @@ GND GND
 #define pulse_pin(port, number) \
     high_pin(port, number);     \
     clear_pin(port, number)
-#define set_pin(port, number, value) port = (value << number) | (port & ~(1UL << number))
+#define set_pin(port, number, value) (port = (value << number) | (port & ~(1UL << number)))
 #define PORTA_high_pin(number) high_pin(PORTA, number)
 #define PORTB_high_pin(number) high_pin(PORTB, number)
 #define PORTC_high_pin(number) high_pin(PORTC, number)
@@ -191,6 +191,7 @@ public:
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
     void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill);
     void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
+    void drawEllipse(uint8_t x1, uint8_t y1, uint8_t a, uint8_t b, uint16_t color, bool fill);
     void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill);
     void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
     void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier);
