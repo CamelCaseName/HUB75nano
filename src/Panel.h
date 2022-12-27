@@ -193,8 +193,8 @@ public:
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
     void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill);
     void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
-    void drawEllipse(uint8_t x1, uint8_t y1, uint8_t a, uint8_t b, uint16_t color, bool fill);
-    void drawCircle(uint8_t x, uint8_t y, uint8_t radius, uint16_t color, bool fill);
+    void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill);
+    void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill);
     void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
     void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier);
 
@@ -326,7 +326,7 @@ public:
 #endif
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
-    uint8_t lower = 0, row = 0, r = 0, g = 0, b = 0;
+    uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;
     LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
 

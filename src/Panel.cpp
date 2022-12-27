@@ -210,14 +210,14 @@ void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o)
 void Panel::fillScreenColor(uint16_t c)
 { // fills the screeen with the set color
     // switches all the colors and sets the values depending on colors
-    HIGH_TO_FULL_COLOR(c, &r, &g, &b); // gets first couple colors
+    HIGH_TO_FULL_COLOR(c, &red, &green, &blue); // gets first couple colors
 
     for (uint8_t i = 0; i < 16; i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
             // switch through all rows
-            sendWholeRow(r > i, g > i, b > i, r > i, g > i, b > i);
+            sendWholeRow(red > i, green > i, blue > i, red > i, green > i, blue > i);
             selectLine(row);
         }
     }
@@ -226,7 +226,7 @@ void Panel::fillScreenColor(uint16_t c)
 inline void Panel::sendTwoPixels(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t gl, uint8_t bl)
 { // sends two pixels, one in upper half, one in lower half to display | first upper half values, the lower half
     // set all pins at once
-    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | b << 5);
+    SET_COLOR(ru | gu << 1 | bu << 2 | rl << 3 | gl << 4 | bl << 5);
     CLOCK;
 }
 
@@ -244,14 +244,14 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
 void Panel::fillBuffer(uint16_t color)
 {
     // get colors
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
 
     // fills the buffer
     for (uint8_t x = 0; x < PANEL_X; x++)
     {
         for (uint8_t y = 0; y < PANEL_X; y++)
         {
-            setBuffer(x, y, r, g, b);
+            setBuffer(x, y, red, green, blue);
         }
     }
 }
@@ -535,13 +535,39 @@ void Panel::displayBuffer()
             LATCH_DATA;
         }
     }
+
+    // msb pass 3
+    for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
+    {
+        // first pixels
+        SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
+        CLOCK;
+
+        // second pixels
+        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
+        CLOCK;
+
+        // 3rd pixels
+        SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 3)))) >> 6));
+        CLOCK;
+
+        // 4th pixels
+        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
+        CLOCK;
+
+        if ((index + 1) % PANEL_CHUNKSIZE == 0)
+        {
+            SET_ROW_PINS(index / PANEL_CHUNKSIZE);
+            LATCH_DATA;
+        }
+    }
 #endif
 }
 
 void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
 { // draws a line with color between the coords given
     // get colors
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
 
     // calculate both gradients
     int8_t dx = abs(x2 - x1);
@@ -553,7 +579,7 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
     float err = dx + dy, e2;
     while (1)
     {
-        setBuffer(x1, y1, r, g, b);
+        setBuffer(x1, y1, red, green, blue);
         e2 = 2 * err;
         if (e2 >= dy)
         {
@@ -575,47 +601,40 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
 void Panel::drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill)
 {
     // get colors
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
 
-    // stepping values
     int8_t x = -a;
-    int8_t y = 0;
-    int16_t e2 = b;
-    int16_t dx = (1 + 2 * x) * e2 * e2;
-    int16_t dy = x * x;
-    int16_t err = dx + dy;
-    // draw loop
-    while (x <= 0)
-    {
-        // 1. quadrant
-        setBuffer(xm - x, ym + y, r, g, b);
-        // 2. quadrant
-        setBuffer(xm + x, ym + y, r, g, b);
-        // 3. quadrant
-        setBuffer(xm + x, ym - y, r, g, b);
-        // 4. quadrant
-        setBuffer(xm - x, ym - y, r, g, b);
-        // recalculate error
-        e2 = 2 * err;
+    int8_t y = 0; /* II. quadrant from bottom left to top right */
+    int16_t a2 = a * a;
+    int16_t b2 = b * b;
+    int16_t e2 = b * b;
+    int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
 
-        // step x
-        if (e2 >= dx)
-        {
-            ++x;
-            err += dx += 2 * b * b;
-        }
-        // step y
-        if (e2 <= dy)
-        {
-            ++y;
-            err += dy += 2 * a * a;
-        }
-    }
-    while (y++ < b)
+    do
     {
-        // draw rest of ellipse
-        setBuffer(xm, ym + y, r, g, b);
-        setBuffer(xm, ym - y, r, g, b);
+        setBuffer(xm - x, ym + y, red, green, blue); /*   I. Quadrant */
+        setBuffer(xm + x, ym + y, red, green, blue); /*  II. Quadrant */
+        setBuffer(xm + x, ym - y, red, green, blue); /* III. Quadrant */
+        setBuffer(xm - x, ym - y, red, green, blue); /*  IV. Quadrant */
+        e2 = 2 * err;
+        if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
+            err += (++x * 2 + 1) * b2;
+        if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
+            err += (++y * 2 + 1) * a2;
+    } while (x <= 0);
+
+    while (y++ < b)
+    {                                            /* to early stop of flat ellipses a=1, */
+        setBuffer(xm, ym + y, red, green, blue); /* -> finish tip of ellipse */
+        setBuffer(xm, ym - y, red, green, blue);
+    }
+
+    if (fill)
+    {
+        while (a > 0)
+        {
+            drawEllipse(xm, ym, --a, b, color, true);
+        }
     }
 }
 
@@ -623,43 +642,36 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
 {
     // draws a circle at the coords with radius and color
     // get colors
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
+
     int8_t x = -radius;
     int8_t y = 0;
-    int8_t err = 2 - 2 * radius;
-
-    // draw outline
-    while (x < 0)
+    //int8_t new_radius = radius;
+    int16_t err = 2 - 2 * radius; // bottom left to top right
+    do
     {
-        // 1. quadrant
-        setBuffer(xm - x, ym + y, r, g, b);
-        // 2. quadrant
-        setBuffer(xm - x, ym - y, r, g, b);
-        // 3. quadrant
-        setBuffer(xm + x, ym - y, r, g, b);
-        // 4. quadrant
-        setBuffer(xm + x, ym + y, r, g, b);
+        setBuffer(xm - x, ym + y, red, green, blue); //   I. Quadrant +x +y
+        setBuffer(xm - y, ym - x, red, green, blue); //  II. Quadrant -x +y
+        setBuffer(xm + x, ym - y, red, green, blue); // III. Quadrant -x -y
+        setBuffer(xm + y, ym + x, red, green, blue); //  IV. Quadrant +x -y
 
-        // recalculate radius for next iteration
-        r = err;
-        // step y
-        if (r <= y)
-            err += ++y * 2 + 1;
-        // step x
-        if (r > x || err > y)
-            err += ++x * 2 + 1;
-    }
+        new_radius = err;
+        if (new_radius <= y)
+            err += ++y * 2 + 1;        // e_xy+e_y < 0
+        if (new_radius > x || err > y) // e_xy+e_x > 0 or no 2nd y-step
+            err += ++x * 2 + 1;        // -> x-step now
+    } while (x < 0);
 
-    if (fill)
+    if (fill) //fill works
     {
         // check if point in circle, then fill
-        for (uint8_t i = xm - radius; i < xm + radius; i++)
+        for (int8_t i = -radius; i < radius; i++)
         {
-            for (uint8_t j = ym - radius; j < ym + radius; j++)
+            for (int8_t j = -radius; j < radius; j++)
             {
-                if ((xm - i) * (xm - i) + (ym - j) * (ym - j) < ((radius - 0.5) * (radius - 0.5)))
+                if (((int16_t)i * i + (int16_t)j * j) < ((radius - 0.5) * (radius - 0.5)))
                 {
-                    setBuffer(i, j, r, g, b);
+                    setBuffer(xm + i, ym + j, red, green, blue);
                 }
             }
         }
@@ -669,7 +681,7 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
 void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     // get colors
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
 
     if (fill)
     {
@@ -677,7 +689,7 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
         {
             for (uint8_t j = y1; j <= y2; j++)
             {
-                setBuffer(i, j, r, g, b);
+                setBuffer(i, j, red, green, blue);
             }
         }
     }
@@ -686,25 +698,25 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
         // left line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            setBuffer(x1, j, r, g, b);
+            setBuffer(x1, j, red, green, blue);
         }
 
         // right line
         for (uint8_t j = y1; j <= y2; j++)
         {
-            setBuffer(x2, j, r, g, b);
+            setBuffer(x2, j, red, green, blue);
         }
 
         // top line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            setBuffer(i, y1, r, g, b);
+            setBuffer(i, y1, red, green, blue);
         }
 
         // bottom line
         for (uint8_t i = x1; i <= x2; i++)
         {
-            setBuffer(i, y2, r, g, b);
+            setBuffer(i, y2, red, green, blue);
         }
     }
 }
@@ -718,7 +730,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 { // deprecated, but probably faster
     // color for the char
 
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
     // iterate through the character line by line
     char out;
     for (uint8_t i = 0; i < 5; i++)
@@ -731,7 +743,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
             if (out & (1 << j))
             {
                 // set pixel at i and j
-                setBuffer(x + 4 - j, y + i, r, g, b);
+                setBuffer(x + 4 - j, y + i, red, green, blue);
             }
         }
     }
@@ -740,7 +752,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
-    convertColor(color, &r, &g, &b);
+    convertColor(color, &red, &green, &blue);
 
     // iterate through the character line by line
     char out;
@@ -754,7 +766,7 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
             if (out & (1 << j / size_modifier))
             {
                 // set pixel at i and j
-                setBuffer(x + 4 * size_modifier - j, y + i, r, g, b);
+                setBuffer(x + 4 * size_modifier - j, y + i, red, green, blue);
             }
         }
     }
