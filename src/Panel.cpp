@@ -17,11 +17,14 @@ Panel::Panel()
     pinMode(BS, OUTPUT);
     pinMode(LAT, OUTPUT);
     pinMode(OE, OUTPUT);
-
-    // each LED struct contains 8 leds, rows * cols in total, so rows*cols/8 is needed
-    bsize = rows * (coloumns / 8);
 }
 
+void Panel::swapBuffer(const LED *newBuffer, uint8_t bufferLength)
+{
+    memcpy(buffer, newBuffer, bufferLength);
+}
+
+// todo fix haha
 void convertColor(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 { // input color, get converted color by reference
     switch (color)
@@ -456,7 +459,7 @@ void Panel::displayBuffer()
     // |bl4b2:gl4b2:rl4b2:bu4b2:gu4b2:ru4b2:bl4b1:gl4b1|rl4b1:bu4b1:gu4b1:ru4b1:bl3b2:gl3b2:rl3b2:bu3b2|gu3b2:ru3b2:bl3b1:gl3b1:rl3b1:bu3b1:gu3b1:ru3b1|
 
     // msb pass 1
-    for (uint16_t index = 0; index < bsize; index++)
+    for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
         // first pixels
         SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
@@ -482,7 +485,7 @@ void Panel::displayBuffer()
     }
 
     // lsb
-    for (uint16_t index = 0; index < bsize; index++)
+    for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
         // first pixels
         SET_COLOR(*((uint8_t *)(&buffer[index])));
@@ -508,7 +511,7 @@ void Panel::displayBuffer()
     }
 
     // msb pass 2
-    for (uint16_t index = 0; index < bsize; index++)
+    for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
         // first pixels
         SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));

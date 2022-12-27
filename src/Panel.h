@@ -179,8 +179,10 @@ inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uin
 class Panel
 {
 public:
+    struct LED;
     void setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b);
     Panel();
+    void swapBuffer(const LED *newBuffer, uint8_t bufferLength);
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
     void fillScreenColor(uint16_t color);
@@ -324,7 +326,6 @@ public:
 #endif
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
-    uint16_t bsize = 0;
     uint8_t lower = 0, row = 0, r = 0, g = 0, b = 0;
     LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 };
