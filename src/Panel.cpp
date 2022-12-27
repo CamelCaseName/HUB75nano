@@ -646,7 +646,7 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
 
     int8_t x = -radius;
     int8_t y = 0;
-    //int8_t new_radius = radius;
+    int8_t new_radius = radius;
     int16_t err = 2 - 2 * radius; // bottom left to top right
     do
     {
