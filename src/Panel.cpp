@@ -268,7 +268,7 @@ void Panel::setBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t 
 void Panel::displayBuffer()
 { // puts the  buffer contents onto the panel
 #ifndef PANEL_BIG
-    for (uint16_t index = 0; index < bsize; index++)
+    for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
         // one led struct contains bits in 3 bytes:
         // |23  22  21  20  19  18  17  16 |15  14  13  12  11  10  9   8  |7   6   5   4   3   2   1   0  |
