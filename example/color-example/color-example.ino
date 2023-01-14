@@ -1,11 +1,11 @@
 #define PANEL_X 64
 #define PANEL_Y 32
+#define PANEL_NO_BUFFER 1
 
 #include "Panel.h"
 
 Panel panel;
 float Hue = 0.0f;
-#define MAX_COLOR 16
 uint8_t r = MAX_COLOR, g = MAX_COLOR, b = MAX_COLOR;
 #define MAX_HUE 120
 #define SIXTH_HUE static_cast<uint16_t>(MAX_HUE * 0.17)
@@ -54,39 +54,4 @@ void loop()
         // panel.fillScreenColor(i / 4); // changes after some time (fast time)
         panel.fillScreenColor(FULL_TO_HIGH_COLOR(r, g, b));
     }
-
-    // panel.test();
-
-    /*
-    |||ALL NAMED COLORS|||
-
-    RED,
-    GREEN,
-    BLUE,
-    WHITE,
-    BLACK,
-    PURPLE,
-    YELLOW,
-    CYAN,
-    LIGHTRED,
-    LIGHTGREEN,
-    LIGHTBLUE,
-    LIGHTWHITE,
-    LIGHTCYAN,
-    DARKYELLOW,
-    LIGHTPURPLE,
-    LIGHTYELLOW,
-    TURQUOISE,
-    PINK,
-    DARKPURPLE,
-    BRIGHTGREEN,
-    BRIGHTCYAN,
-    MEDIUMGREEN,
-    DEEPPURPLE,
-    OCEANBLUE,
-    FLESH,
-    LIGHTPINK,
-    */
-
-    // panel.fillScreenColor(panel.RED);
 }

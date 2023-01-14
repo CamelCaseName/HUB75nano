@@ -19,163 +19,12 @@ Panel::Panel()
     pinMode(OE, OUTPUT);
 }
 
+#ifndef PANEL_NO_BUFFER
 void Panel::swapBuffer(const LED *newBuffer, uint8_t bufferLength)
 {
     memcpy(buffer, newBuffer, bufferLength);
 }
-
-// todo fix haha
-void convertColor(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
-{ // input color, get converted color by reference
-    switch (color)
-    {
-    case Panel::RED:
-        *red = 1;
-        *green = 0;
-        *blue = 0;
-        break;
-    case Panel::GREEN:
-        *red = 0;
-        *green = 1;
-        *blue = 0;
-        break;
-    case Panel::BLUE:
-        *red = 0;
-        *green = 0;
-        *blue = 1;
-        break;
-    case Panel::WHITE:
-        *red = 1;
-        *green = 1;
-        *blue = 1;
-        break;
-    case Panel::BLACK:
-        *red = 0;
-        *green = 0;
-        *blue = 0;
-        break;
-    case Panel::PURPLE:
-        *red = 1;
-        *green = 0;
-        *blue = 1;
-        break;
-    case Panel::YELLOW:
-        *red = 1;
-        *green = 1;
-        *blue = 0;
-        break;
-    case Panel::CYAN:
-        *red = 0;
-        *green = 1;
-        *blue = 1;
-        break;
-#ifdef PANEL_BIG
-    case Panel::DEEPRED:
-        *red = 2;
-        *green = 0;
-        *blue = 0;
-        break;
-    case Panel::DEEPGREEN:
-        *red = 0;
-        *green = 2;
-        *blue = 0;
-        break;
-    case Panel::DEEPBLUE:
-        *red = 0;
-        *green = 0;
-        *blue = 2;
-        break;
-    case Panel::DEEPWHITE:
-        *red = 2;
-        *green = 2;
-        *blue = 2;
-    case Panel::DEEPERWHITE:
-        *red = 3;
-        *green = 3;
-        *blue = 3;
-        break;
-    case Panel::DEEPCYAN:
-        *red = 0;
-        *green = 2;
-        *blue = 2;
-        break;
-    case Panel::DARKYELLOW:
-        *red = 1;
-        *green = 2;
-        *blue = 0;
-        break;
-    case Panel::DEEPPURPLE:
-        *red = 2;
-        *green = 0;
-        *blue = 2;
-        break;
-    case Panel::DEEPYELLOW:
-        *red = 2;
-        *green = 2;
-        *blue = 0;
-        break;
-    case Panel::TURQUOISE:
-        *red = 0;
-        *green = 1;
-        *blue = 2;
-        break;
-    case Panel::PINK:
-        *red = 1;
-        *green = 0;
-        *blue = 2;
-        break;
-    case Panel::DARKPURPLE:
-        *red = 2;
-        *green = 0;
-        *blue = 1;
-        break;
-    case Panel::BRIGHTGREEN:
-        *red = 2;
-        *green = 1;
-        *blue = 0;
-        break;
-    case Panel::BRIGHTCYAN:
-        *red = 2;
-        *green = 1;
-        *blue = 1;
-        break;
-    case Panel::MEDIUMGREEN:
-        *red = 2;
-        *green = 1;
-        *blue = 2;
-        break;
-    case Panel::DEEPERPURPLE:
-        *red = 3;
-        *green = 0;
-        *blue = 3;
-        break;
-    case Panel::OCEANBLUE:
-        *red = 0;
-        *green = 2;
-        *blue = 1;
-        break;
-    case Panel::FLESH:
-        *red = 1;
-        *green = 2;
-        *blue = 2;
-        break;
-    case Panel::LIGHTPINK:
-        *red = 1;
-        *green = 2;
-        *blue = 1;
-        break;
-    case Panel::DEEPERBLUE:
-        *red = 0;
-        *green = 0;
-        *blue = 3;
-        break;
 #endif
-    default:
-        HIGH_TO_FULL_COLOR(color, red, green, blue);
-        break;
-    }
-}
-
 inline void Panel::selectLine(uint8_t lineIndex)
 { // selects one of the 16 lines, 0 based
     SET_ROW_PINS(lineIndex);
@@ -241,10 +90,11 @@ void Panel::sendWholeRow(uint8_t ru, uint8_t gu, uint8_t bu, uint8_t rl, uint8_t
     LATCH_DATA;
 }
 
+#ifndef PANEL_NO_BUFFER
 void Panel::fillBuffer(uint16_t color)
 {
     // get colors
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     // fills the buffer
     for (uint8_t x = 0; x < PANEL_X; x++)
@@ -567,7 +417,7 @@ void Panel::displayBuffer()
 void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
 { // draws a line with color between the coords given
     // get colors
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     // calculate both gradients
     int8_t dx = abs(x2 - x1);
@@ -601,7 +451,7 @@ void Panel::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
 void Panel::drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill)
 {
     // get colors
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     int8_t x = -a;
     int8_t y = 0; /* II. quadrant from bottom left to top right */
@@ -642,7 +492,7 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
 {
     // draws a circle at the coords with radius and color
     // get colors
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     int8_t x = -radius;
     int8_t y = 0;
@@ -662,7 +512,7 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
             err += ++x * 2 + 1;        // -> x-step now
     } while (x < 0);
 
-    if (fill) //fill works
+    if (fill) // fill works
     {
         // check if point in circle, then fill
         for (int8_t i = -radius; i < radius; i++)
@@ -681,7 +531,7 @@ void Panel::drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, b
 void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
 { // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
     // get colors
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     if (fill)
     {
@@ -730,7 +580,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 { // deprecated, but probably faster
     // color for the char
 
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
     // iterate through the character line by line
     char out;
     for (uint8_t i = 0; i < 5; i++)
@@ -752,7 +602,7 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
 void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
-    convertColor(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
 
     // iterate through the character line by line
     char out;
@@ -771,6 +621,7 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
         }
     }
 }
+#endif // PANEL_NO_BUFFER
 
 // todo add drawing methods for
 // - triangle with arbitrary points

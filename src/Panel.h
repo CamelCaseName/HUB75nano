@@ -32,7 +32,7 @@ B1 4,
 R2 5,
 G2 6,
 B2 7,
-CLK 8,
+CLK A5,
 OE 9,
 GND GND
 */
@@ -41,10 +41,12 @@ GND GND
 
 #ifndef Panel_h
 #define Panel_h
+#ifndef PANEL_NO_BUFFER
 /////////////////////
 #define PANEL_BIG  // use 2 bit rgb image buffer
 #define PANEL_CLUT // use 6 bit CLUT image buffer
 /////////////////////
+#endif
 #ifndef PANEL_X
 #define PANEL_X 64
 #endif
@@ -56,8 +58,8 @@ GND GND
 #define PANEL_CHUNKSIZE (PANEL_X / 4)
 
 #define MAX_COLORDEPTH 2
-
 #define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH - 1)
+#define COLOR_CLAMP (255.0 / (MAX_COLOR))
 
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
 // helper definitions
@@ -94,7 +96,7 @@ GND GND
 #define GS 6   // green second byte
 #define LAT 18 // data latch
 #define CLK 8  // clock signal
-#define OE 9   // output enable
+#define OE 19  // output enable
 
 // pin access defines, rows
 #define HIGH_RA high_pin(PORTC, 0)
@@ -141,9 +143,9 @@ GND GND
 #define HIGH_LAT high_pin(PORTC, 4)
 #define CLEAR_LAT clear_pin(PORTC, 4)
 #define SET_LAT(value) set_pin(PORTC, 4, value)
-#define HIGH_CLK high_pin(PORTB, 0)
-#define CLEAR_CLK clear_pin(PORTB, 0)
-#define SET_CLK(value) set_pin(PORTB, 0, value)
+#define HIGH_CLK high_pin(PORTC, 5)
+#define CLEAR_CLK clear_pin(PORTC, 5)
+#define SET_CLK(value) set_pin(PORTC, 5, value)
 #define HIGH_OE high_pin(PORTB, 1)
 #define CLEAR_OE clear_pin(PORTB, 1)
 #define SET_OE(value) set_pin(PORTB, 1, value)
@@ -163,7 +165,7 @@ GND GND
 
 constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
 {
-    return ((int)(((double)r / 255.0) + 0.5) << 11) | ((int)(((double)g / 255.0) + 0.5) << 5) | (int)(((double)b / 255.0) + 0.5);
+    return ((int)(((double)r / COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g / COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b / COLOR_CLAMP) + 0.5);
 }
 constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
 {
@@ -179,15 +181,17 @@ inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uin
 class Panel
 {
 public:
-    struct LED;
-    void setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b);
     Panel();
-    void swapBuffer(const LED *newBuffer, uint8_t bufferLength);
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
     void fillScreenColor(uint16_t color);
     void sendTwoPixels(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
     void sendWholeRow(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
+
+#ifndef PANEL_NO_BUFFER
+    struct LED;
+    void setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b);
+    void swapBuffer(const LED *newBuffer, uint8_t bufferLength);
     void displayBuffer();
     void fillBuffer(uint16_t color);
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
@@ -197,7 +201,9 @@ public:
     void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill);
     void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
     void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier);
+#endif
 
+#ifndef PANEL_NO_BUFFER
 #ifndef PANEL_BIG
 #pragma pack(1)
     struct LED
@@ -291,43 +297,39 @@ public:
         uint8_t : 0;
     };
 #endif
-
+#endif
     enum Colors
     {
-        RED,
-        GREEN,
-        BLUE,
-        WHITE,
-        BLACK,
-        PURPLE,
-        YELLOW,
-        CYAN,
-#ifdef PANEL_BIG
-        DEEPRED,
-        DEEPGREEN,
-        DEEPBLUE,
-        DEEPWHITE,
-        DEEPCYAN,
-        DARKYELLOW,
-        DEEPPURPLE,
-        DEEPYELLOW,
-        TURQUOISE,
-        PINK,
-        DARKPURPLE,
-        BRIGHTGREEN,
-        BRIGHTCYAN,
-        MEDIUMGREEN,
-        DEEPERPURPLE,
-        OCEANBLUE,
-        FLESH,
-        LIGHTPINK,
-        DEEPERWHITE,
-        DEEPERBLUE
-#endif
+        RED = FULL_TO_HIGH_COLOR(255, 0, 0),
+        GREEN = FULL_TO_HIGH_COLOR(0, 255, 0),
+        BLUE = FULL_TO_HIGH_COLOR(0, 0, 255),
+        WHITE = FULL_TO_HIGH_COLOR(255, 255, 255),
+        BLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
+        PURPLE = FULL_TO_HIGH_COLOR(255, 0, 255),
+        YELLOW = FULL_TO_HIGH_COLOR(255, 255, 0),
+        CYAN = FULL_TO_HIGH_COLOR(0, 255, 255),
+        DARKRED = FULL_TO_HIGH_COLOR(128, 0, 0),
+        DARKGREEN = FULL_TO_HIGH_COLOR(0, 128, 0),
+        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 128),
+        DARKWHITE = FULL_TO_HIGH_COLOR(128, 128, 128),
+        DARKBLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
+        DARKPURPLE = FULL_TO_HIGH_COLOR(128, 0, 128),
+        DARKYELLOW = FULL_TO_HIGH_COLOR(128, 128, 0),
+        DARKCYAN = FULL_TO_HIGH_COLOR(0, 128, 128),
+        DARKERRED = FULL_TO_HIGH_COLOR(64, 0, 0),
+        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 64, 0),
+        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 64),
+        DARKERWHITE = FULL_TO_HIGH_COLOR(64, 64, 64),
+        DARKERBLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
+        DARKERPURPLE = FULL_TO_HIGH_COLOR(64, 0, 64),
+        DARKERYELLOW = FULL_TO_HIGH_COLOR(64, 64, 0),
+        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 64, 64),
     };
     uint8_t rows = 0, coloumns = 0, halfbsize = 0;
     uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;
+#ifndef PANEL_NO_BUFFER
     LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
+#endif
 };
 
 #pragma region font
