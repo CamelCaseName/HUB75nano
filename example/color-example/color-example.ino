@@ -4,11 +4,13 @@
 
 #include "Panel.h"
 
-Panel panel;
-float Hue = 0.0f;
+Panel panel = {};
 uint8_t r = MAX_COLOR, g = MAX_COLOR, b = MAX_COLOR;
-#define MAX_HUE 120
-#define SIXTH_HUE static_cast<uint16_t>(MAX_HUE * 0.17)
+#define SLOWDOWN 50
+#define MAX_ITER ((MAX_COLOR + 1) * (MAX_COLOR + 1) * (MAX_COLOR + 1))
+#define OFFSET_R 0
+#define OFFSET_G 10
+#define OFFSET_B 21
 
 void setup()
 {
@@ -16,42 +18,51 @@ void setup()
 
 void loop()
 {
+    uint8_t ri, gi, bi;
     // this example iterates through ALL available colors in the panel
-    for (uint16_t i = 0; i < MAX_HUE; i++)
+
+    for (uint8_t i = 0; i < MAX_ITER; i++)
     {
-        Hue = 1.0f - ((MAX_HUE + 1.0f) / (i + 1.0f));
-        if (Hue < 0.33333333f)
-        {
-            r = (2.0f - Hue * 6.0f) * MAX_COLOR;
-            g = (Hue * 6.0f) * MAX_COLOR;
-            b = 0;
-        }
-        else if (Hue < 0.6666666f)
-        {
-            r = 0;
-            g = (4.0f - Hue * 6.0f) * MAX_COLOR;
-            b = (Hue * 6.0f - 2.0f) * MAX_COLOR;
-        }
+        // red
+        if (i <= OFFSET_R)
+            ri = OFFSET_R - i;
+        if (i > (MAX_ITER / 2) + OFFSET_R)
+            ri = MAX_ITER - i;
         else
+            ri = i;
+
+        // green
+        if (i <= OFFSET_G)
+            gi = OFFSET_G - i;
+        else if (i < (MAX_ITER / 2) + OFFSET_G)
+            gi = i - OFFSET_G;
+        else
+            gi = MAX_ITER + OFFSET_G - i;
+
+        // blue
+        if (i <= OFFSET_B)
+            bi = OFFSET_B - i;
+        else if (i < (MAX_ITER / 2) + OFFSET_B)
+            bi = i - OFFSET_B;
+        else
+            bi = MAX_ITER + OFFSET_B - i;
+
+        r = (ri - 1) / (MAX_COLOR + 1);
+        g = (gi - 1) / (MAX_COLOR + 1);
+        b = (bi - 1) / (MAX_COLOR + 1);
+
+        for (size_t j = 0; j < SLOWDOWN; j++)
         {
-            r = (Hue * 6.0f - 4.0f) * MAX_COLOR;
-            g = 0;
-            b = ((1.0f - Hue) * 6.0f) * MAX_COLOR;
+            panel.fillScreenColor(FULL_TO_HIGH_COLOR(r, g, b));
         }
-        r = r < MAX_COLOR ?: MAX_COLOR;
-        g = g < MAX_COLOR ?: MAX_COLOR;
-        b = b < MAX_COLOR ?: MAX_COLOR;
-
-        //         _    _
-        //   Red: | \__/ |
-        //        0 __   1
-        // Green: |/  \__|
-        //        0   __ 1
-        //  Blue: |__/  \|
-        //        0 |  | 1
-        //         1/3 2/3
-
-        // panel.fillScreenColor(i / 4); // changes after some time (fast time)
-        panel.fillScreenColor(FULL_TO_HIGH_COLOR(r, g, b));
     }
+
+    //         _    _
+    //   Red: | \__/ |
+    //        0 __   1
+    // Green: |/  \__|
+    //        0   __ 1
+    //  Blue: |__/  \|
+    //        0 |  | 1
+    //         1/3 2/3
 }
