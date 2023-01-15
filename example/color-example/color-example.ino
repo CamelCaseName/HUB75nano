@@ -1,16 +1,25 @@
 #define PANEL_X 64
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
+#define MAX_COLORDEPTH 2
 
 #include "Panel.h"
 
 Panel panel = {};
-uint8_t r = MAX_COLOR, g = MAX_COLOR, b = MAX_COLOR;
-#define SLOWDOWN 50
+uint8_t r, g, b;
+#if MAX_COLORDEPTH > 2
+uint16_t ri, gi, bi;
+#else
+uint8_t ri, gi, bi;
+#endif
 #define MAX_ITER ((MAX_COLOR + 1) * (MAX_COLOR + 1) * (MAX_COLOR + 1))
-#define OFFSET_R 0
-#define OFFSET_G 10
-#define OFFSET_B 21
+
+#define SLOWDOWN 50
+
+// tweak rgb wave here, offsets are to be a max of MAX_ITER / 2.
+#define OFFSET_R (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0)
+#define OFFSET_G (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0.3333)
+#define OFFSET_B (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0.6666)
 
 void setup()
 {
@@ -18,10 +27,8 @@ void setup()
 
 void loop()
 {
-    uint8_t ri, gi, bi;
     // this example iterates through ALL available colors in the panel
-
-    for (uint8_t i = 0; i < MAX_ITER; i++)
+    for (uint16_t i = 0; i < MAX_ITER; i++)
     {
         // red
         if (i <= OFFSET_R)
@@ -51,9 +58,9 @@ void loop()
         g = (gi - 1) / (MAX_COLOR + 1);
         b = (bi - 1) / (MAX_COLOR + 1);
 
-        for (size_t j = 0; j < SLOWDOWN; j++)
+        for (uint8_t j = 0; j < SLOWDOWN; j++)
         {
-            panel.fillScreenColor(FULL_TO_HIGH_COLOR(r, g, b));
+            panel.fillScreenColor(r, g, b);
         }
     }
 

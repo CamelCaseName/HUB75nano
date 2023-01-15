@@ -57,7 +57,9 @@ GND GND
 #define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y / 8)
 #define PANEL_CHUNKSIZE (PANEL_X / 4)
 
+#ifndef MAX_COLORDEPTH
 #define MAX_COLORDEPTH 2
+#endif
 #define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH - 1)
 #define COLOR_CLAMP (255.0 / (MAX_COLOR))
 
@@ -193,6 +195,7 @@ public:
     void selectLine(uint8_t lineIndex);
     void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
     void fillScreenColor(uint16_t color);
+    void fillScreenColor(uint8_t r, uint8_t g, uint8_t b);
     void sendTwoPixels(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
     void sendWholeRow(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
 
@@ -333,7 +336,7 @@ public:
         DARKERYELLOW = FULL_TO_HIGH_COLOR(64, 64, 0),
         DARKERCYAN = FULL_TO_HIGH_COLOR(0, 64, 64),
     };
-    uint8_t rows = 0, coloumns = 0, halfbsize = 0;
+    uint8_t rows = PANEL_Y, coloumns = PANEL_X, halfbsize = 0;
     uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;
 #ifndef PANEL_NO_BUFFER
     LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used

@@ -2,8 +2,6 @@
 
 Panel::Panel()
 {
-    coloumns = PANEL_X;
-    rows = PANEL_Y;
     pinMode(RA, OUTPUT);
     pinMode(RB, OUTPUT);
     pinMode(RC, OUTPUT);
@@ -67,6 +65,19 @@ void Panel::fillScreenColor(uint16_t c)
         {
             // switch through all rows
             sendWholeRow(red > i, green > i, blue > i, red > i, green > i, blue > i);
+            selectLine(row);
+        }
+    }
+}
+
+void Panel::fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
+{ // fills the screeen with the set color
+    for (uint8_t i = 0; i < MAX_COLORDEPTH * MAX_COLORDEPTH; i++)
+    {
+        for (uint8_t row = 0; row < rows / 2; row++)
+        {
+            // switch through all rows
+            sendWholeRow(r > i, g > i, b > i, r > i, g > i, b > i);
             selectLine(row);
         }
     }
