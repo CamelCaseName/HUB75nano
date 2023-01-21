@@ -44,7 +44,7 @@ GND GND
 #define Panel_h
 #ifndef PANEL_NO_BUFFER
 /////////////////////
-// #define PANEL_BIG  // use 2 bit rgb image buffer
+#define PANEL_BIG 1 // use 2 bit rgb image buffer
 // #define PANEL_CLUT // use 6 bit CLUT image buffer
 /////////////////////
 #endif
@@ -167,21 +167,21 @@ GND GND
     LATCH;         \
     OUTPUT_ENABLE
 
-constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
-{
-    return (((r & 31) << 11) | ((g & 63) << 5) | (b & 31));
-}
 constexpr uint16_t FULL_TO_HIGH_COLOR_FULL(uint8_t r, uint8_t g, uint8_t b)
 {
     return ((int)(((double)r / 255) + 0.5) << 11) | ((int)(((double)g / 255) + 0.5) << 5) | (int)(((double)b / 255) + 0.5);
 }
 constexpr uint16_t FULL_TO_HIGH_COLOR_CLAMPED(uint8_t r, uint8_t g, uint8_t b)
 {
-    return ((int)(((double)r / COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g / COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b / COLOR_CLAMP) + 0.5);
+    return ((int)(((double)r * COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g * COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b * COLOR_CLAMP) + 0.5);
 }
 constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
 {
     return (((int)(r * MAX_COLOR + 0.5f)) << 11) | ((int)((g * MAX_COLOR + 0.5f)) << 5) | (int)((b * MAX_COLOR) + 0.5f);
+}
+constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (((r & 31) << 11) | ((g & 63) << 5) | (b & 31));
 }
 inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 {
@@ -313,30 +313,28 @@ public:
 #endif
     enum Colors
     {
-        RED = FULL_TO_HIGH_COLOR(255, 0, 0),
-        GREEN = FULL_TO_HIGH_COLOR(0, 255, 0),
-        BLUE = FULL_TO_HIGH_COLOR(0, 0, 255),
-        WHITE = FULL_TO_HIGH_COLOR(255, 255, 255),
+        RED = FULL_TO_HIGH_COLOR(3, 0, 0),
+        GREEN = FULL_TO_HIGH_COLOR(0, 3, 0),
+        BLUE = FULL_TO_HIGH_COLOR(0, 0, 3),
+        WHITE = FULL_TO_HIGH_COLOR(3, 3, 3),
         BLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
-        PURPLE = FULL_TO_HIGH_COLOR(255, 0, 255),
-        YELLOW = FULL_TO_HIGH_COLOR(255, 255, 0),
-        CYAN = FULL_TO_HIGH_COLOR(0, 255, 255),
-        DARKRED = FULL_TO_HIGH_COLOR(128, 0, 0),
-        DARKGREEN = FULL_TO_HIGH_COLOR(0, 128, 0),
-        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 128),
-        DARKWHITE = FULL_TO_HIGH_COLOR(128, 128, 128),
-        DARKBLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
-        DARKPURPLE = FULL_TO_HIGH_COLOR(128, 0, 128),
-        DARKYELLOW = FULL_TO_HIGH_COLOR(128, 128, 0),
-        DARKCYAN = FULL_TO_HIGH_COLOR(0, 128, 128),
-        DARKERRED = FULL_TO_HIGH_COLOR(64, 0, 0),
-        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 64, 0),
-        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 64),
-        DARKERWHITE = FULL_TO_HIGH_COLOR(64, 64, 64),
-        DARKERBLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
-        DARKERPURPLE = FULL_TO_HIGH_COLOR(64, 0, 64),
-        DARKERYELLOW = FULL_TO_HIGH_COLOR(64, 64, 0),
-        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 64, 64),
+        PURPLE = FULL_TO_HIGH_COLOR(3, 0, 3),
+        YELLOW = FULL_TO_HIGH_COLOR(3, 3, 0),
+        CYAN = FULL_TO_HIGH_COLOR(0, 3, 3),
+        DARKRED = FULL_TO_HIGH_COLOR(2, 0, 0),
+        DARKGREEN = FULL_TO_HIGH_COLOR(0, 2, 0),
+        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 2),
+        DARKWHITE = FULL_TO_HIGH_COLOR(2, 2, 2),
+        DARKPURPLE = FULL_TO_HIGH_COLOR(2, 0, 2),
+        DARKYELLOW = FULL_TO_HIGH_COLOR(2, 2, 0),
+        DARKCYAN = FULL_TO_HIGH_COLOR(0, 2, 2),
+        DARKERRED = FULL_TO_HIGH_COLOR(1, 0, 0),
+        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 1, 0),
+        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 1),
+        DARKERWHITE = FULL_TO_HIGH_COLOR(1, 1, 1),
+        DARKERPURPLE = FULL_TO_HIGH_COLOR(1, 0, 1),
+        DARKERYELLOW = FULL_TO_HIGH_COLOR(1, 1, 0),
+        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 1, 1),
     };
     uint8_t rows = PANEL_Y, coloumns = PANEL_X, halfbsize = 0;
     uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;

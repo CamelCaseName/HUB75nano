@@ -60,7 +60,7 @@ void Panel::fillScreenColor(uint16_t c)
     // switches all the colors and sets the values depending on colors
     HIGH_TO_FULL_COLOR(c, &red, &green, &blue); // gets first couple colors
 
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint8_t i = 0; i < (MAX_COLOR + 1); i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
@@ -73,7 +73,7 @@ void Panel::fillScreenColor(uint16_t c)
 
 void Panel::fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
 { // fills the screeen with the set color
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint8_t i = 0; i < (MAX_COLOR + 1); i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
@@ -278,8 +278,9 @@ void Panel::setBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t 
 }
 
 void Panel::displayBuffer()
-{ // puts the  buffer contents onto the panel
+{
 #ifndef PANEL_BIG
+    // puts the  buffer contents onto the panel
     for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
         // one led struct contains bits in 3 bytes:
@@ -308,9 +309,7 @@ void Panel::displayBuffer()
             LATCH_DATA;
         }
     }
-#else
-
-    // one led struct contains bits in 6 bytes:
+#else // one led struct contains bits in 6 bytes:
 
     // first 3
     // |23    22    21    20    19    18    17    16   |15    14    13    12    11    10    9     8    |7     6     5     4     3     2     1     0    |
