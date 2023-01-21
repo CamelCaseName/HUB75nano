@@ -8,12 +8,12 @@
 | 5              | R2                | R2     | D5          |
 | 6              | G2                | G2     | D6          |
 | 7              | B2                | B2     | D7          |
-| 8              | n.C               | n.C    | n.C         |
+| 8              | n.C               | E      | A4          |
 | 9              | A                 | A      | A0          |
 | 10             | B                 | B      | A1          |
 | 11             | C                 | C      | A2          |
-| 12             | D                 | n.C    | A3/n.C      |
-| 13             | CLK               | CLK    | A5          |
-| 14             | LAT               | LAT    | A4          |
-| 15             | OE                | OE     | D8          |
+| 12             | D                 | D      | A3/n.C      |
+| 13             | CLK               | CLK    | D9          |
+| 14             | LAT               | LAT    | D10         |
+| 15             | OE                | OE     | D11         |
 | 16             | GND               | GND    | GND/n.C     |

@@ -25,15 +25,16 @@ A A0,
 B A1,
 C A2,
 D A3,
-LAT A4,
+(E) A4,
+LAT A5,
+CLK A6,
+OE A7,
 R1 2,
 G1 3,
 B1 4,
 R2 5,
 G2 6,
 B2 7,
-CLK A5,
-OE 9,
 GND GND
 */
 
@@ -90,15 +91,16 @@ GND GND
 #define RB 15  // register selector b
 #define RC 16  // register selector c
 #define RD 17  // register selector d
+#define RE 18  // register selector d
 #define RF 2   // red first byte
-#define RS 5   // red second byte
-#define BF 4   // blue first byte
-#define BS 7   // blue second byte
 #define GF 3   // green first byte
+#define BF 4   // blue first byte
+#define RS 5   // red second byte
 #define GS 6   // green second byte
-#define LAT 18 // data latch
-#define CLK 8  // clock signal
-#define OE 19  // output enable
+#define BS 7   // blue second byte
+#define LAT 9  // data latch
+#define CLK 10 // clock signal
+#define OE 11  // output enable
 
 // pin access defines, rows
 #define HIGH_RA high_pin(PORTC, 0)
@@ -142,15 +144,15 @@ GND GND
 #endif
 
 // pin access defines, rest
-#define HIGH_LAT high_pin(PORTC, 4)
-#define CLEAR_LAT clear_pin(PORTC, 4)
-#define SET_LAT(value) set_pin(PORTC, 4, value)
-#define HIGH_CLK high_pin(PORTC, 5)
-#define CLEAR_CLK clear_pin(PORTC, 5)
-#define SET_CLK(value) set_pin(PORTC, 5, value)
-#define HIGH_OE high_pin(PORTB, 1)
-#define CLEAR_OE clear_pin(PORTB, 1)
-#define SET_OE(value) set_pin(PORTB, 1, value)
+#define HIGH_LAT high_pin(PORTB, 2)
+#define CLEAR_LAT clear_pin(PORTB, 2)
+#define SET_LAT(value) set_pin(PORTB, 2, value)
+#define HIGH_CLK high_pin(PORTB, 1)
+#define CLEAR_CLK clear_pin(PORTB, 1)
+#define SET_CLK(value) set_pin(PORTB, 1, value)
+#define HIGH_OE high_pin(PORTB, 3)
+#define CLEAR_OE clear_pin(PORTB, 3)
+#define SET_OE(value) set_pin(PORTB, 3, value)
 #define SET_ROW_PINS(row) PORTC = row | PORTC & 240
 #define LATCH \
     HIGH_LAT; \

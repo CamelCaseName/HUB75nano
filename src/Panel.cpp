@@ -6,6 +6,8 @@ Panel::Panel()
     pinMode(RB, OUTPUT);
     pinMode(RC, OUTPUT);
     pinMode(RD, OUTPUT);
+    pinMode(LAT, OUTPUT);
+    pinMode(OE, OUTPUT);
     pinMode(CLK, OUTPUT);
     pinMode(RF, OUTPUT);
     pinMode(RS, OUTPUT);
@@ -13,8 +15,8 @@ Panel::Panel()
     pinMode(GS, OUTPUT);
     pinMode(BF, OUTPUT);
     pinMode(BS, OUTPUT);
-    pinMode(LAT, OUTPUT);
-    pinMode(OE, OUTPUT);
+    digitalWrite(OE, LOW);
+    digitalWrite(CLK, LOW);
 }
 
 #ifndef PANEL_NO_BUFFER
@@ -26,7 +28,6 @@ void Panel::swapBuffer(const LED *newBuffer, uint8_t bufferLength)
 inline void Panel::selectLine(uint8_t lineIndex)
 { // selects one of the 16 lines, 0 based
     SET_ROW_PINS(lineIndex);
-    LATCH_DATA;
 }
 
 void Panel::fillScreenShift(uint8_t s, uint8_t f, uint8_t o)
@@ -72,7 +73,7 @@ void Panel::fillScreenColor(uint16_t c)
 
 void Panel::fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
 { // fills the screeen with the set color
-    for (uint8_t i = 0; i < MAX_COLORDEPTH * MAX_COLORDEPTH; i++)
+    for (uint8_t i = 0; i < 16; i++)
     {
         for (uint8_t row = 0; row < rows / 2; row++)
         {
