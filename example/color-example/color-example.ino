@@ -1,7 +1,7 @@
 #define PANEL_X 64
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
-#define MAX_COLORDEPTH 2
+#define MAX_COLORDEPTH 4
 
 #include "Panel.h"
 
@@ -14,7 +14,7 @@ uint8_t ri, gi, bi;
 #endif
 #define MAX_ITER ((MAX_COLOR + 1) * (MAX_COLOR + 1) * (MAX_COLOR + 1))
 
-#define SLOWDOWN 50
+#define SLOWDOWN 10
 
 // tweak rgb wave here, offsets are to be a max of MAX_ITER / 2.
 #define OFFSET_R (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0)
@@ -33,10 +33,10 @@ void loop()
         // red
         if (i <= OFFSET_R)
             ri = OFFSET_R - i;
-        if (i > (MAX_ITER / 2) + OFFSET_R)
-            ri = MAX_ITER - i;
+        else if (i < (MAX_ITER / 2) + OFFSET_R)
+            ri = i - OFFSET_R;
         else
-            ri = i;
+            ri = MAX_ITER + OFFSET_R - i;
 
         // green
         if (i <= OFFSET_G)

@@ -11,7 +11,7 @@
 
 #ifndef BIG
 
-Panel panel(32, 64);
+Panel panel = {};
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
@@ -22,7 +22,7 @@ char t;
 void setup()
 {
     Serial.begin(115200);
-    panel.createBufferBG(bgcolor);
+    panel.fillBuffer(bgcolor);
 }
 
 // example text to send in two parts, because murphys law:
