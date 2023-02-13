@@ -10,13 +10,14 @@ Then just put `#import <Panel.h>` and everything should work.
 	
 You can use `#define PANEL_BIG` to enable the 2 bit buffer for the matrix.
 There are also numerous examples, which are implementations of this library.
+`#define PANEL_NO_BUFFER` removes all buffers so frees a lot of memory, but leaves you with immediate mode calls only.
 
 A writeup on early stages of development is [here](https://create.arduino.cc/projecthub/CamelCaseName/running-a-32x64-rgb-led-panel-with-only-an-arduino-nano-c19385).
 
 # Pinout/Connection reference
 <img src="https://hackster.imgix.net/uploads/image/file/146124/DisplayPinout.jpg?auto=compress%2Cformat&w=740&h=555" alt="HUB75 Pinout" width="200"/>
 
-This is a pin description for the HUB75 connector on the panels.
+This is a pin description for the HUB75 connector on the panels. The file in the "additional documentation" folder also contains a mapping for directly soldering to a 16pin flat cable
 The corresponding pins on the arduino are as follows:
 
 Pin mapping:
@@ -27,28 +28,21 @@ Pin mapping:
 | B         | A1   | Second row bit                                               |
 | C         | A2   | Third row bit                                                |
 | D         | A3   | Fourth/Most significant row bit                              |
-| LAT       | A4   | Latches the data from the shift registers to the LED drivers |
+| LAT       | 10   | Latches the data from the shift registers to the LED drivers |
 | R1        | 2    | Set red LED on upper half                                    |
 | G1        | 3    | Set green LED on upper half                                  |
 | B1        | 4    | Set blue LED on upper half                                   |
 | R2        | 5    | Set red LED on lower half                                    |
 | G2        | 6    | Set green LED on lower half                                  |
 | B2        | 7    | Set blue LED on lower half                                   |
-| CLK       | 8    | Shifts the data on rising edge                               |
-| OE        | 9    | Enables the output of the LED drivers                        |
+| CLK       | 9    | Shifts the data on rising edge                               |
+| OE        | 11   | Enables the output of the LED drivers                        |
 | GND       | GND  | Ground reference                                             |
 
 Right side is the panel, left the Arduino.
 
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 
-
-The Color example focuses on how to fill the screen with a color, and also with special colors. 
-
-The picture example shows how text generated with [this tool](https://www.github.com/CamelCaseName/pic2led) can be shown.
-simply copy the generated text into your setup, it will take a while though. These images will use around 6,5kb of ROM.
-
-<img src="https://i.imgur.com/Zr81xNZ.jpg" alt="smiley face" width="200"/>
 
 # Limitations:
 ### voltage issues

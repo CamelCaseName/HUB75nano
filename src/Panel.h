@@ -45,7 +45,7 @@ GND GND
 #ifndef PANEL_NO_BUFFER
 /////////////////////
 #define PANEL_BIG 1 // use 2 bit rgb image buffer
-// #define PANEL_CLUT // use 6 bit CLUT image buffer
+// #define PANEL_CLUT // use 6 bit CLUT image buffer (todo)
 /////////////////////
 #endif
 #ifndef PANEL_X
