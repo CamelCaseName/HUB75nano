@@ -582,7 +582,7 @@ void Panel::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t co
     }
 }
 
-void Panel::drawSquare(uint8_t x, uint8_t y, uint8_t size, uint8_t color, bool fill)
+void Panel::drawSquare(uint8_t x, uint8_t y, uint8_t size, uint16_t color, bool fill)
 {
     drawRect(x, y, x + size, y + size, color, fill);
 }
