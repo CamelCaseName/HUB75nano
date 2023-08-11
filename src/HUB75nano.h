@@ -164,8 +164,10 @@ GND GND
     HIGH_OE;          \
     CLEAR_OE
 #define LATCH_DATA \
+    HIGH_OE;       \
     LATCH;         \
-    OUTPUT_ENABLE
+    CLEAR_OE      
+    
 
 constexpr uint16_t FULL_TO_HIGH_COLOR_FULL(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -254,12 +256,15 @@ public:
 #pragma pack(1)
     struct LED
     { // 6 bytes long, contains 8 leds at 2 bit color depth
+        
+        //L1 B1
         uint8_t redUpperBit1Led1 : 1;
         uint8_t greenUpperBit1Led1 : 1;
         uint8_t blueUpperBit1Led1 : 1;
         uint8_t redLowerBit1Led1 : 1;
         uint8_t greenLowerBit1Led1 : 1;
         uint8_t blueLowerBit1Led1 : 1;
+        //L1 B2
         uint8_t redUpperBit2Led1 : 1;
         uint8_t greenUpperBit2Led1 : 1;
         uint8_t : 0;
@@ -267,6 +272,7 @@ public:
         uint8_t redLowerBit2Led1 : 1;
         uint8_t greenLowerBit2Led1 : 1;
         uint8_t blueLowerBit2Led1 : 1;
+        //L2 B1
         uint8_t redUpperBit1Led2 : 1;
         uint8_t greenUpperBit1Led2 : 1;
         uint8_t blueUpperBit1Led2 : 1;
@@ -274,6 +280,7 @@ public:
         uint8_t : 0;
         uint8_t greenLowerBit1Led2 : 1;
         uint8_t blueLowerBit1Led2 : 1;
+        //L2 B2
         uint8_t redUpperBit2Led2 : 1;
         uint8_t greenUpperBit2Led2 : 1;
         uint8_t blueUpperBit2Led2 : 1;
@@ -281,12 +288,14 @@ public:
         uint8_t greenLowerBit2Led2 : 1;
         uint8_t blueLowerBit2Led2 : 1;
         uint8_t : 0;
+        //L3 B1
         uint8_t redUpperBit1Led3 : 1;
         uint8_t greenUpperBit1Led3 : 1;
         uint8_t blueUpperBit1Led3 : 1;
         uint8_t redLowerBit1Led3 : 1;
         uint8_t greenLowerBit1Led3 : 1;
         uint8_t blueLowerBit1Led3 : 1;
+        //L3 B2
         uint8_t redUpperBit2Led3 : 1;
         uint8_t greenUpperBit2Led3 : 1;
         uint8_t : 0;
@@ -294,6 +303,7 @@ public:
         uint8_t redLowerBit2Led3 : 1;
         uint8_t greenLowerBit2Led3 : 1;
         uint8_t blueLowerBit2Led3 : 1;
+        //L4 B1
         uint8_t redUpperBit1Led4 : 1;
         uint8_t greenUpperBit1Led4 : 1;
         uint8_t blueUpperBit1Led4 : 1;
@@ -301,6 +311,7 @@ public:
         uint8_t : 0;
         uint8_t greenLowerBit1Led4 : 1;
         uint8_t blueLowerBit1Led4 : 1;
+        //L4 B2
         uint8_t redUpperBit2Led4 : 1;
         uint8_t greenUpperBit2Led4 : 1;
         uint8_t blueUpperBit2Led4 : 1;
@@ -335,9 +346,12 @@ public:
         DARKERPURPLE = FULL_TO_HIGH_COLOR(1, 0, 1),
         DARKERYELLOW = FULL_TO_HIGH_COLOR(1, 1, 0),
         DARKERCYAN = FULL_TO_HIGH_COLOR(0, 1, 1),
+        ORANGE = FULL_TO_HIGH_COLOR(3,1,0),
+        NO_COLOR = -1,
     };
     uint8_t rows = PANEL_Y, coloumns = PANEL_X, halfbsize = 0;
     uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;
+    uint8_t brightness = 100;
 #ifndef PANEL_NO_BUFFER
     LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
 #endif
