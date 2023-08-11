@@ -637,10 +637,14 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
     }
 }
 
-void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
+void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
+    bool fill_bg;
+    uint8_t bg_red, bg_green, bg_blue;
     HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
+    fill_bg = bg_color != NO_COLOR;
 
     // iterate through the character line by line
     char out;
@@ -656,8 +660,24 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
                 // set pixel at i and j
                 setBuffer(x + 4 * size_modifier - j, y + i, red, green, blue);
             }
+            else {
+              if(fill_bg)
+                setBuffer(x + 4 * size_modifier - j, y + i, bg_red, bg_green, bg_blue);
+            }
         }
     }
+}
+
+
+void Panel::drawString(uint8_t x, uint8_t y, char* str, uint16_t color, uint16_t bg_color, uint8_t size_modifier) {
+  for(uint8_t i = 0; i < strlen(str); i++) {
+    uint16_t xoffset = x + (3 * size_modifier + 1) * i;
+    if(xoffset > PANEL_X)
+      return;
+    
+    drawBigChar(xoffset, y, str[i], color, bg_color, size_modifier); //seperate by 1
+    //drawBigChar(x + 4 * size_modifier * i, y, str[i], color, size_modifier); //seperate by size
+  }
 }
 #endif // PANEL_NO_BUFFER
 

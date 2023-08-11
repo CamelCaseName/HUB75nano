@@ -215,7 +215,8 @@ public:
     void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill);
     void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill);
     void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
-    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier);
+    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color = NO_COLOR, uint8_t size_modifier = 1);
+    void drawString(uint8_t x, uint8_t y, char* str, uint16_t color, uint16_t bg_color = NO_COLOR, uint8_t size_modifier = 1);
 #endif
 
 #ifndef PANEL_NO_BUFFER
