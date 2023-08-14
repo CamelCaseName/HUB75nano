@@ -3,7 +3,7 @@
 #define PANEL_NO_BUFFER 1
 #define MAX_COLORDEPTH 4
 
-#include "Panel.h"
+#include "HUB75nano.h"
 
 Panel panel = {};
 uint8_t r, g, b;

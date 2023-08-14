@@ -1080,6 +1080,7 @@ private:
     void displayBigBuffer()
     {
         LED *index;
+
         // coding:
         // 00 -> off
         // 01 -> 33%

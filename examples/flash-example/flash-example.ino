@@ -1,6 +1,6 @@
 
 #define PANEL_FLASH // 4 bit flash buffer
-#include "Panel.h"
+#include "HUB75nano.h"
 
 // buffer which contains the image we want to display, important to use the PROGMEM so it is saved to flash!
 // generated with https://github.com/CamelCaseName/BMP2HUB75

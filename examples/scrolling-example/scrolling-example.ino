@@ -1,4 +1,4 @@
-#include "Panel.h"
+#include "HUB75nano.h"
 
 struct coords
 {

@@ -1,4 +1,4 @@
-#include "Panel.h"
+#include "HUB75nano.h"
 // this sketch should ouptut serial input to the panel
 
 Panel panel = {};
