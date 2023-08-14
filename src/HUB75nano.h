@@ -57,6 +57,14 @@
 #endif
 #ifdef PANEL_FLASH
 #undef PANEL_BIG
+
+#ifndef MAX_BRIGHTNESS_SLEEP_MUSEC
+#define MAX_BRIGHTNESS_SLEEP_MUSEC 100
+#endif
+#ifndef BRIGHTNESS_SLEEP_MUSEC
+#define BRIGHTNESS_SLEEP_MUSEC 100
+#endif
+
 // have it bigger a size as we have more available lol
 #define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y * 2) // 4 byte per led, we have 6 bit per 2 led per color depth -> about 4k
 #endif
@@ -835,7 +843,6 @@ public:
 #pragma endregion // buffer_definition
 private:
     uint8_t row = 0, red, green, blue;
-    uint8_t brightness = 100;
     inline void stepRow()
     {
         SET_ROW(row);
@@ -1246,11 +1253,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(100 - brightness);
+                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
         }
         // lsb
@@ -1414,11 +1421,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness / 2);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(50 - brightness / 2);
+                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
             }
         }
     }
@@ -1662,11 +1669,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(100 - brightness);
+                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
         }
 #pragma endregion // MMSB
@@ -1816,11 +1823,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness / 2);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(50 - brightness / 2);
+                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
             }
         }
 #pragma endregion // MMSB
@@ -1970,11 +1977,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness / 4);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 4);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(25 - brightness / 4);
+                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 4 - BRIGHTNESS_SLEEP_MUSEC / 4);
             }
         }
 #pragma endregion // LSB
@@ -2124,11 +2131,11 @@ private:
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(brightness / 8);
-            if (brightness < 100)
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 8);
+            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(13 - brightness / 8);
+                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 8 - BRIGHTNESS_SLEEP_MUSEC / 8);
             }
 #pragma endregion // LLSB
         }
