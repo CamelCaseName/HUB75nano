@@ -305,8 +305,10 @@ void Panel::displayBuffer()
 
         if ((index + 1) % PANEL_CHUNKSIZE == 0) /*16 = 64 / 4 for 4 pixels per loop iteration*/
         {
-            SET_ROW_PINS(index / PANEL_CHUNKSIZE);
-            LATCH_DATA;
+          HIGH_OE;
+          LATCH;
+          SET_ROW_PINS(index / PANEL_CHUNKSIZE);
+          CLEAR_OE;
         }
     }
 #else // one led struct contains bits in 6 bytes:
@@ -319,6 +321,13 @@ void Panel::displayBuffer()
     // |23    22    21    20    19    18    17    16   |15    14    13    12    11    10    9     8    |7     6     5     4     3     2     1     0    |
     // |bl4b2:gl4b2:rl4b2:bu4b2:gu4b2:ru4b2:bl4b1:gl4b1|rl4b1:bu4b1:gu4b1:ru4b1:bl3b2:gl3b2:rl3b2:bu3b2|gu3b2:ru3b2:bl3b1:gl3b1:rl3b1:bu3b1:gu3b1:ru3b1|
 
+
+    // coding:
+    // 00 -> off
+    // 01 -> 33%
+    // 10 -> 66%
+    // 11 -> on
+    
     // msb pass 1
     for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
@@ -338,11 +347,18 @@ void Panel::displayBuffer()
         SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
         CLOCK;
 
-        if ((index + 1) % PANEL_CHUNKSIZE == 0)
-        {
+         if ((index + 1) % PANEL_CHUNKSIZE == 0)
+         {
+            HIGH_OE;
+            LATCH;
             SET_ROW_PINS(index / PANEL_CHUNKSIZE);
-            LATCH_DATA;
-        }
+            CLEAR_OE;
+            delayMicroseconds(brightness);
+            if(brightness < 100) {
+              HIGH_OE;
+              delayMicroseconds(100 - brightness);
+            }
+         }
     }
 
     // lsb
@@ -366,62 +382,73 @@ void Panel::displayBuffer()
 
         if ((index + 1) % PANEL_CHUNKSIZE == 0)
         {
+            HIGH_OE;
+            LATCH;
             SET_ROW_PINS(index / PANEL_CHUNKSIZE);
-            LATCH_DATA;
+            CLEAR_OE;
+            delayMicroseconds(brightness/2);
+            if(brightness < 100) {
+              HIGH_OE;
+              delayMicroseconds(50 - brightness/2);
+            }
         }
     }
 
+/*
     // msb pass 2
     for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
-        // first pixels
-        SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
-        CLOCK;
-
-        // second pixels
-        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
-        CLOCK;
-
-        // 3rd pixels
-        SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 3)))) >> 6));
-        CLOCK;
-
-        // 4th pixels
-        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
-        CLOCK;
-
-        if ((index + 1) % PANEL_CHUNKSIZE == 0)
-        {
-            SET_ROW_PINS(index / PANEL_CHUNKSIZE);
-            LATCH_DATA;
-        }
+       // first pixels
+       SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
+       CLOCK;
+    
+       // second pixels
+       SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
+       CLOCK;
+    
+       // 3rd pixels
+       SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 3)))) >> 6));
+       CLOCK;
+    
+       // 4th pixels
+       SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
+       CLOCK;
+    
+       if ((index + 1) % PANEL_CHUNKSIZE == 0)
+       {
+           SET_ROW_PINS(index / PANEL_CHUNKSIZE);
+           LATCH_DATA;
+       }
     }
-
+    
+    
+    // only 2 passes for msb!
     // msb pass 3
     for (uint16_t index = 0; index < PANEL_BUFFERSIZE; index++)
     {
-        // first pixels
-        SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
-        CLOCK;
-
-        // second pixels
-        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
-        CLOCK;
-
-        // 3rd pixels
-        SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 3)))) >> 6));
-        CLOCK;
-
-        // 4th pixels
-        SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
-        CLOCK;
-
-        if ((index + 1) % PANEL_CHUNKSIZE == 0)
-        {
-            SET_ROW_PINS(index / PANEL_CHUNKSIZE);
-            LATCH_DATA;
-        }
+      // first pixels
+      SET_COLOR((uint8_t)((*((uint16_t *)(&buffer[index])) >> 6)));
+      CLOCK;
+    
+      // second pixels
+      SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 2))) >> 2));
+      CLOCK;
+    
+      // 3rd pixels
+      SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 3)))) >> 6));
+      CLOCK;
+    
+      // 4th pixels
+      SET_COLOR(((*(((uint8_t *)(&buffer[index])) + (sizeof(uint8_t) * 5))) >> 2));
+      CLOCK;
+    
+      if ((index + 1) % PANEL_CHUNKSIZE == 0)
+      {
+          SET_ROW_PINS(index / PANEL_CHUNKSIZE);
+          LATCH_DATA;
+      }
     }
+    */
 #endif
 }
 
@@ -610,10 +637,14 @@ void Panel::drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
     }
 }
 
-void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
+void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
 { // new with scaling, but may be slower
     // color for the char
+    bool fill_bg;
+    uint8_t bg_red, bg_green, bg_blue;
     HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+    HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
+    fill_bg = bg_color != NO_COLOR;
 
     // iterate through the character line by line
     char out;
@@ -629,8 +660,24 @@ void Panel::drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8
                 // set pixel at i and j
                 setBuffer(x + 4 * size_modifier - j, y + i, red, green, blue);
             }
+            else {
+              if(fill_bg)
+                setBuffer(x + 4 * size_modifier - j, y + i, bg_red, bg_green, bg_blue);
+            }
         }
     }
+}
+
+
+void Panel::drawString(uint8_t x, uint8_t y, char* str, uint16_t color, uint16_t bg_color, uint8_t size_modifier) {
+  for(uint8_t i = 0; i < strlen(str); i++) {
+    uint16_t xoffset = x + (3 * size_modifier + 1) * i;
+    if(xoffset > PANEL_X)
+      return;
+    
+    drawBigChar(xoffset, y, str[i], color, bg_color, size_modifier); //seperate by 1
+    //drawBigChar(x + 4 * size_modifier * i, y, str[i], color, size_modifier); //seperate by size
+  }
 }
 #endif // PANEL_NO_BUFFER
 

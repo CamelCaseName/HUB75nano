@@ -1,6 +1,6 @@
 #define PANEL_BIG 1
 
-#include "HUB75nano.h"
+#include "Panel.h"
 
 // create an instance of the panel
 Panel panel = {};

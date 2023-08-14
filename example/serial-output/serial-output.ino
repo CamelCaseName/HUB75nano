@@ -1,22 +1,12 @@
-#include "HUB75nano.h"
+#include "Panel.h"
 // this sketch should ouptut serial input to the panel
-
-//          IMPORTANT!!
-//
-// in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
-// The library will very likely be in your arduino libary folder
-// C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
-// go in there, and do as said above. please.
-//
-
-#ifndef BIG
 
 Panel panel = {};
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
-uint8_t fcolor = 3;
-uint8_t bgcolor = 2;
+uint16_t fcolor = panel.RED;
+uint16_t bgcolor = panel.DARKERBLUE;
 char t;
 
 void setup()
@@ -48,7 +38,6 @@ void loop()
                 length = 0;
                 // Serial.println("clearing");
                 panel.fillBuffer(bgcolor);
-                panel.displayBuffer();
             }
             else if (t < 32)
             {
@@ -68,7 +57,6 @@ void loop()
             {
                 out[strlen(out)] = t;
             }
-            panel.displayBuffer();
         }
         oldlength = length;
         length = strlen(out);
@@ -88,7 +76,6 @@ void loop()
                     length = 0;
                     // Serial.println("clearing");
                     panel.fillBuffer(bgcolor);
-                    panel.displayBuffer();
                 }
                 else
                 {
@@ -111,37 +98,13 @@ void loop()
                 length = 0;
                 // Serial.println("clearing");
                 panel.fillBuffer(bgcolor);
-                panel.displayBuffer();
             }
         }
 
         for (uint8_t i = oldlength; i < length; i++)
         {
-            /*if (out[i] == '\n') {
-                out[i] == ' ';
-                for (uint8_t j = i + 1; j < length; j++) {
-                    out[i % 16 + ((i / 16) * 16) + length - j] = out[j];
-                    out[j] == ' ';
-                }
-            }*/
             panel.drawChar((i % 16) * 4, (i / 16) * 6 + 1, out[i], fcolor);
-            panel.displayBuffer();
         }
-        panel.displayBuffer();
     }
     panel.displayBuffer();
 }
-
-//"error handleing"
-#else
-void setup()
-{
-    Serial.begin(115200);
-}
-void loop()
-{
-    Serial.println("It will not work!!!!!!");
-    Serial.println("you will see ram blinking around, and you will write  wrong adresses");
-    Serial.println("in order to run this sketch, you must go into panel.h and remove \"#define BIG\", or comment it. (line 41)");
-}
-#endif // BIG
