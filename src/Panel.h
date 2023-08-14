@@ -842,6 +842,7 @@ private:
         row = (row + 1) & (uint8_t)31;
     }
 
+#pragma region buffer_specifics-
 #ifndef PANEL_FLASH
 #ifndef PANEL_BIG
     void displaySmallBuffer()
@@ -2133,5 +2134,5 @@ private:
     }
 #endif
 #pragma endregion // buffer_specifics
-#endif
 };
+#endif
