@@ -1,52 +1,38 @@
 /*
-  Panel.h can be used to display stuff on a hub75 panel with up to 32 x 64 pixels
-  designed for ARDUINO NANO.
-
-  (c) Leonhard Seidel, 2022
-
+  Panel.h can be used to display stuff on a HUB75 panel with row shift registers with 64x32px in 8, 16 or 4096 colors
+  designed for ARDUINO nano.
+  (c) Leonhard Seidel, itsaps, jandlseb, 2023
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
   version 3 of the License, or (at your option) any later version.
-
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Lesser General Public License for more details.
-
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-/*
-Pin mapping:
-A A0,
-B A1,
-C A2,
-D A3,
-(E) A4,
-LAT A5,
-CLK A6,
-OE A7,
-R1 2,
-G1 3,
-B1 4,
-R2 5,
-G2 6,
-B2 7,
-GND GND
-*/
-
 #include <Arduino.h>
+#include <avr/pgmspace.h>
+#ifndef PANEL_H
+#define PANEL_H
+/////////////////////
+// #define PANEL_BIG // use 2 bit rgb image buffer
+// #define PANEL_FLASH // 4 bit flash buffer
+// #define PANEL_NO_BUFFER //no buffer, immediate mode only
+// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in GPIOB
+// #define PANEL_NO_FONT //disables everything font related, saves some flash
+// #define PANEL_HIGH_RES //enables high res (single pixel) output in a 64x64 window
+/////////////////////
 
-#ifndef Panel_h
-#define Panel_h
-#ifndef PANEL_NO_BUFFER
-/////////////////////
-#define PANEL_BIG 1 // use 2 bit rgb image buffer, uncomment to save space
-// #define PANEL_CLUT // use 6 bit CLUT image buffer (todo)
-/////////////////////
+#pragma region definitions
+// check we are on uno or nano
+#ifndef ARDUINO_AVR_UNO
+#ifndef ARDUINO_AVR_NANO
+#error "This library only supports the Arduino nano and Uno, so the atm368p with 2kb sram, 1kb eeprom and 32kb flash. For other chips/boards, please see the internet or try to adapt this library here, but no guarantees"
+#endif
 #endif
 #ifndef PANEL_X
 #define PANEL_X 64
@@ -54,311 +40,128 @@ GND GND
 #ifndef PANEL_Y
 #define PANEL_Y 32
 #endif
-
+#ifdef PANEL_NO_BUFFER
+#undef PANEL_FLASH
+#undef PANEL_BIG
+#undef PANEL_HIGH_RES
+#define PANEL_NO_FONT
+#endif
+#ifdef PANEL_HIGH_RES
+#ifdef PANEL_BIG
+#error "The high resolution mode is only available with the flash buffer or 1 bit buffer"
+#endif
+#endif
+#ifdef PANEL_HIGH_RES
+#define PANEL_X 64
+#define PANEL_Y 64
+#endif
+#ifdef PANEL_FLASH
+#undef PANEL_BIG
+// have it bigger a size as we have more available lol
+#define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y * 2) // 4 byte per led, we have 6 bit per 2 led per color depth -> about 4k
+#endif
+#ifndef PANEL_BUFFERSIZE
 #define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y / 8)
-#define PANEL_CHUNKSIZE (PANEL_X / 4)
-
+#endif
 #ifndef MAX_COLORDEPTH
+#ifdef PANEL_BIG
 #define MAX_COLORDEPTH 2
+#else
+#ifdef PANEL_FLASH
+#define MAX_COLORDEPTH 4
+#else
+#ifdef PANEL_NO_BUFFER
+#define MAX_COLORDEPTH 8
+#else
+#define MAX_COLORDEPTH 1
+#endif
+#endif
+#endif
 #endif
 #define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH - 1)
 #define COLOR_CLAMP (255.0 / (MAX_COLOR))
-
-// ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
-// helper definitions
-#define high_pin(port, number) port |= 1UL << number
-#define toggle_pin(port, number) port ^= 1UL << number
-#define clear_pin(port, number) port &= ~(1UL << number)
-#define pulse_pin(port, number) \
-    high_pin(port, number);     \
-    clear_pin(port, number)
-#define set_pin(port, number, value) (port = (value << number) | (port & ~(1UL << number)))
-#define PORTA_high_pin(number) high_pin(PORTA, number)
-#define PORTB_high_pin(number) high_pin(PORTB, number)
-#define PORTC_high_pin(number) high_pin(PORTC, number)
-#define PORTD_high_pin(number) high_pin(PORTD, number)
-#define PORTA_toggle_pin(number) toggle_pin(PORTA, number)
-#define PORTB_toggle_pin(number) toggle_pin(PORTB, number)
-#define PORTC_toggle_pin(number) toggle_pin(PORTC, number)
-#define PORTD_toggle_pin(number) toggle_pin(PORTD, number)
-#define PORTA_clear_pin(number) clear_pin(PORTA, number)
-#define PORTB_clear_pin(number) clear_pin(PORTB, number)
-#define PORTC_clear_pin(number) clear_pin(PORTC, number)
-#define PORTD_clear_pin(number) clear_pin(PORTD, number)
-
 // actual pin numbers
 #define RA 14  // register selector a
 #define RB 15  // register selector b
 #define RC 16  // register selector c
 #define RD 17  // register selector d
-#define RE 18  // register selector d
+#define RE 18  // register selector e
 #define RF 2   // red first byte
 #define GF 3   // green first byte
 #define BF 4   // blue first byte
 #define RS 5   // red second byte
 #define GS 6   // green second byte
 #define BS 7   // blue second byte
-#define LAT 9  // data latch
-#define CLK 10 // clock signal
+#define CLK 9  // clock signal
+#define LAT 10 // data latch
 #define OE 11  // output enable
-
+// ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
+// helper definitions
+#define high_pin(port, number) port |= 1 << number
+#define clear_pin(port, number) port &= ~(1 << number)
 // pin access defines, rows
 #define HIGH_RA high_pin(PORTC, 0)
 #define CLEAR_RA clear_pin(PORTC, 0)
-#define SET_RA(value) set_pin(PORTC, 0, value)
 #define HIGH_RB high_pin(PORTC, 1)
 #define CLEAR_RB clear_pin(PORTC, 1)
-#define SET_RB(value) set_pin(PORTC, 1, value)
 #define HIGH_RC high_pin(PORTC, 2)
 #define CLEAR_RC clear_pin(PORTC, 2)
-#define SET_RC(value) set_pin(PORTC, 2, value)
 #define HIGH_RD high_pin(PORTC, 3)
 #define CLEAR_RD clear_pin(PORTC, 3)
-#define SET_RD(value) set_pin(PORTC, 3, value)
-
-// pin access defines, color
-#define HIGH_RF high_pin(PORTD, 2)
-#define CLEAR_RF clear_pin(PORTD, 2)
-#define SET_RF(value) set_pin(PORTD, 2, value)
-#define HIGH_GF high_pin(PORTD, 3)
-#define CLEAR_GF clear_pin(PORTD, 3)
-#define SET_GF(value) set_pin(PORTD, 3, value)
-#define HIGH_BF high_pin(PORTD, 4)
-#define CLEAR_BF clear_pin(PORTD, 4)
-#define SET_BF(value) set_pin(PORTD, 4, value)
-#define HIGH_RS high_pin(PORTD, 5)
-#define CLEAR_RS clear_pin(PORTD, 5)
-#define SET_RS(value) set_pin(PORTD, 5, value)
-#define HIGH_GS high_pin(PORTD, 6)
-#define CLEAR_GS clear_pin(PORTD, 6)
-#define SET_GS(value) set_pin(PORTD, 6, value)
-#define HIGH_BS high_pin(PORTD, 7)
-#define CLEAR_BS clear_pin(PORTD, 7)
-#define SET_BS(value) set_pin(PORTD, 7, value)
-
+#define HIGH_RE high_pin(PORTC, 4)
+#define CLEAR_RE clear_pin(PORTC, 4)
+#define SET_ROW(row) \
+    PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224
 // bulk pin access color, only good if pins are in right order
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
 // set 6 color pins and keep the rx tx pins as are
 #define SET_COLOR(value) \
-    PORTD = ((value & 63) << 2) | PORTD & 3
+    PORTD = value | PORTD & (uint8_t)3
+#else
+#error "Please keep the same pin numbering on the color pins, its not fast enough with different pins"
 #endif
-
 // pin access defines, rest
-#define HIGH_LAT high_pin(PORTB, 2)
-#define CLEAR_LAT clear_pin(PORTB, 2)
-#define SET_LAT(value) set_pin(PORTB, 2, value)
 #define HIGH_CLK high_pin(PORTB, 1)
 #define CLEAR_CLK clear_pin(PORTB, 1)
-#define SET_CLK(value) set_pin(PORTB, 1, value)
+#define HIGH_LAT high_pin(PORTB, 2)
+#define CLEAR_LAT clear_pin(PORTB, 2)
 #define HIGH_OE high_pin(PORTB, 3)
 #define CLEAR_OE clear_pin(PORTB, 3)
-#define SET_OE(value) set_pin(PORTB, 3, value)
-#define SET_ROW_PINS(row) PORTC = row | PORTC & 240
+#define Clock \
+    HIGH_CLK; \
+    CLEAR_CLK
 #define LATCH \
     HIGH_LAT; \
     CLEAR_LAT
-#define CLOCK \
-    HIGH_CLK; \
-    CLEAR_CLK
-#define OUTPUT_ENABLE \
-    HIGH_OE;          \
-    CLEAR_OE
-#define LATCH_DATA \
-    HIGH_OE;       \
-    LATCH;         \
-    CLEAR_OE      
-    
+#pragma endregion // definitions
 
-constexpr uint16_t FULL_TO_HIGH_COLOR_FULL(uint8_t r, uint8_t g, uint8_t b)
+#pragma region color_helpers
+inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
 {
-    return ((int)(((double)r / 255) + 0.5) << 11) | ((int)(((double)g / 255) + 0.5) << 5) | (int)(((double)b / 255) + 0.5);
-}
-constexpr uint16_t FULL_TO_HIGH_COLOR_CLAMPED(uint8_t r, uint8_t g, uint8_t b)
-{
-    return ((int)(((double)r * COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g * COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b * COLOR_CLAMP) + 0.5);
-}
-constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
-{
-    return (((int)(r * MAX_COLOR + 0.5f)) << 11) | ((int)((g * MAX_COLOR + 0.5f)) << 5) | (int)((b * MAX_COLOR) + 0.5f);
+    *red = (color >> (uint8_t)11) & (uint8_t)31;
+    *green = (color >> (uint8_t)5) & (uint8_t)63;
+    *blue = color & (uint8_t)31;
 }
 constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
 {
-    return (((r & 31) << 11) | ((g & 63) << 5) | (b & 31));
+    return (((r & (uint8_t)31) << (uint8_t)11) | ((g & (uint8_t)63) << (uint8_t)5) | (b & (uint8_t)31));
 }
-inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
+constexpr uint16_t FULL_TO_HIGH_COLOR_FULL(uint8_t r, uint8_t g, uint8_t b)
 {
-    *red = (color >> 11) & 31;
-    *green = (color >> 5) & 63;
-    *blue = color & 31;
+    return ((int)(((double)r / 8) - 0.5) << (uint8_t)11) | ((int)(((double)g / 4) - 0.5) << (uint8_t)5) | (int)(((double)b / 8) - 0.5);
 }
-
-class Panel
+constexpr uint16_t FULL_TO_HIGH_COLOR_CLAMPED(uint8_t r, uint8_t g, uint8_t b)
 {
-public:
-    Panel();
-    void selectLine(uint8_t lineIndex);
-    void fillScreenShift(uint8_t s, uint8_t f, uint8_t o);
-    void fillScreenColor(uint16_t color);
-    void fillScreenColor(uint8_t r, uint8_t g, uint8_t b);
-    void sendTwoPixels(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
-    void sendWholeRow(uint8_t redUpper, uint8_t greenUpper, uint8_t blueUpper, uint8_t redLower, uint8_t greenLower, uint8_t blueLower);
-
-#ifndef PANEL_NO_BUFFER
-    struct LED;
-    void setBuffer(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b);
-    void swapBuffer(const LED *newBuffer, uint8_t bufferLength);
-    void displayBuffer();
-    void fillBuffer(uint16_t color);
-    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill);
-    void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint16_t color, bool fill);
-    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
-    void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill);
-    void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill);
-    void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color);
-    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color = NO_COLOR, uint8_t size_modifier = 1);
-    void drawString(uint8_t x, uint8_t y, char* str, uint16_t color, uint16_t bg_color = NO_COLOR, uint8_t size_modifier = 1);
-#endif
-
-#ifndef PANEL_NO_BUFFER
-#ifndef PANEL_BIG
-#pragma pack(1)
-    struct LED
-    { // 3 bytes long, contains 8 leds at 1 bit color depth
-        uint8_t redUpper1 : 1;
-        uint8_t greenUpper1 : 1;
-        uint8_t blueUpper1 : 1;
-        uint8_t redLower1 : 1;
-        uint8_t greenLower1 : 1;
-        uint8_t blueLower1 : 1;
-        uint8_t redUpper2 : 1;
-        uint8_t greenUpper2 : 1;
-        uint8_t : 0;
-        uint8_t blueUpper2 : 1;
-        uint8_t redLower2 : 1;
-        uint8_t greenLower2 : 1;
-        uint8_t blueLower2 : 1;
-        uint8_t redUpper3 : 1;
-        uint8_t greenUpper3 : 1;
-        uint8_t blueUpper3 : 1;
-        uint8_t redLower3 : 1;
-        uint8_t : 0;
-        uint8_t greenLower3 : 1;
-        uint8_t blueLower3 : 1;
-        uint8_t redUpper4 : 1;
-        uint8_t greenUpper4 : 1;
-        uint8_t blueUpper4 : 1;
-        uint8_t redLower4 : 1;
-        uint8_t greenLower4 : 1;
-        uint8_t blueLower4 : 1;
-        uint8_t : 0;
-    };
-
-#else
-#pragma pack(1)
-    struct LED
-    { // 6 bytes long, contains 8 leds at 2 bit color depth
-        
-        //L1 B1
-        uint8_t redUpperBit1Led1 : 1;
-        uint8_t greenUpperBit1Led1 : 1;
-        uint8_t blueUpperBit1Led1 : 1;
-        uint8_t redLowerBit1Led1 : 1;
-        uint8_t greenLowerBit1Led1 : 1;
-        uint8_t blueLowerBit1Led1 : 1;
-        //L1 B2
-        uint8_t redUpperBit2Led1 : 1;
-        uint8_t greenUpperBit2Led1 : 1;
-        uint8_t : 0;
-        uint8_t blueUpperBit2Led1 : 1;
-        uint8_t redLowerBit2Led1 : 1;
-        uint8_t greenLowerBit2Led1 : 1;
-        uint8_t blueLowerBit2Led1 : 1;
-        //L2 B1
-        uint8_t redUpperBit1Led2 : 1;
-        uint8_t greenUpperBit1Led2 : 1;
-        uint8_t blueUpperBit1Led2 : 1;
-        uint8_t redLowerBit1Led2 : 1;
-        uint8_t : 0;
-        uint8_t greenLowerBit1Led2 : 1;
-        uint8_t blueLowerBit1Led2 : 1;
-        //L2 B2
-        uint8_t redUpperBit2Led2 : 1;
-        uint8_t greenUpperBit2Led2 : 1;
-        uint8_t blueUpperBit2Led2 : 1;
-        uint8_t redLowerBit2Led2 : 1;
-        uint8_t greenLowerBit2Led2 : 1;
-        uint8_t blueLowerBit2Led2 : 1;
-        uint8_t : 0;
-        //L3 B1
-        uint8_t redUpperBit1Led3 : 1;
-        uint8_t greenUpperBit1Led3 : 1;
-        uint8_t blueUpperBit1Led3 : 1;
-        uint8_t redLowerBit1Led3 : 1;
-        uint8_t greenLowerBit1Led3 : 1;
-        uint8_t blueLowerBit1Led3 : 1;
-        //L3 B2
-        uint8_t redUpperBit2Led3 : 1;
-        uint8_t greenUpperBit2Led3 : 1;
-        uint8_t : 0;
-        uint8_t blueUpperBit2Led3 : 1;
-        uint8_t redLowerBit2Led3 : 1;
-        uint8_t greenLowerBit2Led3 : 1;
-        uint8_t blueLowerBit2Led3 : 1;
-        //L4 B1
-        uint8_t redUpperBit1Led4 : 1;
-        uint8_t greenUpperBit1Led4 : 1;
-        uint8_t blueUpperBit1Led4 : 1;
-        uint8_t redLowerBit1Led4 : 1;
-        uint8_t : 0;
-        uint8_t greenLowerBit1Led4 : 1;
-        uint8_t blueLowerBit1Led4 : 1;
-        //L4 B2
-        uint8_t redUpperBit2Led4 : 1;
-        uint8_t greenUpperBit2Led4 : 1;
-        uint8_t blueUpperBit2Led4 : 1;
-        uint8_t redLowerBit2Led4 : 1;
-        uint8_t greenLowerBit2Led4 : 1;
-        uint8_t blueLowerBit2Led4 : 1;
-        uint8_t : 0;
-    };
-#endif
-#endif
-    enum Colors
-    {
-        RED = FULL_TO_HIGH_COLOR(3, 0, 0),
-        GREEN = FULL_TO_HIGH_COLOR(0, 3, 0),
-        BLUE = FULL_TO_HIGH_COLOR(0, 0, 3),
-        WHITE = FULL_TO_HIGH_COLOR(3, 3, 3),
-        BLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
-        PURPLE = FULL_TO_HIGH_COLOR(3, 0, 3),
-        YELLOW = FULL_TO_HIGH_COLOR(3, 3, 0),
-        CYAN = FULL_TO_HIGH_COLOR(0, 3, 3),
-        DARKRED = FULL_TO_HIGH_COLOR(2, 0, 0),
-        DARKGREEN = FULL_TO_HIGH_COLOR(0, 2, 0),
-        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 2),
-        DARKWHITE = FULL_TO_HIGH_COLOR(2, 2, 2),
-        DARKPURPLE = FULL_TO_HIGH_COLOR(2, 0, 2),
-        DARKYELLOW = FULL_TO_HIGH_COLOR(2, 2, 0),
-        DARKCYAN = FULL_TO_HIGH_COLOR(0, 2, 2),
-        DARKERRED = FULL_TO_HIGH_COLOR(1, 0, 0),
-        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 1, 0),
-        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 1),
-        DARKERWHITE = FULL_TO_HIGH_COLOR(1, 1, 1),
-        DARKERPURPLE = FULL_TO_HIGH_COLOR(1, 0, 1),
-        DARKERYELLOW = FULL_TO_HIGH_COLOR(1, 1, 0),
-        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 1, 1),
-        ORANGE = FULL_TO_HIGH_COLOR(3,1,0),
-        NO_COLOR = -1,
-    };
-    uint8_t rows = PANEL_Y, coloumns = PANEL_X, halfbsize = 0;
-    uint8_t lower = 0, row = 0, red = 0, green = 0, blue = 0;
-    uint8_t brightness = 100;
-#ifndef PANEL_NO_BUFFER
-    LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth - 2015 bytes of ram used
-#endif
-};
+    return ((int)(((double)r / COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g / COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b / COLOR_CLAMP) + 0.5);
+}
+constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
+{
+    return (((int)(r * MAX_COLOR + 0.5f)) << (uint8_t)11) | ((int)((g * MAX_COLOR + 0.5f)) << (uint8_t)5) | (int)((b * MAX_COLOR) + 0.5f);
+}
+#pragma endregion
 
 #pragma region font
+#ifndef PANEL_NO_FONT
 // Copyright <2010> <Robey Pointer, https://robey.lag.net/> =========>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this softwareand associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
@@ -463,7 +266,6 @@ const uint8_t font4x6[96][2] PROGMEM = {
     {0x54, 0x00}, /*'~'*/
     {0x56, 0xe2}  /*''*/
 };
-
 //<=============================================================================
 //
 // Copyright <2015> <https://hackaday.io/PK.3>========================>
@@ -477,30 +279,1859 @@ inline unsigned char getFontLine(unsigned char data, int line_num)
 {
     const uint8_t index = (data - 32);
     unsigned char pixel = 0;
-    if (pgm_read_byte(&font4x6[index][1]) & 1 == 1)
+    if (pgm_read_byte(&font4x6[index][1]) & (uint8_t)1 == 1)
         line_num -= 1;
     if (line_num == 0)
     {
-        pixel = (pgm_read_byte(&font4x6[index][0])) >> 4;
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> (uint8_t)4;
     }
     else if (line_num == 1)
     {
-        pixel = (pgm_read_byte(&font4x6[index][0])) >> 1;
+        pixel = (pgm_read_byte(&font4x6[index][0])) >> (uint8_t)1;
     }
     else if (line_num == 2)
     {
         // Split over 2 bytes
-        return (((pgm_read_byte(&font4x6[index][0])) & 0x03) << 2) | (((pgm_read_byte(&font4x6[index][1])) & 0x02));
+        return (((pgm_read_byte(&font4x6[index][0])) & (uint8_t)0x03) << (uint8_t)2) | (((pgm_read_byte(&font4x6[index][1])) & (uint8_t)0x02));
     }
     else if (line_num == 3)
     {
-        pixel = (pgm_read_byte(&font4x6[index][1])) >> 4;
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> (uint8_t)4;
     }
     else if (line_num == 4)
     {
-        pixel = (pgm_read_byte(&font4x6[index][1])) >> 1;
+        pixel = (pgm_read_byte(&font4x6[index][1])) >> (uint8_t)1;
     }
-    return pixel & 0xE;
+    return pixel & (uint8_t)0xE;
 } //<=============================================================================
-#pragma endregion
 #endif
+#pragma endregion // font
+class Panel
+{
+public:
+#pragma region constructors
+#ifdef PANEL_FLASH
+    Panel(PGM_VOID_P buffer_in)
+    {
+        buffer = buffer_in;
+        pinMode(RA, OUTPUT);
+        pinMode(RB, OUTPUT);
+        pinMode(RC, OUTPUT);
+        pinMode(RD, OUTPUT);
+        pinMode(RE, OUTPUT);
+        pinMode(RF, OUTPUT);
+        pinMode(RS, OUTPUT);
+        pinMode(GF, OUTPUT);
+        pinMode(GS, OUTPUT);
+        pinMode(BF, OUTPUT);
+        pinMode(BS, OUTPUT);
+        pinMode(CLK, OUTPUT);
+        pinMode(LAT, OUTPUT);
+        pinMode(OE, OUTPUT);
+    }
+#else
+    Panel()
+    {
+        pinMode(RA, OUTPUT);
+        pinMode(RB, OUTPUT);
+        pinMode(RC, OUTPUT);
+        pinMode(RD, OUTPUT);
+        pinMode(RE, OUTPUT);
+        pinMode(RF, OUTPUT);
+        pinMode(RS, OUTPUT);
+        pinMode(GF, OUTPUT);
+        pinMode(GS, OUTPUT);
+        pinMode(BF, OUTPUT);
+        pinMode(BS, OUTPUT);
+        pinMode(CLK, OUTPUT);
+        pinMode(LAT, OUTPUT);
+        pinMode(OE, OUTPUT);
+    }
+#endif
+#pragma endregion // constructors
+
+#pragma region immediates
+    void fillScreenColor(uint16_t c)
+    {
+        // fills the screeen with the set color
+        // switches all the colors and sets the values depending on colors
+        HIGH_TO_FULL_COLOR(c, &red, &green, &blue); // gets first couple colors
+        fillScreenColor(red, green, blue);
+    }
+    void fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
+    {
+        // todo continue work here building it up, but not top priority
+        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+        {
+            // bitness needs to be between 1 and 8, changes sent bitdepth. the lower, the faster
+            for (uint8_t bitness = MAX_COLORDEPTH - 1; bitness < MAX_COLORDEPTH; bitness--)
+            {
+                SET_COLOR((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
+                SendRow();
+            }
+            // advance 1 in row once we are done with one
+            stepRow();
+        }
+    }
+#pragma GCC push_options
+#pragma GCC optimize("unroll-loops")
+    inline void SendRow()
+    {
+        for (uint8_t i = 0; i < PANEL_X; i++)
+        {
+            Clock;
+        }
+    }
+#pragma GCC pop_options
+#pragma GCC pop_options
+#pragma endregion // immediates
+
+#pragma region buffer_specifics
+
+#pragma region led_struct_definition
+#ifdef PANEL_BIG
+#define LED LED_long
+#else
+#define LED LED_short
+#endif
+#pragma pack(1)
+    typedef struct LED_short
+    { // 3 bytes long, contains 8 leds at 1 bit color depth
+        uint8_t redUpperBit1Led1 : 1;
+        uint8_t greenUpperBit1Led1 : 1;
+        uint8_t blueUpperBit1Led1 : 1;
+        uint8_t redLowerBit1Led1 : 1;
+        uint8_t greenLowerBit1Led1 : 1;
+        uint8_t blueLowerBit1Led1 : 1;
+        uint8_t redUpperBit1Led2 : 1;
+        uint8_t greenUpperBit1Led2 : 1;
+        uint8_t : 0;
+        uint8_t blueUpperBit1Led2 : 1;
+        uint8_t redLowerBit1Led2 : 1;
+        uint8_t greenLowerBit1Led2 : 1;
+        uint8_t blueLowerBit1Led2 : 1;
+        uint8_t redUpperBit1Led3 : 1;
+        uint8_t greenUpperBit1Led3 : 1;
+        uint8_t blueUpperBit1Led3 : 1;
+        uint8_t redLowerBit1Led3 : 1;
+        uint8_t : 0;
+        uint8_t greenLowerBit1Led3 : 1;
+        uint8_t blueLowerBit1Led3 : 1;
+        uint8_t redUpperBit1Led4 : 1;
+        uint8_t greenUpperBit1Led4 : 1;
+        uint8_t blueUpperBit1Led4 : 1;
+        uint8_t redLowerBit1Led4 : 1;
+        uint8_t greenLowerBit1Led4 : 1;
+        uint8_t blueLowerBit1Led4 : 1;
+        uint8_t : 0;
+    } LED_short;
+#pragma pack(1)
+    typedef struct LED_long
+    { // 6 bytes long, contains 8 leds at 2 bit color depth
+        uint8_t redUpperBit1Led1 : 1;
+        uint8_t greenUpperBit1Led1 : 1;
+        uint8_t blueUpperBit1Led1 : 1;
+        uint8_t redLowerBit1Led1 : 1;
+        uint8_t greenLowerBit1Led1 : 1;
+        uint8_t blueLowerBit1Led1 : 1;
+        uint8_t redUpperBit2Led1 : 1;
+        uint8_t greenUpperBit2Led1 : 1;
+        uint8_t : 0;
+        uint8_t blueUpperBit2Led1 : 1;
+        uint8_t redLowerBit2Led1 : 1;
+        uint8_t greenLowerBit2Led1 : 1;
+        uint8_t blueLowerBit2Led1 : 1;
+        uint8_t redUpperBit1Led2 : 1;
+        uint8_t greenUpperBit1Led2 : 1;
+        uint8_t blueUpperBit1Led2 : 1;
+        uint8_t redLowerBit1Led2 : 1;
+        uint8_t : 0;
+        uint8_t greenLowerBit1Led2 : 1;
+        uint8_t blueLowerBit1Led2 : 1;
+        uint8_t redUpperBit2Led2 : 1;
+        uint8_t greenUpperBit2Led2 : 1;
+        uint8_t blueUpperBit2Led2 : 1;
+        uint8_t redLowerBit2Led2 : 1;
+        uint8_t greenLowerBit2Led2 : 1;
+        uint8_t blueLowerBit2Led2 : 1;
+        uint8_t : 0;
+        uint8_t redUpperBit1Led3 : 1;
+        uint8_t greenUpperBit1Led3 : 1;
+        uint8_t blueUpperBit1Led3 : 1;
+        uint8_t redLowerBit1Led3 : 1;
+        uint8_t greenLowerBit1Led3 : 1;
+        uint8_t blueLowerBit1Led3 : 1;
+        uint8_t redUpperBit2Led3 : 1;
+        uint8_t greenUpperBit2Led3 : 1;
+        uint8_t : 0;
+        uint8_t blueUpperBit2Led3 : 1;
+        uint8_t redLowerBit2Led3 : 1;
+        uint8_t greenLowerBit2Led3 : 1;
+        uint8_t blueLowerBit2Led3 : 1;
+        uint8_t redUpperBit1Led4 : 1;
+        uint8_t greenUpperBit1Led4 : 1;
+        uint8_t blueUpperBit1Led4 : 1;
+        uint8_t redLowerBit1Led4 : 1;
+        uint8_t : 0;
+        uint8_t greenLowerBit1Led4 : 1;
+        uint8_t blueLowerBit1Led4 : 1;
+        uint8_t redUpperBit2Led4 : 1;
+        uint8_t greenUpperBit2Led4 : 1;
+        uint8_t blueUpperBit2Led4 : 1;
+        uint8_t redLowerBit2Led4 : 1;
+        uint8_t greenLowerBit2Led4 : 1;
+        uint8_t blueLowerBit2Led4 : 1;
+        uint8_t : 0;
+    } LED_long;
+#pragma endregion // led_struct_definition
+
+#pragma region buffer_copying
+#ifdef PANEL_FLASH
+    void swapBuffer(PGM_VOID_P newBuffer)
+    {
+        buffer = newBuffer;
+    }
+#else
+    void swapBuffer(const LED *newBuffer, uint8_t bufferLength)
+    {
+        memcpy(buffer, newBuffer, bufferLength);
+    }
+#endif
+    void fillBuffer(uint16_t color)
+    {
+        // get colors
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        // fills the buffer
+        for (uint8_t x = 0; x < PANEL_X; x++)
+        {
+            for (uint8_t y = 0; y < PANEL_Y; y++)
+            {
+                setBuffer(x, y, red, green, blue);
+            }
+        }
+    }
+#pragma endregion // buffer_copying
+
+#pragma region buffer_setting_definitions:
+    inline void setBuffer(uint8_t x, uint8_t y, uint8_t red_, uint8_t green_, uint8_t blue_)
+    {
+#ifdef PANEL_BIG
+        setBigBuffer(x, y, red_, green_, blue_); // 1 bit buffer in ram
+#else
+#ifndef PANEL_FLASH
+        setSmallBuffer(x, y, red_, green_, blue_); // 2 bit buffer in ram
+#else
+#endif
+#endif
+    }
+#pragma endregion // buffer_setting_definitions
+
+#pragma region drawing
+    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
+    { // draws a line with color between the coords given
+      // get colors
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        // calculate both gradients
+        int8_t dx = abs(x2 - x1);
+        int8_t dy = -abs(y2 - y1);
+        // create de-/increment values for walking the line
+        int8_t sx = x1 < x2 ? 1 : -1;
+        int8_t sy = y1 < y2 ? 1 : -1;
+        // error corerction
+        float err = dx + dy, e2;
+        while (1)
+        {
+            setBuffer(x1, y1, red, green, blue);
+            e2 = 2 * err;
+            if (e2 >= dy)
+            {
+                if (x1 == x2)
+                    break;
+                err += dy;
+                x1 += sx;
+            }
+            if (e2 <= dx)
+            {
+                if (y1 == y2)
+                    break;
+                err += dx;
+                y1 += sy;
+            }
+        }
+    }
+    void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill)
+    {
+        // get colors
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        int8_t x = -a;
+        int8_t y = 0; /* II. quadrant from bottom left to top right */
+        int16_t a2 = a * a;
+        int16_t b2 = b * b;
+        int16_t e2 = b * b;
+        int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
+        do
+        {
+            setBuffer(xm - x, ym + y, red, green, blue); /*   I. Quadrant */
+            setBuffer(xm + x, ym + y, red, green, blue); /*  II. Quadrant */
+            setBuffer(xm + x, ym - y, red, green, blue); /* III. Quadrant */
+            setBuffer(xm - x, ym - y, red, green, blue); /*  IV. Quadrant */
+            e2 = 2 * err;
+            if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
+                err += (++x * 2 + 1) * b2;
+            if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
+                err += (++y * 2 + 1) * a2;
+        } while (x <= 0);
+        while (y++ < b)
+        {                                            /* to early stop of flat ellipses a=1, */
+            setBuffer(xm, ym + y, red, green, blue); /* -> finish tip of ellipse */
+            setBuffer(xm, ym - y, red, green, blue);
+        }
+        if (fill)
+        {
+            while (a > 0)
+            {
+                drawEllipse(xm, ym, --a, b, color, true);
+            }
+        }
+    }
+    void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill)
+    {
+        // draws a circle at the coords with radius and color
+        // get colors
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        int8_t x = -radius;
+        int8_t y = 0;
+        int8_t new_radius = radius;
+        int16_t err = 2 - 2 * radius; // bottom left to top right
+        do
+        {
+            setBuffer(xm - x, ym + y, red, green, blue); //   I. Quadrant +x +y
+            setBuffer(xm - y, ym - x, red, green, blue); //  II. Quadrant -x +y
+            setBuffer(xm + x, ym - y, red, green, blue); // III. Quadrant -x -y
+            setBuffer(xm + y, ym + x, red, green, blue); //  IV. Quadrant +x -y
+            new_radius = err;
+            if (new_radius <= y)
+                err += ++y * 2 + 1;        // e_xy+e_y < 0
+            if (new_radius > x || err > y) // e_xy+e_x > 0 or no 2nd y-step
+                err += ++x * 2 + 1;        // -> x-step now
+        } while (x < 0);
+        if (fill) // fill works
+        {
+            // check if point in circle, then fill
+            for (int8_t i = -radius; i < radius; i++)
+            {
+                for (int8_t j = -radius; j < radius; j++)
+                {
+                    if (((int16_t)i * i + (int16_t)j * j) < ((radius - 0.5) * (radius - 0.5)))
+                    {
+                        setBuffer(xm + i, ym + j, red, green, blue);
+                    }
+                }
+            }
+        }
+    }
+    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
+    {
+        // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
+        // get colors
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        if (fill)
+        {
+            for (uint8_t i = x1; i <= x2; i++)
+            {
+                for (uint8_t j = y1; j <= y2; j++)
+                {
+                    setBuffer(i, j, red, green, blue);
+                }
+            }
+        }
+        else
+        {
+            // left line
+            for (uint8_t j = y1; j <= y2; j++)
+            {
+                setBuffer(x1, j, red, green, blue);
+            }
+            // right line
+            for (uint8_t j = y1; j <= y2; j++)
+            {
+                setBuffer(x2, j, red, green, blue);
+            }
+            // top line
+            for (uint8_t i = x1; i <= x2; i++)
+            {
+                setBuffer(i, y1, red, green, blue);
+            }
+            // bottom line
+            for (uint8_t i = x1; i <= x2; i++)
+            {
+                setBuffer(i, y2, red, green, blue);
+            }
+        }
+    }
+    void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint16_t color, bool fill)
+    {
+        drawRect(x, y, x + size, y + size, color, fill);
+    }
+#ifndef PANEL_NO_FONT
+    inline void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
+    {
+        drawChar(x, y, letter, color, NO_COLOR);
+    }
+    void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color)
+    {
+        bool fill_bg;
+        uint8_t bg_red, bg_green, bg_blue; // color for the char
+        HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
+
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        fill_bg = bg_color != NO_COLOR;
+        // iterate through the character line by line
+        char out;
+        for (uint8_t i = 0; i < 5; i++)
+        {
+            out = getFontLine(letter, i);
+            // iterate through the character bit by bit
+            for (uint8_t j = 4; j > 0; --j)
+            {
+                // shift by j and check for bit set
+                if (out & (uint8_t)(1 << (uint8_t)j))
+                {
+                    // set pixel at i and j
+                    setBuffer(x + 4 - j, y + i, red, green, blue);
+                }
+                else if (fill_bg)
+                {
+                    setBuffer(x + 4 - j, y + i, bg_red, bg_green, bg_blue);
+                }
+            }
+        }
+    }
+    inline void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
+    {
+        drawBigChar(x, y, letter, color, NO_COLOR, size_modifier);
+    }
+    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
+    { // new with scaling, but may be slower
+        // color for the char
+        bool fill_bg;
+        uint8_t bg_red, bg_green, bg_blue;
+        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
+        HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
+        fill_bg = bg_color != NO_COLOR;
+        // iterate through the character line by line
+        char out;
+        for (uint8_t i = 0; i < 5 * size_modifier; i++)
+        {
+            out = getFontLine(letter, i / size_modifier);
+            // iterate through the character bit by bit
+            for (uint8_t j = 4 * size_modifier; j > 0; --j)
+            {
+                // shift by j and check for bit set
+                if (out & (1 << j / size_modifier))
+                {
+                    // set pixel at i and j
+                    setBuffer(x + 4 * size_modifier - j, y + i, red, green, blue);
+                }
+                else
+                {
+                    if (fill_bg)
+                        setBuffer(x + 4 * size_modifier - j, y + i, bg_red, bg_green, bg_blue);
+                }
+            }
+        }
+    }
+    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint16_t bg_color)
+    {
+        drawString(x, y, str, color, bg_color, 1);
+    }
+    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color)
+    {
+        drawString(x, y, str, color, NO_COLOR, 1);
+    }
+    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t size_modifier)
+    {
+        drawString(x, y, str, color, NO_COLOR, size_modifier);
+    }
+    void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
+    {
+        for (uint8_t i = 0; i < strlen(str); i++)
+        {
+            uint16_t xoffset = x + (3 * size_modifier + 1) * i;
+            if (xoffset > PANEL_X)
+                return;
+
+            drawBigChar(xoffset, y, str[i], color, bg_color, size_modifier); // seperate by 1
+            // drawBigChar(x + 4 * size_modifier * i, y, str[i], color, size_modifier); //seperate by size
+        }
+    }
+#endif
+    // todo add drawing methods for
+    // - triangle with arbitrary points
+    // - triangle with right angle, rotation and side lengths
+    // - line with given width
+#pragma endregion // drawing
+
+#pragma region color_enum_definition
+    enum Colors
+    {
+        RED = FULL_TO_HIGH_COLOR(3, 0, 0),
+        GREEN = FULL_TO_HIGH_COLOR(0, 3, 0),
+        BLUE = FULL_TO_HIGH_COLOR(0, 0, 3),
+        WHITE = FULL_TO_HIGH_COLOR(3, 3, 3),
+        BLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
+        PURPLE = FULL_TO_HIGH_COLOR(3, 0, 3),
+        YELLOW = FULL_TO_HIGH_COLOR(3, 3, 0),
+        CYAN = FULL_TO_HIGH_COLOR(0, 3, 3),
+        DARKRED = FULL_TO_HIGH_COLOR(2, 0, 0),
+        DARKGREEN = FULL_TO_HIGH_COLOR(0, 2, 0),
+        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 2),
+        DARKWHITE = FULL_TO_HIGH_COLOR(2, 2, 2),
+        DARKPURPLE = FULL_TO_HIGH_COLOR(2, 0, 2),
+        DARKYELLOW = FULL_TO_HIGH_COLOR(2, 2, 0),
+        DARKCYAN = FULL_TO_HIGH_COLOR(0, 2, 2),
+        DARKERRED = FULL_TO_HIGH_COLOR(1, 0, 0),
+        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 1, 0),
+        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 1),
+        DARKERWHITE = FULL_TO_HIGH_COLOR(1, 1, 1),
+        DARKERPURPLE = FULL_TO_HIGH_COLOR(1, 0, 1),
+        DARKERYELLOW = FULL_TO_HIGH_COLOR(1, 1, 0),
+        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 1, 1),
+        ORANGE = FULL_TO_HIGH_COLOR(3, 1, 0),
+        NO_COLOR = -1,
+    };
+#pragma endregion // color_enum_definition
+
+#pragma region buffer_definition
+#ifndef PANEL_NO_BUFFER
+#ifdef PANEL_BIG
+    LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth
+#else
+#ifdef PANEL_FLASH
+    PGM_VOID_P buffer = 0;
+#else
+    LED buffer[PANEL_BUFFERSIZE];
+#endif
+#endif
+
+#pragma region buffer_output_definitions:
+    inline void displayBuffer()
+    {
+        // puts the  buffer contents onto the panel
+#ifdef PANEL_BIG
+        displayBigBuffer(); // 1 bit buffer in ram
+#else
+#ifdef PANEL_FLASH
+        displayFlashBuffer(); // 4 bit buffer in flash
+#else
+        displaySmallBuffer(); // 2 bit buffer in ram
+#endif
+#endif
+    }
+#pragma endregion // buffer_output_definitions
+#else
+    LED buffer[0];
+#endif
+#pragma endregion // buffer_definition
+private:
+    uint8_t row = 0, red, green, blue;
+    uint8_t brightness = 100;
+    inline void stepRow()
+    {
+        SET_ROW(row);
+        row = (row + 1) & (uint8_t)31;
+    }
+
+#ifndef PANEL_FLASH
+#ifndef PANEL_BIG
+    void displaySmallBuffer()
+    {
+        LED *index;
+        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
+        {
+            index = (LED *)(&buffer) + (y << (uint8_t)4);
+            // we set each pixel after the other
+
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            // set row
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+        }
+    }
+#ifndef PANEL_FLASH
+    void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+    {
+        if (y < (PANEL_Y / 2))
+        {
+            // we are in upper half of pixels
+            uint16_t index = ((y * PANEL_X) + x) / 4;
+            switch (x % 4)
+            {
+            case 0: /*first pixel*/
+                buffer[index].redUpperBit1Led1 = red;
+                buffer[index].greenUpperBit1Led1 = green;
+                buffer[index].blueUpperBit1Led1 = blue;
+                break;
+            case 1: /*second pixel*/
+                buffer[index].redUpperBit1Led2 = red;
+                buffer[index].greenUpperBit1Led2 = green;
+                buffer[index].blueUpperBit1Led2 = blue;
+                break;
+            case 2: /*third pixel*/
+                buffer[index].redUpperBit1Led3 = red;
+                buffer[index].greenUpperBit1Led3 = green;
+                buffer[index].blueUpperBit1Led3 = blue;
+                break;
+            case 3: /*fourth pixel*/
+                buffer[index].redUpperBit1Led4 = red;
+                buffer[index].greenUpperBit1Led4 = green;
+                buffer[index].blueUpperBit1Led4 = blue;
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            y -= (PANEL_Y / 2);
+            // we are in lower half of pixels
+            uint16_t index = (y * PANEL_X + x) / 4;
+            switch (x % 4)
+            {
+            case 0: /*first pixel*/
+                buffer[index].redLowerBit1Led1 = red;
+                buffer[index].greenLowerBit1Led1 = green;
+                buffer[index].blueLowerBit1Led1 = blue;
+                break;
+            case 1: /*second pixel*/
+                buffer[index].redLowerBit1Led2 = red;
+                buffer[index].greenLowerBit1Led2 = green;
+                buffer[index].blueLowerBit1Led2 = blue;
+                break;
+            case 2: /*third pixel*/
+                buffer[index].redLowerBit1Led3 = red;
+                buffer[index].greenLowerBit1Led3 = green;
+                buffer[index].blueLowerBit1Led3 = blue;
+                break;
+            case 3: /*fourth pixel*/
+                buffer[index].redLowerBit1Led4 = red;
+                buffer[index].greenLowerBit1Led4 = green;
+                buffer[index].blueLowerBit1Led4 = blue;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+#endif
+#else
+    void displayBigBuffer()
+    {
+        LED *index;
+        // coding:
+        // 00 -> off
+        // 01 -> 33%
+        // 10 -> 66%
+        // 11 -> on
+        // msb
+        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
+        {
+            index = (LED *)(&buffer) + (y << (uint8_t)4);
+
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            ++index;
+            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            Clock;
+            // display row
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(100 - brightness);
+            }
+        }
+        // lsb
+        for (uint8_t y = 0; y < PANEL_Y / 2; y++)
+        {
+
+            index = (LED *)(&buffer) + (y << (uint8_t)4);
+
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            ++index;
+            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            Clock;
+            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            Clock;
+            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            Clock;
+            // display row
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness / 2);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(50 - brightness / 2);
+            }
+        }
+    }
+#endif
+    void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+    {
+        if (y < (PANEL_Y / 2))
+        {
+            // we are in upper half of pixels
+            uint8_t index = (y * PANEL_X + x) / 4;
+            switch (x % 4)
+            {
+            case 0: /*first pixel*/
+                buffer[index].redUpperBit1Led1 = red;
+                buffer[index].greenUpperBit1Led1 = green;
+                buffer[index].blueUpperBit1Led1 = blue;
+                buffer[index].redUpperBit2Led1 = red >> (uint8_t)1;
+                buffer[index].greenUpperBit2Led1 = green >> (uint8_t)1;
+                buffer[index].blueUpperBit2Led1 = blue >> (uint8_t)1;
+                break;
+            case 1: /*second pixel*/
+                buffer[index].redUpperBit1Led2 = red;
+                buffer[index].greenUpperBit1Led2 = green;
+                buffer[index].blueUpperBit1Led2 = blue;
+                buffer[index].redUpperBit2Led2 = red >> (uint8_t)1;
+                buffer[index].greenUpperBit2Led2 = green >> (uint8_t)1;
+                buffer[index].blueUpperBit2Led2 = blue >> (uint8_t)1;
+                break;
+            case 2: /*third pixel*/
+                buffer[index].redUpperBit1Led3 = red;
+                buffer[index].greenUpperBit1Led3 = green;
+                buffer[index].blueUpperBit1Led3 = blue;
+                buffer[index].redUpperBit2Led3 = red >> (uint8_t)1;
+                buffer[index].greenUpperBit2Led3 = green >> (uint8_t)1;
+                buffer[index].blueUpperBit2Led3 = blue >> (uint8_t)1;
+                break;
+            case 3: /*fourth pixel*/
+                buffer[index].redUpperBit1Led4 = red;
+                buffer[index].greenUpperBit1Led4 = green;
+                buffer[index].blueUpperBit1Led4 = blue;
+                buffer[index].redUpperBit2Led4 = red >> (uint8_t)1;
+                buffer[index].greenUpperBit2Led4 = green >> (uint8_t)1;
+                buffer[index].blueUpperBit2Led4 = blue >> (uint8_t)1;
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            y -= (PANEL_Y / 2);
+            // we are in lower half of pixels
+            uint8_t index = (y * PANEL_X + x) / 4;
+            switch (x % 4)
+            {
+            case 0:
+                buffer[index].redLowerBit1Led1 = red;
+                buffer[index].greenLowerBit1Led1 = green;
+                buffer[index].blueLowerBit1Led1 = blue;
+                buffer[index].redLowerBit2Led1 = red >> (uint8_t)1;
+                buffer[index].greenLowerBit2Led1 = green >> (uint8_t)1;
+                buffer[index].blueLowerBit2Led1 = blue >> (uint8_t)1;
+                break;
+            case 1: /*second pixel*/
+                buffer[index].redLowerBit1Led2 = red;
+                buffer[index].greenLowerBit1Led2 = green;
+                buffer[index].blueLowerBit1Led2 = blue;
+                buffer[index].redLowerBit2Led2 = red >> (uint8_t)1;
+                buffer[index].greenLowerBit2Led2 = green >> (uint8_t)1;
+                buffer[index].blueLowerBit2Led2 = blue >> (uint8_t)1;
+                break;
+            case 2: /*third pixel*/
+                buffer[index].redLowerBit1Led3 = red;
+                buffer[index].greenLowerBit1Led3 = green;
+                buffer[index].blueLowerBit1Led3 = blue;
+                buffer[index].redLowerBit2Led3 = red >> (uint8_t)1;
+                buffer[index].greenLowerBit2Led3 = green >> (uint8_t)1;
+                buffer[index].blueLowerBit2Led3 = blue >> (uint8_t)1;
+                break;
+            case 3: /*fourth pixel*/
+                buffer[index].redLowerBit1Led4 = red;
+                buffer[index].greenLowerBit1Led4 = green;
+                buffer[index].blueLowerBit1Led4 = blue;
+                buffer[index].redLowerBit2Led4 = red >> (uint8_t)1;
+                buffer[index].greenLowerBit2Led4 = green >> (uint8_t)1;
+                buffer[index].blueLowerBit2Led4 = blue >> (uint8_t)1;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+#else
+
+    void displayFlashBuffer()
+    {
+        uint16_t index = 0;
+        for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
+        {
+            // we send first the MMSB, then MSB, LSB, LLSB
+            index = (uint16_t)(buffer + (y << (uint8_t)6));
+
+#pragma region MMSB
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index));
+            Clock;
+            // shift data into buffers
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(100 - brightness);
+            }
+        }
+#pragma endregion // MMSB
+
+        for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
+        {
+            index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 4);
+
+#pragma region MSB
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index));
+            Clock;
+            // shift data into buffers
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness / 2);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(50 - brightness / 2);
+            }
+        }
+#pragma endregion // MMSB
+
+        for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
+        {
+            index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 2);
+
+#pragma region LSB
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index));
+            Clock;
+            // shift data into buffers
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness / 4);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(25 - brightness / 4);
+            }
+        }
+#pragma endregion // LSB
+
+        for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
+        {
+            index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE * 3 / 4); // advance index to next section
+
+#pragma region LLSB
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index++));
+            Clock;
+            SET_COLOR(pgm_read_byte(index));
+            Clock;
+            // shift data into buffers
+            HIGH_OE;
+            LATCH;
+            stepRow();
+            CLEAR_OE;
+            delayMicroseconds(brightness / 8);
+            if (brightness < 100)
+            {
+                HIGH_OE;
+                delayMicroseconds(13 - brightness / 8);
+            }
+#pragma endregion // LLSB
+        }
+    }
+#endif
+#pragma endregion // buffer_specifics
+#endif
+};
