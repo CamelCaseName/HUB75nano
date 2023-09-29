@@ -24,7 +24,6 @@
 // #define PANEL_NO_BUFFER //no buffer, immediate mode only
 // #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in GPIOB
 // #define PANEL_NO_FONT //disables everything font related, saves some flash
-// #define PANEL_HIGH_RES //enables high res (single pixel) output in a 64x64 window
 /////////////////////
 
 #pragma region definitions
@@ -43,18 +42,9 @@
 #ifdef PANEL_NO_BUFFER
 #undef PANEL_FLASH
 #undef PANEL_BIG
-#undef PANEL_HIGH_RES
 #define PANEL_NO_FONT
 #endif
-#ifdef PANEL_HIGH_RES
-#ifdef PANEL_BIG
-#error "The high resolution mode is only available with the flash buffer or 1 bit buffer"
-#endif
-#endif
-#ifdef PANEL_HIGH_RES
-#define PANEL_X 64
-#define PANEL_Y 64
-#endif
+
 #ifdef PANEL_FLASH
 #undef PANEL_BIG
 
@@ -1429,7 +1419,7 @@ private:
             }
         }
     }
-#endif
+
     void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
     {
         if (y < (PANEL_Y / 2))
@@ -1518,6 +1508,7 @@ private:
             }
         }
     }
+#endif
 #else
 
     void displayFlashBuffer()
