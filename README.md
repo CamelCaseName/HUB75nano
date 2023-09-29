@@ -9,13 +9,15 @@ Clone or download the archive and put it inside your Arduino IDE custom library 
 Then just put `#import <Panel.h>` and everything should work.
 	
 Definitions you can use to change how the library works
+```
 /////////////////////
-// `#define PANEL_BIG` // use 2 bit rgb image buffer
-// `#define PANEL_FLASH` // 4 bit flash buffer
-// `#define PANEL_NO_BUFFER` //no buffer, immediate mode only
-// `#define PANEL_GPIO_NON_INTRUSIVE` //dont overwrite the other pins in GPIOB
-// `#define PANEL_NO_FONT` //disables everything font related, saves some flash
+// #define PANEL_BIG // use 2 bit rgb image buffer
+// #define PANEL_FLASH // 4 bit flash buffer
+// #define PANEL_NO_BUFFER //no buffer, immediate mode only
+// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in GPIOB
+// #define PANEL_NO_FONT //disables everything font related, saves some flash
 /////////////////////
+```
 
 A writeup on very early stages of development is [here](https://create.arduino.cc/projecthub/CamelCaseName/running-a-32x64-rgb-led-panel-with-only-an-arduino-nano-c19385).
 

@@ -114,7 +114,7 @@
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
 // set 6 color pins and keep the rx tx pins as are
 #define SET_COLOR(value) \
-    PORTD = value | PORTD & (uint8_t)3
+    PORTD = value | (PORTD & (uint8_t)3)
 #else
 #error "Please keep the same pin numbering on the color pins, its not fast enough with different pins"
 #endif
