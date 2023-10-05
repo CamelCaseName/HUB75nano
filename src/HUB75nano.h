@@ -717,25 +717,27 @@ public:
         HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
         fill_bg = bg_color != NO_COLOR;
+        uint8_t width = 4 * size_modifier;
+        uint8_t height = 5 * size_modifier;
         // iterate through the character line by line
         char out;
-        for (uint8_t i = 0; i < 5 * size_modifier; i++)
+        for (uint8_t i = 0; i < height; i++)
         {
-            out = getFontLine(letter, i / size_modifier);
-            // iterate through the character bit by bit
-            for (uint8_t j = 4 * size_modifier; j > 0; --j)
+            uint8_t scaled_i = i / size_modifier;
+            out = getFontLine(letter, scaled_i);
+            // iterate through the character bit by bit, so x direction
+            for (uint8_t j = width; j > 0; --j)
             {
                 // shift by j and check for bit set
-                if (out & (1 << j / size_modifier))
+                if (out & (1 << (j / size_modifier)))
                 {
                     // set pixel at i and j
-                    setBuffer(x + 4 * size_modifier - j, y + i, red, green, blue);
+                    setBuffer(x + j, y + i, red, green, blue);
+                    continue;
                 }
-                else
-                {
-                    if (fill_bg)
-                        setBuffer(x + 4 * size_modifier - j, y + i, bg_red, bg_green, bg_blue);
-                }
+
+                if (fill_bg)
+                    setBuffer(x + j, y + i, bg_red, bg_green, bg_blue);
             }
         }
     }
