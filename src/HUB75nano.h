@@ -22,9 +22,11 @@
 /////////////////////
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
-// #define PANEL_NO_BUFFER //no buffer, immediate mode only
-// #define PANEL_NO_FONT //disables everything font related, saves some flash
-// #define PANEL_MAX_SPEED //aggresively inlines the 4 draw assembly instructions, else its kept as a method to keep size down
+// #define PANEL_NO_BUFFER // no buffer, immediate mode only
+// #define PANEL_NO_FONT // disables everything font related, saves some flash
+// #define PANEL_MAX_SPEED // aggresively inlines the 4 draw assembly instructions, else its kept as a method to keep size down
+// #define PANEL_FLIP_VERTICAL // flips the panel vertically
+// #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
 /////////////////////
 
 #pragma region definitions
@@ -1301,6 +1303,12 @@ displaySmallBuffer()
 #ifndef PANEL_FLASH
 void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
 {
+#ifdef PANEL_FLIP_VERTICAL
+    y = PANEL_Y - y;
+#endif
+#ifdef PANEL_FLIP_HORIZONTAL
+    x = PANEL_X - x;
+#endif
     if (y < (PANEL_Y / 2))
     {
         // we are in upper half of pixels

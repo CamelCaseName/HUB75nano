@@ -15,7 +15,9 @@ Definitions you can use to change how the library works
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
 // #define PANEL_NO_FONT // disables everything font related, saves some flash
-// #define PANEL_MAX_SPEED // trades more size for more speed
+// #define PANEL_MAX_SPEED // uses more space but is faster, usually not needed
+// #define PANEL_FLIP_VERTICAL // flips the panel vertically
+// #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
 /////////////////////
 ```
 
@@ -29,26 +31,28 @@ The corresponding pins on the arduino are as follows:
 
 Pin mapping:
 
-| Connector | nano | function                                                     |
-| --------- | ---- | ------------------------------------------------------------ |
-| A         | A0   | First/Least significant row bit                              |
-| B         | A1   | Second row bit                                               |
-| C         | A2   | Third row bit                                                |
-| D         | A3   | Fourth/Most significant row bit                              |
-| R1        | 2    | Set red LED on upper half                                    |
-| G1        | 3    | Set green LED on upper half                                  |
-| B1        | 4    | Set blue LED on upper half                                   |
-| R2        | 5    | Set red LED on lower half                                    |
-| G2        | 6    | Set green LED on lower half                                  |
-| B2        | 7    | Set blue LED on lower half                                   |
-| CLK       | 9    | Shifts the data on rising edge                               |
-| LAT       | 10   | Latches the data from the shift registers to the LED drivers |
-| OE        | 11   | Enables the output of the LED drivers                        |
-| GND       | GND  | Ground reference                                             |
+| Connector | nano | def. name | function                                                     |
+| --------- | ---- | --------- | ------------------------------------------------------------ |
+| A         | A0   | RA        | First/Least significant row bit                              |
+| B         | A1   | RB        | Second row bit                                               |
+| C         | A2   | RC        | Third row bit                                                |
+| D         | A3   | RD        | Fourth/Most significant row bit                              |
+| R1        | 2    | RF        | Set red LED on upper half                                    |
+| G1        | 3    | GF        | Set green LED on upper half                                  |
+| B1        | 4    | BF        | Set blue LED on upper half                                   |
+| R2        | 5    | RS        | Set red LED on lower half                                    |
+| G2        | 6    | GS        | Set green LED on lower half                                  |
+| B2        | 7    | BS        | Set blue LED on lower half                                   |
+| CLK       | 9    | CLK       | Shifts the data on rising edge                               |
+| LAT       | 10   | LAT       | Latches the data from the shift registers to the LED drivers |
+| OE        | 11   | OE        | Enables the output of the LED drivers                        |
+| GND       | GND  | -         | Ground reference                                             |
 
 Right side is the panel, left the Arduino.
 
-You can deviate from this mapping but it comes at a speed cost.
+You can deviate from this mapping but it comes at a speed cost. To use your own pins, refer to the table above (def. name coloumn) and just define the pin to one you like. 
+
+Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
 
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 
