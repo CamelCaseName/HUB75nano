@@ -13,9 +13,9 @@ Definitions you can use to change how the library works
 /////////////////////
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
-// #define PANEL_NO_BUFFER //no buffer, immediate mode only
-// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in GPIOB
-// #define PANEL_NO_FONT //disables everything font related, saves some flash
+// #define PANEL_NO_BUFFER // no buffer, immediate mode only
+// #define PANEL_NO_FONT // disables everything font related, saves some flash
+// #define PANEL_MAX_SPEED // trades more size for more speed
 /////////////////////
 ```
 
@@ -48,6 +48,8 @@ Pin mapping:
 
 Right side is the panel, left the Arduino.
 
+You can deviate from this mapping but it comes at a speed cost.
+
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 
 
@@ -55,5 +57,6 @@ This library also contains some examples on how to use it. The examples all are 
 ### voltage issues
 - when running more than 800 LEDs on full white, the color starts to deterioate quickly. this happens because the blue LEDs need more voltage to run than the others, therefore it turns into an orange color. You can get more white LEDs when running them in coloumns (max about 25\*31) than rows (63\*23). With full white rows it starts to turn orange at about 4 to 5 rows. this can be helped by overvolting the panel supply voltage to above 5V, but it is not recommended. Tests have shown 6 full rows of white at 5.7V and no rows at 4.6V. 
 
-### 2 bit/limited color depth
-- Due to the limited 2k SRAM of the nano we can't store more than 2\*3\*2048 bits (1536 byte, 2 bit per color per pixel) of color info. For a smaller panel the maximum color depth would be higher, but the code for that case isn't written yet. The Flash also isn't an option as it is limited to about 10k write cycles and would therefore fail way faster than if we were to only store the program and not its dynamic data on there. And the 1k of EEPROM also wont help as they are a) only 1k and b) slow to read and write. So either use a programmatic way of displaying things for more than 2bits using the respecitve methods for directly addressing the panel or stick to more than 2 bit in a static setting where we load the image onto the nano alongside the program once.
+### No Panel Chaining / other sizes really supported yet, is planned
+
+### Flipping vertically/horizontally is planned
