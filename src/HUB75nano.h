@@ -1057,9 +1057,16 @@ public:
 #pragma endregion // buffer_definition
 private:
     uint8_t row = 0, red, green, blue;
+
+    // we can only set the row fast when the pins are in order
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void stepRow()
+    {
+#else
     inline void stepRow()
     {
-        // we can only set the row fast when the pins are in order
+#endif
+
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17
         // set the 4 row pins at once
         PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224;
@@ -1084,15 +1091,17 @@ private:
         row = (row + 1) & (uint8_t)31;
     }
 
+    // bulk pin access color, only good if pins are in right order
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void set_color(uint8_t value){
+#else
     inline void set_color(uint8_t value)
     {
-        // bulk pin access color, only good if pins are in right order
-
+#endif
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
         // set 6 color pins and keep the rx tx pins as are
         PORTD = value | (PORTD & (uint8_t)3);
 #else
-
         __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
         high_pin(PORT_RF, PORT_PIN_RF);
         __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
@@ -1118,677 +1127,679 @@ private:
         __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
         clear_pin(PORT_BS, PORT_PIN_BS);
 #endif
-    }
+}
 
 #pragma region buffer_specifics
 #ifndef PANEL_FLASH
 #ifndef PANEL_BIG
-    void displaySmallBuffer()
+void
+displaySmallBuffer()
+{
+    LED *index;
+    for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
     {
-        LED *index;
-        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
-        {
-            index = (LED *)(&buffer) + (y << (uint8_t)4);
-            // we set each pixel after the other
+        index = (LED *)(&buffer) + (y << (uint8_t)4);
+        // we set each pixel after the other
 
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
 
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            // set row
-            HIGH_OE;
-            LATCH;
-            stepRow();
-            CLEAR_OE;
-        }
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        // set row
+        HIGH_OE;
+        LATCH;
+        stepRow();
+        CLEAR_OE;
     }
+}
 #ifndef PANEL_FLASH
-    void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (y < (PANEL_Y / 2))
     {
-        if (y < (PANEL_Y / 2))
+        // we are in upper half of pixels
+        uint16_t index = ((y * PANEL_X) + x) / 4;
+        switch (x % 4)
         {
-            // we are in upper half of pixels
-            uint16_t index = ((y * PANEL_X) + x) / 4;
-            switch (x % 4)
-            {
-            case 0: /*first pixel*/
-                buffer[index].redUpperBit1Led1 = red;
-                buffer[index].greenUpperBit1Led1 = green;
-                buffer[index].blueUpperBit1Led1 = blue;
-                break;
-            case 1: /*second pixel*/
-                buffer[index].redUpperBit1Led2 = red;
-                buffer[index].greenUpperBit1Led2 = green;
-                buffer[index].blueUpperBit1Led2 = blue;
-                break;
-            case 2: /*third pixel*/
-                buffer[index].redUpperBit1Led3 = red;
-                buffer[index].greenUpperBit1Led3 = green;
-                buffer[index].blueUpperBit1Led3 = blue;
-                break;
-            case 3: /*fourth pixel*/
-                buffer[index].redUpperBit1Led4 = red;
-                buffer[index].greenUpperBit1Led4 = green;
-                buffer[index].blueUpperBit1Led4 = blue;
-                break;
-            default:
-                break;
-            }
-        }
-        else
-        {
-            y -= (PANEL_Y / 2);
-            // we are in lower half of pixels
-            uint16_t index = (y * PANEL_X + x) / 4;
-            switch (x % 4)
-            {
-            case 0: /*first pixel*/
-                buffer[index].redLowerBit1Led1 = red;
-                buffer[index].greenLowerBit1Led1 = green;
-                buffer[index].blueLowerBit1Led1 = blue;
-                break;
-            case 1: /*second pixel*/
-                buffer[index].redLowerBit1Led2 = red;
-                buffer[index].greenLowerBit1Led2 = green;
-                buffer[index].blueLowerBit1Led2 = blue;
-                break;
-            case 2: /*third pixel*/
-                buffer[index].redLowerBit1Led3 = red;
-                buffer[index].greenLowerBit1Led3 = green;
-                buffer[index].blueLowerBit1Led3 = blue;
-                break;
-            case 3: /*fourth pixel*/
-                buffer[index].redLowerBit1Led4 = red;
-                buffer[index].greenLowerBit1Led4 = green;
-                buffer[index].blueLowerBit1Led4 = blue;
-                break;
-            default:
-                break;
-            }
+        case 0: /*first pixel*/
+            buffer[index].redUpperBit1Led1 = red;
+            buffer[index].greenUpperBit1Led1 = green;
+            buffer[index].blueUpperBit1Led1 = blue;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redUpperBit1Led2 = red;
+            buffer[index].greenUpperBit1Led2 = green;
+            buffer[index].blueUpperBit1Led2 = blue;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redUpperBit1Led3 = red;
+            buffer[index].greenUpperBit1Led3 = green;
+            buffer[index].blueUpperBit1Led3 = blue;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redUpperBit1Led4 = red;
+            buffer[index].greenUpperBit1Led4 = green;
+            buffer[index].blueUpperBit1Led4 = blue;
+            break;
+        default:
+            break;
         }
     }
+    else
+    {
+        y -= (PANEL_Y / 2);
+        // we are in lower half of pixels
+        uint16_t index = (y * PANEL_X + x) / 4;
+        switch (x % 4)
+        {
+        case 0: /*first pixel*/
+            buffer[index].redLowerBit1Led1 = red;
+            buffer[index].greenLowerBit1Led1 = green;
+            buffer[index].blueLowerBit1Led1 = blue;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redLowerBit1Led2 = red;
+            buffer[index].greenLowerBit1Led2 = green;
+            buffer[index].blueLowerBit1Led2 = blue;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redLowerBit1Led3 = red;
+            buffer[index].greenLowerBit1Led3 = green;
+            buffer[index].blueLowerBit1Led3 = blue;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redLowerBit1Led4 = red;
+            buffer[index].greenLowerBit1Led4 = green;
+            buffer[index].blueLowerBit1Led4 = blue;
+            break;
+        default:
+            break;
+        }
+    }
+}
 #endif
 #else
-    void displayBigBuffer()
+void
+displayBigBuffer()
+{
+    LED *index;
+
+    // coding:
+    // 00 -> off
+    // 01 -> 33%
+    // 10 -> 66%
+    // 11 -> on
+    // msb
+    for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
     {
-        LED *index;
+        index = (LED *)(&buffer) + (y << (uint8_t)4);
 
-        // coding:
-        // 00 -> off
-        // 01 -> 33%
-        // 10 -> 66%
-        // 11 -> on
-        // msb
-        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        ++index;
+        set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+        Clock;
+        // display row
+        HIGH_OE;
+        LATCH;
+        stepRow();
+        CLEAR_OE;
+        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
+        if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
         {
-            index = (LED *)(&buffer) + (y << (uint8_t)4);
-
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            ++index;
-            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
-            Clock;
-            // display row
             HIGH_OE;
-            LATCH;
-            stepRow();
-            CLEAR_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-            }
-        }
-        // lsb
-        for (uint8_t y = 0; y < PANEL_Y / 2; y++)
-        {
-
-            index = (LED *)(&buffer) + (y << (uint8_t)4);
-
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            ++index;
-            set_color(*(uint8_t *)(index) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
-            Clock;
-            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
-            Clock;
-            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
-            Clock;
-            // display row
-            HIGH_OE;
-            LATCH;
-            stepRow();
-            CLEAR_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
-            }
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
         }
     }
-
-    void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+    // lsb
+    for (uint8_t y = 0; y < PANEL_Y / 2; y++)
     {
-        if (y < (PANEL_Y / 2))
+
+        index = (LED *)(&buffer) + (y << (uint8_t)4);
+
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        ++index;
+        set_color(*(uint8_t *)(index) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+        Clock;
+        set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+        Clock;
+        set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+        Clock;
+        // display row
+        HIGH_OE;
+        LATCH;
+        stepRow();
+        CLEAR_OE;
+        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+        if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
         {
-            // we are in upper half of pixels
-            uint8_t index = (y * PANEL_X + x) / 4;
-            switch (x % 4)
-            {
-            case 0: /*first pixel*/
-                buffer[index].redUpperBit1Led1 = red;
-                buffer[index].greenUpperBit1Led1 = green;
-                buffer[index].blueUpperBit1Led1 = blue;
-                buffer[index].redUpperBit2Led1 = red >> (uint8_t)1;
-                buffer[index].greenUpperBit2Led1 = green >> (uint8_t)1;
-                buffer[index].blueUpperBit2Led1 = blue >> (uint8_t)1;
-                break;
-            case 1: /*second pixel*/
-                buffer[index].redUpperBit1Led2 = red;
-                buffer[index].greenUpperBit1Led2 = green;
-                buffer[index].blueUpperBit1Led2 = blue;
-                buffer[index].redUpperBit2Led2 = red >> (uint8_t)1;
-                buffer[index].greenUpperBit2Led2 = green >> (uint8_t)1;
-                buffer[index].blueUpperBit2Led2 = blue >> (uint8_t)1;
-                break;
-            case 2: /*third pixel*/
-                buffer[index].redUpperBit1Led3 = red;
-                buffer[index].greenUpperBit1Led3 = green;
-                buffer[index].blueUpperBit1Led3 = blue;
-                buffer[index].redUpperBit2Led3 = red >> (uint8_t)1;
-                buffer[index].greenUpperBit2Led3 = green >> (uint8_t)1;
-                buffer[index].blueUpperBit2Led3 = blue >> (uint8_t)1;
-                break;
-            case 3: /*fourth pixel*/
-                buffer[index].redUpperBit1Led4 = red;
-                buffer[index].greenUpperBit1Led4 = green;
-                buffer[index].blueUpperBit1Led4 = blue;
-                buffer[index].redUpperBit2Led4 = red >> (uint8_t)1;
-                buffer[index].greenUpperBit2Led4 = green >> (uint8_t)1;
-                buffer[index].blueUpperBit2Led4 = blue >> (uint8_t)1;
-                break;
-            default:
-                break;
-            }
-        }
-        else
-        {
-            y -= (PANEL_Y / 2);
-            // we are in lower half of pixels
-            uint8_t index = (y * PANEL_X + x) / 4;
-            switch (x % 4)
-            {
-            case 0:
-                buffer[index].redLowerBit1Led1 = red;
-                buffer[index].greenLowerBit1Led1 = green;
-                buffer[index].blueLowerBit1Led1 = blue;
-                buffer[index].redLowerBit2Led1 = red >> (uint8_t)1;
-                buffer[index].greenLowerBit2Led1 = green >> (uint8_t)1;
-                buffer[index].blueLowerBit2Led1 = blue >> (uint8_t)1;
-                break;
-            case 1: /*second pixel*/
-                buffer[index].redLowerBit1Led2 = red;
-                buffer[index].greenLowerBit1Led2 = green;
-                buffer[index].blueLowerBit1Led2 = blue;
-                buffer[index].redLowerBit2Led2 = red >> (uint8_t)1;
-                buffer[index].greenLowerBit2Led2 = green >> (uint8_t)1;
-                buffer[index].blueLowerBit2Led2 = blue >> (uint8_t)1;
-                break;
-            case 2: /*third pixel*/
-                buffer[index].redLowerBit1Led3 = red;
-                buffer[index].greenLowerBit1Led3 = green;
-                buffer[index].blueLowerBit1Led3 = blue;
-                buffer[index].redLowerBit2Led3 = red >> (uint8_t)1;
-                buffer[index].greenLowerBit2Led3 = green >> (uint8_t)1;
-                buffer[index].blueLowerBit2Led3 = blue >> (uint8_t)1;
-                break;
-            case 3: /*fourth pixel*/
-                buffer[index].redLowerBit1Led4 = red;
-                buffer[index].greenLowerBit1Led4 = green;
-                buffer[index].blueLowerBit1Led4 = blue;
-                buffer[index].redLowerBit2Led4 = red >> (uint8_t)1;
-                buffer[index].greenLowerBit2Led4 = green >> (uint8_t)1;
-                buffer[index].blueLowerBit2Led4 = blue >> (uint8_t)1;
-                break;
-            default:
-                break;
-            }
+            HIGH_OE;
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
         }
     }
+}
+
+void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (y < (PANEL_Y / 2))
+    {
+        // we are in upper half of pixels
+        uint8_t index = (y * PANEL_X + x) / 4;
+        switch (x % 4)
+        {
+        case 0: /*first pixel*/
+            buffer[index].redUpperBit1Led1 = red;
+            buffer[index].greenUpperBit1Led1 = green;
+            buffer[index].blueUpperBit1Led1 = blue;
+            buffer[index].redUpperBit2Led1 = red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led1 = green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led1 = blue >> (uint8_t)1;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redUpperBit1Led2 = red;
+            buffer[index].greenUpperBit1Led2 = green;
+            buffer[index].blueUpperBit1Led2 = blue;
+            buffer[index].redUpperBit2Led2 = red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led2 = green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led2 = blue >> (uint8_t)1;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redUpperBit1Led3 = red;
+            buffer[index].greenUpperBit1Led3 = green;
+            buffer[index].blueUpperBit1Led3 = blue;
+            buffer[index].redUpperBit2Led3 = red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led3 = green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led3 = blue >> (uint8_t)1;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redUpperBit1Led4 = red;
+            buffer[index].greenUpperBit1Led4 = green;
+            buffer[index].blueUpperBit1Led4 = blue;
+            buffer[index].redUpperBit2Led4 = red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led4 = green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led4 = blue >> (uint8_t)1;
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        y -= (PANEL_Y / 2);
+        // we are in lower half of pixels
+        uint8_t index = (y * PANEL_X + x) / 4;
+        switch (x % 4)
+        {
+        case 0:
+            buffer[index].redLowerBit1Led1 = red;
+            buffer[index].greenLowerBit1Led1 = green;
+            buffer[index].blueLowerBit1Led1 = blue;
+            buffer[index].redLowerBit2Led1 = red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led1 = green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led1 = blue >> (uint8_t)1;
+            break;
+        case 1: /*second pixel*/
+            buffer[index].redLowerBit1Led2 = red;
+            buffer[index].greenLowerBit1Led2 = green;
+            buffer[index].blueLowerBit1Led2 = blue;
+            buffer[index].redLowerBit2Led2 = red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led2 = green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led2 = blue >> (uint8_t)1;
+            break;
+        case 2: /*third pixel*/
+            buffer[index].redLowerBit1Led3 = red;
+            buffer[index].greenLowerBit1Led3 = green;
+            buffer[index].blueLowerBit1Led3 = blue;
+            buffer[index].redLowerBit2Led3 = red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led3 = green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led3 = blue >> (uint8_t)1;
+            break;
+        case 3: /*fourth pixel*/
+            buffer[index].redLowerBit1Led4 = red;
+            buffer[index].greenLowerBit1Led4 = green;
+            buffer[index].blueLowerBit1Led4 = blue;
+            buffer[index].redLowerBit2Led4 = red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led4 = green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led4 = blue >> (uint8_t)1;
+            break;
+        default:
+            break;
+        }
+    }
+}
 #endif
 #else
 
@@ -2414,5 +2425,6 @@ private:
     }
 #endif
 #pragma endregion // buffer_specifics
-};
+}
+;
 #endif
