@@ -22,7 +22,7 @@
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER //no buffer, immediate mode only
-// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in GPIOB
+// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in IO bytes
 // #define PANEL_NO_FONT //disables everything font related, saves some flash
 /////////////////////
 
@@ -33,18 +33,23 @@
 #error "This library only supports the Arduino nano and Uno, so the atm368p with 2kb sram, 1kb eeprom and 32kb flash. For other chips/boards, please see the internet or try to adapt this library here, but no guarantees"
 #endif
 #endif
+
+// standard sizes
 #ifndef PANEL_X
 #define PANEL_X 64
 #endif
 #ifndef PANEL_Y
 #define PANEL_Y 32
 #endif
+
+// buffer toggle
 #ifdef PANEL_NO_BUFFER
 #undef PANEL_FLASH
 #undef PANEL_BIG
 #define PANEL_NO_FONT
 #endif
 
+// flash toggle
 #ifdef PANEL_FLASH
 #undef PANEL_BIG
 
@@ -61,6 +66,8 @@
 #ifndef PANEL_BUFFERSIZE
 #define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y / 8)
 #endif
+
+// color transformatuion values
 #ifndef MAX_COLORDEPTH
 #ifdef PANEL_BIG
 #define MAX_COLORDEPTH 2
@@ -76,61 +83,311 @@
 #endif
 #endif
 #endif
+
 #define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH - 1)
 #define COLOR_CLAMP (255.0 / (MAX_COLOR))
-// actual pin numbers
-#define RA 14  // register selector a
-#define RB 15  // register selector b
-#define RC 16  // register selector c
-#define RD 17  // register selector d
-#define RE 18  // register selector e
-#define RF 2   // red first byte
-#define GF 3   // green first byte
-#define BF 4   // blue first byte
-#define RS 5   // red second byte
-#define GS 6   // green second byte
-#define BS 7   // blue second byte
-#define CLK 9  // clock signal
+
+// actual pin numbers like in the arduino digitalwrite, can be changed here or in your project
+#ifndef RA
+#define RA 14 // row selector a
+#endif
+#ifndef RB
+#define RB 15 // row selector b
+#endif
+#ifndef RC
+#define RC 16 // row selector c
+#endif
+#ifndef RD
+#define RD 17 // row selector d
+#endif
+// currently unused
+#ifndef RE
+#define RE 18 // row selector e
+#endif
+#ifndef RF
+#define RF 2 // red first byte
+#endif
+#ifndef GF
+#define GF 3 // green first byte
+#endif
+#ifndef BF
+#define BF 4 // blue first byte
+#endif
+#ifndef RS
+#define RS 5 // red second byte
+#endif
+#ifndef GS
+#define GS 6 // green second byte
+#endif
+#ifndef BS
+#define BS 7 // blue second byte
+#endif
+#ifndef CLK
+#define CLK 9 // clock signal
+#endif
+#ifndef LAT
 #define LAT 10 // data latch
-#define OE 11  // output enable
+#endif
+#ifndef OE
+#define OE 11 // output enable
+#endif
+
 // ref https://roboticsbackend.com/arduino-fast-digitalwrite/#Using_direct_port_manipulation_instead_of_digitalWrite
-// helper definitions
+// helper definitions for setting/clearing
 #define high_pin(port, number) port |= 1 << number
 #define clear_pin(port, number) port &= ~(1 << number)
-// pin access defines, rows
-#define HIGH_RA high_pin(PORTC, 0)
-#define CLEAR_RA clear_pin(PORTC, 0)
-#define HIGH_RB high_pin(PORTC, 1)
-#define CLEAR_RB clear_pin(PORTC, 1)
-#define HIGH_RC high_pin(PORTC, 2)
-#define CLEAR_RC clear_pin(PORTC, 2)
-#define HIGH_RD high_pin(PORTC, 3)
-#define CLEAR_RD clear_pin(PORTC, 3)
-#define HIGH_RE high_pin(PORTC, 4)
-#define CLEAR_RE clear_pin(PORTC, 4)
-#define SET_ROW(row) \
-    PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224
+
+// arduino pin number to port number and the respective pin number conversion
+#pragma region pin_to_port_number_conversion
+// todo make script to generate these macros/do two preprocessor passes with makefile
+// first row pin
+#if RA < 8
+#define PORT_RA PORTD
+#define PORT_PIN_RA RA
+#else
+#if RA < 14
+#define PORT_RA PORTB
+#define PORT_PIN_RA RA - 8
+#else
+#define PORT_RA PORTC
+#define PORT_PIN_RA RA - 14
+#endif
+#endif
+
+// second row pin
+#if RB < 8
+#define PORT_RB PORTD
+#define PORT_PIN_RB RB
+#else
+#if RB < 14
+#define PORT_RB PORTB
+#define PORT_PIN_RB RB - 8
+#else
+#define PORT_RB PORTC
+#define PORT_PIN_RB RB - 14
+#endif
+#endif
+
+// third row pin
+#if RC < 8
+#define PORT_RC PORTD
+#define PORT_PIN_RC RC
+#else
+#if RC < 14
+#define PORT_RC PORTB
+#define PORT_PIN_RC RC - 8
+#else
+#define PORT_RC PORTC
+#define PORT_PIN_RC RC - 14
+#endif
+#endif
+
+// fourth row pin
+#if RD < 8
+#define PORT_RD PORTD
+#define PORT_PIN_RD RC
+#else
+#if RD < 14
+#define PORT_RD PORTB
+#define PORT_PIN_RD RD - 8
+#else
+#define PORT_RD PORTC
+#define PORT_PIN_RD RD - 14
+#endif
+#endif
+
+// fifth row pin
+#if RE < 8
+#define PORT_RE PORTD
+#define PORT_PIN_RE RE
+#else
+#if RE < 14
+#define PORT_RE PORTB
+#define PORT_PIN_RE RE - 8
+#else
+#define PORT_RE PORTC
+#define PORT_PIN_RE RE - 14
+#endif
+#endif
+
+// upper red
+#if RF < 8
+#define PORT_RF PORTD
+#define PORT_PIN_RF RF
+#else
+#if RF < 14
+#define PORT_RF PORTB
+#define PORT_PIN_RF RF - 8
+#else
+#define PORT_RF PORTC
+#define PORT_PIN_RF RF - 14
+#endif
+#endif
+
+// upper green
+#if GF < 8
+#define PORT_GF PORTD
+#define PORT_PIN_GF GF
+#else
+#if GF < 14
+#define PORT_GF PORTB
+#define PORT_PIN_GF GF - 8
+#else
+#define PORT_GF PORTC
+#define PORT_PIN_GF GF - 14
+#endif
+#endif
+
+// upper blue
+#if BF < 8
+#define PORT_BF PORTD
+#define PORT_PIN_BF BF
+#else
+#if BF < 14
+#define PORT_BF PORTB
+#define PORT_PIN_BF BF - 8
+#else
+#define PORT_BF PORTC
+#define PORT_PIN_BF BF - 14
+#endif
+#endif
+
+// lower red
+#if RS < 8
+#define PORT_RS PORTD
+#define PORT_PIN_RS RS
+#else
+#if RS < 14
+#define PORT_RS PORTB
+#define PORT_PIN_RS RS - 8
+#else
+#define PORT_RS PORTC
+#define PORT_PIN_RS RS - 14
+#endif
+#endif
+
+// lower green
+#if GS < 8
+#define PORT_GS PORTD
+#define PORT_PIN_GS GS
+#else
+#if GS < 14
+#define PORT_GS PORTB
+#define PORT_PIN_GS GS - 8
+#else
+#define PORT_GS PORTC
+#define PORT_PIN_GS GS - 14
+#endif
+#endif
+
+// lower blue
+#if BS < 8
+#define PORT_BS PORTD
+#define PORT_PIN_BS BS
+#else
+#if BS < 14
+#define PORT_BS PORTB
+#define PORT_PIN_BS BS - 8
+#else
+#define PORT_BS PORTC
+#define PORT_PIN_BS BS - 14
+#endif
+#endif
+
+// clock
+#if CLK < 8
+#define PORT_CLK PORTD
+#define PORT_PIN_CLK CLK
+#else
+#if CLK < 14
+#define PORT_CLK PORTB
+#define PORT_PIN_CLK CLK - 8
+#else
+#define PORT_CLK PORTC
+#define PORT_PIN_CLK CLK - 14
+#endif
+#endif
+
+// latch
+#if LAT < 8
+#define PORT_LAT PORTD
+#define PORT_PIN_LAT LAT
+#else
+#if LAT < 14
+#define PORT_LAT PORTB
+#define PORT_PIN_LAT LAT - 8
+#else
+#define PORT_LAT PORTC
+#define PORT_PIN_LAT LAT - 14
+#endif
+#endif
+
+// output enable
+#if OE < 8
+#define PORT_OE PORTD
+#define PORT_PIN_OE OE
+#else
+#if OE < 14
+#define PORT_OE PORTB
+#define PORT_PIN_OE OE - 8
+#else
+#define PORT_OE PORTC
+#define PORT_PIN_OE OE - 14
+#endif
+#endif
+
+#pragma endregion pin_to_port_number_conversion
+
 // bulk pin access color, only good if pins are in right order
+#ifndef PANEL_GPIO_NON_INTRUSIVE
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
 // set 6 color pins and keep the rx tx pins as are
 #define SET_COLOR(value) \
     PORTD = value | (PORTD & (uint8_t)3)
 #else
-#error "Please keep the same pin numbering on the color pins, its not fast enough with different pins"
+#define SET_COLOR(value)                                \
+    \                    
+        __asm__ __volatile__("sbrc	%0, 0" ::"r"(row)); \
+    high_pin(PORT_RA, PORT_PIN_RA);                     \
+    __asm__ __volatile__("sbrs	%0, 0" ::"r"(row));     \
+    clear_pin(PORT_RA, PORT_PIN_RA);                    \
+    __asm__ __volatile__("sbrc	%0, 1" ::"r"(row));     \
+    high_pin(PORT_RB, PORT_PIN_RB);                     \
+    __asm__ __volatile__("sbrs	%0, 1" ::"r"(row));     \
+    clear_pin(PORT_RB, PORT_PIN_RB);                    \
+    __asm__ __volatile__("sbrc	%0, 2" ::"r"(row));     \
+    high_pin(PORT_RC, PORT_PIN_RC);                     \
+    __asm__ __volatile__("sbrs	%0, 2" ::"r"(row));     \
+    clear_pin(PORT_RC, PORT_PIN_RC);                    \
+    __asm__ __volatile__("sbrc	%0, 3" ::"r"(row));     \
+    high_pin(PORT_RD, PORT_PIN_RD);                     \
+    __asm__ __volatile__("sbrs	%0, 3" ::"r"(row));     \
+    clear_pin(PORT_RD, PORT_PIN_RD);
 #endif
+#else
+#define SET_COLOR(value)                       \
+    set_pin(PORT_RF, PORT_PIN_RF, value & 4);  \
+    set_pin(PORT_GF, PORT_PIN_GF, value & 8);  \
+    set_pin(PORT_BF, PORT_PIN_BF, value & 16); \
+    set_pin(PORT_RS, PORT_PIN_RS, value & 32); \
+    set_pin(PORT_GS, PORT_PIN_GS, value & 64); \
+    set_pin(PORT_BS, PORT_PIN_BS, value & 128)
+#endif
+
 // pin access defines, rest
-#define HIGH_CLK high_pin(PORTB, 1)
-#define CLEAR_CLK clear_pin(PORTB, 1)
-#define HIGH_LAT high_pin(PORTB, 2)
-#define CLEAR_LAT clear_pin(PORTB, 2)
-#define HIGH_OE high_pin(PORTB, 3)
-#define CLEAR_OE clear_pin(PORTB, 3)
+#define HIGH_CLK high_pin(PORT_CLK, PORT_PIN_CLK)
+#define CLEAR_CLK clear_pin(PORT_CLK, PORT_PIN_CLK)
+#define HIGH_LAT high_pin(PORT_LAT, PORT_PIN_LAT)
+#define CLEAR_LAT clear_pin(PORT_LAT, PORT_PIN_LAT)
+#define HIGH_OE high_pin(PORT_OE, PORT_PIN_OE)
+#define CLEAR_OE clear_pin(PORT_OE, PORT_PIN_OE)
 #define Clock \
     HIGH_CLK; \
     CLEAR_CLK
 #define LATCH \
     HIGH_LAT; \
     CLEAR_LAT
+
 #pragma endregion // definitions
 
 #pragma region color_helpers
@@ -837,11 +1094,32 @@ private:
     uint8_t row = 0, red, green, blue;
     inline void stepRow()
     {
-        SET_ROW(row);
-        row = (row + 1) & (uint8_t)31;
+        // we can only set the row fast when the pins are in order
+#if RA == 14 and RB == 15 and RC == 16 and RD == 17
+        // set the 4 row pins at once
+        PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224
+#else
+        __asm__ __volatile__("sbrc	%0, 0" ::"r"(row));
+        high_pin(PORT_RA, PORT_PIN_RA);
+        __asm__ __volatile__("sbrs	%0, 0" ::"r"(row));
+        clear_pin(PORT_RA, PORT_PIN_RA);
+        __asm__ __volatile__("sbrc	%0, 1" ::"r"(row));
+        high_pin(PORT_RB, PORT_PIN_RB);
+        __asm__ __volatile__("sbrs	%0, 1" ::"r"(row));
+        clear_pin(PORT_RB, PORT_PIN_RB);
+        __asm__ __volatile__("sbrc	%0, 2" ::"r"(row));
+        high_pin(PORT_RC, PORT_PIN_RC);
+        __asm__ __volatile__("sbrs	%0, 2" ::"r"(row));
+        clear_pin(PORT_RC, PORT_PIN_RC);
+        __asm__ __volatile__("sbrc	%0, 3" ::"r"(row));
+        high_pin(PORT_RD, PORT_PIN_RD);
+        __asm__ __volatile__("sbrs	%0, 3" ::"r"(row));
+        clear_pin(PORT_RD, PORT_PIN_RD);
+#endif
+                                        row = (row + 1) & (uint8_t)31;
     }
 
-#pragma region buffer_specifics-
+#pragma region buffer_specifics
 #ifndef PANEL_FLASH
 #ifndef PANEL_BIG
     void displaySmallBuffer()
@@ -1513,7 +1791,8 @@ private:
 #endif
 #else
 
-    void displayFlashBuffer()
+    void
+    displayFlashBuffer()
     {
         uint16_t index = 0;
         for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
