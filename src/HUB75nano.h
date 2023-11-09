@@ -18,12 +18,13 @@
 #include <avr/pgmspace.h>
 #ifndef PANEL_H
 #define PANEL_H
+
 /////////////////////
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER //no buffer, immediate mode only
-// #define PANEL_GPIO_NON_INTRUSIVE //dont overwrite the other pins in IO bytes
 // #define PANEL_NO_FONT //disables everything font related, saves some flash
+// #define PANEL_MAX_SPEED //aggresively inlines the 4 draw assembly instructions, else its kept as a method to keep size down
 /////////////////////
 
 #pragma region definitions
@@ -336,43 +337,7 @@
 #endif
 #endif
 
-#pragma endregion pin_to_port_number_conversion
-
-// bulk pin access color, only good if pins are in right order
-#ifndef PANEL_GPIO_NON_INTRUSIVE
-#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
-// set 6 color pins and keep the rx tx pins as are
-#define SET_COLOR(value) \
-    PORTD = value | (PORTD & (uint8_t)3)
-#else
-#define SET_COLOR(value)                                \
-    \                    
-        __asm__ __volatile__("sbrc	%0, 0" ::"r"(row)); \
-    high_pin(PORT_RA, PORT_PIN_RA);                     \
-    __asm__ __volatile__("sbrs	%0, 0" ::"r"(row));     \
-    clear_pin(PORT_RA, PORT_PIN_RA);                    \
-    __asm__ __volatile__("sbrc	%0, 1" ::"r"(row));     \
-    high_pin(PORT_RB, PORT_PIN_RB);                     \
-    __asm__ __volatile__("sbrs	%0, 1" ::"r"(row));     \
-    clear_pin(PORT_RB, PORT_PIN_RB);                    \
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(row));     \
-    high_pin(PORT_RC, PORT_PIN_RC);                     \
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(row));     \
-    clear_pin(PORT_RC, PORT_PIN_RC);                    \
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(row));     \
-    high_pin(PORT_RD, PORT_PIN_RD);                     \
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(row));     \
-    clear_pin(PORT_RD, PORT_PIN_RD);
-#endif
-#else
-#define SET_COLOR(value)                       \
-    set_pin(PORT_RF, PORT_PIN_RF, value & 4);  \
-    set_pin(PORT_GF, PORT_PIN_GF, value & 8);  \
-    set_pin(PORT_BF, PORT_PIN_BF, value & 16); \
-    set_pin(PORT_RS, PORT_PIN_RS, value & 32); \
-    set_pin(PORT_GS, PORT_PIN_GS, value & 64); \
-    set_pin(PORT_BS, PORT_PIN_BS, value & 128)
-#endif
+#pragma endregion // pin_to_port_number_conversion
 
 // pin access defines, rest
 #define HIGH_CLK high_pin(PORT_CLK, PORT_PIN_CLK)
@@ -621,7 +586,7 @@ public:
             // bitness needs to be between 1 and 8, changes sent bitdepth. the lower, the faster
             for (uint8_t bitness = MAX_COLORDEPTH - 1; bitness < MAX_COLORDEPTH; bitness--)
             {
-                SET_COLOR((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
+                set_color((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
                 SendRow();
             }
             // advance 1 in row once we are done with one
@@ -1097,7 +1062,7 @@ private:
         // we can only set the row fast when the pins are in order
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17
         // set the 4 row pins at once
-        PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224
+        PORTC = row & (uint8_t)31 | PORTC & (uint8_t)224;
 #else
         __asm__ __volatile__("sbrc	%0, 0" ::"r"(row));
         high_pin(PORT_RA, PORT_PIN_RA);
@@ -1116,7 +1081,43 @@ private:
         __asm__ __volatile__("sbrs	%0, 3" ::"r"(row));
         clear_pin(PORT_RD, PORT_PIN_RD);
 #endif
-                                        row = (row + 1) & (uint8_t)31;
+        row = (row + 1) & (uint8_t)31;
+    }
+
+    inline void set_color(uint8_t value)
+    {
+        // bulk pin access color, only good if pins are in right order
+
+#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
+        // set 6 color pins and keep the rx tx pins as are
+        PORTD = value | (PORTD & (uint8_t)3);
+#else
+
+        __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
+        high_pin(PORT_RF, PORT_PIN_RF);
+        __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
+        clear_pin(PORT_RF, PORT_PIN_RF);
+        __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
+        high_pin(PORT_GF, PORT_PIN_GF);
+        __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
+        clear_pin(PORT_GF, PORT_PIN_GF);
+        __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
+        high_pin(PORT_BF, PORT_PIN_BF);
+        __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
+        clear_pin(PORT_BF, PORT_PIN_BF);
+        __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
+        high_pin(PORT_RS, PORT_PIN_RS);
+        __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
+        clear_pin(PORT_RS, PORT_PIN_RS);
+        __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
+        high_pin(PORT_GS, PORT_PIN_GS);
+        __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
+        clear_pin(PORT_GS, PORT_PIN_GS);
+        __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
+        high_pin(PORT_BS, PORT_PIN_BS);
+        __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
+        clear_pin(PORT_BS, PORT_PIN_BS);
+#endif
     }
 
 #pragma region buffer_specifics
@@ -1130,155 +1131,155 @@ private:
             index = (LED *)(&buffer) + (y << (uint8_t)4);
             // we set each pixel after the other
 
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
             // set row
             HIGH_OE;
@@ -1368,155 +1369,155 @@ private:
         {
             index = (LED *)(&buffer) + (y << (uint8_t)4);
 
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
 
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             ++index;
-            SET_COLOR((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
+            set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 3)))) >> (uint8_t)4));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
             Clock;
             // display row
             HIGH_OE;
@@ -1536,155 +1537,155 @@ private:
 
             index = (LED *)(&buffer) + (y << (uint8_t)4);
 
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
 
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             ++index;
-            SET_COLOR(*(uint8_t *)(index) << (uint8_t)2);
+            set_color(*(uint8_t *)(index) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + sizeof(uint8_t)))) >> (uint8_t)2));
             Clock;
-            SET_COLOR((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
+            set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 3))) << (uint8_t)2);
             Clock;
-            SET_COLOR((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
+            set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
             Clock;
             // display row
             HIGH_OE;
@@ -1791,8 +1792,7 @@ private:
 #endif
 #else
 
-    void
-    displayFlashBuffer()
+    void displayFlashBuffer()
     {
         uint16_t index = 0;
         for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
@@ -1801,140 +1801,140 @@ private:
             index = (uint16_t)(buffer + (y << (uint8_t)6));
 
 #pragma region MMSB
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index));
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index));
             Clock;
             // shift data into buffers
             HIGH_OE;
@@ -1955,140 +1955,140 @@ private:
             index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 4);
 
 #pragma region MSB
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index));
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index));
             Clock;
             // shift data into buffers
             HIGH_OE;
@@ -2109,140 +2109,140 @@ private:
             index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 2);
 
 #pragma region LSB
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index));
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index));
             Clock;
             // shift data into buffers
             HIGH_OE;
@@ -2263,140 +2263,140 @@ private:
             index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE * 3 / 4); // advance index to next section
 
 #pragma region LLSB
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
-            Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
 
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index++));
+            set_color(pgm_read_byte(index++));
             Clock;
-            SET_COLOR(pgm_read_byte(index));
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index++));
+            Clock;
+            set_color(pgm_read_byte(index));
             Clock;
             // shift data into buffers
             HIGH_OE;
