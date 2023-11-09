@@ -52,18 +52,19 @@
 #define PANEL_NO_FONT
 #endif
 
-// flash toggle
-#ifdef PANEL_FLASH
-#undef PANEL_BIG
-#ifdef PANEL_FLIP_VERTICAL
-#error "vertical flip cannot be done on flash output, only horizontal"
-#endif
-
+// sleep for brightnesses
 #ifndef MAX_BRIGHTNESS_SLEEP_MUSEC
 #define MAX_BRIGHTNESS_SLEEP_MUSEC 100
 #endif
 #ifndef BRIGHTNESS_SLEEP_MUSEC
 #define BRIGHTNESS_SLEEP_MUSEC 100
+#endif
+
+// flash toggle
+#ifdef PANEL_FLASH
+#undef PANEL_BIG
+#ifdef PANEL_FLIP_VERTICAL
+#error "vertical flip cannot be done on flash output, only horizontal"
 #endif
 
 // have it bigger a size as we have more available lol
@@ -607,7 +608,6 @@ public:
             Clock;
         }
     }
-#pragma GCC pop_options
 #pragma GCC pop_options
 #pragma endregion // immediates
 

@@ -1,8 +1,21 @@
 #define PANEL_X 64
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
-#define MAX_COLORDEPTH 4
-
+#define MAX_COLORDEPTH 3
+#define RA 14  // row selector a
+#define RB 15  // row selector b
+#define RC 16  // row selector c
+#define RD 18  // row selector d
+#define RE 19  // row selector e
+#define RF 2   // red first byte
+#define GF 3   // green first byte
+#define BF 4   // blue first byte
+#define RS 5   // red second byte
+#define GS 6   // green second byte
+#define BS 7   // blue second byte
+#define CLK 8  // clock signal
+#define LAT 17 // data latch
+#define OE 9   // output enable
 #include "HUB75nano.h"
 
 Panel panel = {};

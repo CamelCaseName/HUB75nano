@@ -1,5 +1,4 @@
 #define PANEL_BIG 1
-
 #include "HUB75nano.h"
 
 // create an instance of the panel
@@ -11,10 +10,6 @@ uint8_t fcolor = 3;
 uint8_t bgcolor = 2;
 char t;
 // String test = "23.576%";
-
-// I M P O R T A N T
-
-// in panel.h, you should comment out line Nr. 41 for this to work better/more reliable
 
 void setup()
 {

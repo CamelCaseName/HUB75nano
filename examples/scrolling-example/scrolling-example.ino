@@ -16,14 +16,6 @@ struct coords
     uint8_t : 2;
 };
 
-//          IMPORTANT!!
-//
-// in order to run this sketch, you must go into panel.h and remove "#define BIG", or comment it. (line 41)
-// The library will very likely be in your arduino libary folder
-// C:\Users\*username*\Documents\Arduino\libraries\HUB75nano
-// go in there, and do as said above. please.
-//
-
 // this also doesnt really work yet, its too blinky
 //  + ugly programming
 
