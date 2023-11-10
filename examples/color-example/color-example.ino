@@ -1,38 +1,15 @@
 #define PANEL_X 64
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
-#define MAX_COLORDEPTH 3
-#define RA 14  // row selector a
-#define RB 15  // row selector b
-#define RC 16  // row selector c
-#define RD 18  // row selector d
-#define RE 19  // row selector e
-#define RF 2   // red first byte
-#define GF 3   // green first byte
-#define BF 4   // blue first byte
-#define RS 5   // red second byte
-#define GS 6   // green second byte
-#define BS 7   // blue second byte
-#define CLK 8  // clock signal
-#define LAT 17 // data latch
-#define OE 9   // output enable
+// disable wait on the color output
+#define MAX_BRIGHTNESS_SLEEP_MUSEC 0
+#define BRIGHTNESS_SLEEP_MUSEC 20
 #include "HUB75nano.h"
 
 Panel panel = {};
-uint8_t r, g, b;
-#if MAX_COLORDEPTH > 2
-uint16_t ri, gi, bi;
-#else
 uint8_t ri, gi, bi;
-#endif
-#define MAX_ITER ((MAX_COLOR + 1) * (MAX_COLOR + 1) * (MAX_COLOR + 1))
 
-#define SLOWDOWN 10
-
-// tweak rgb wave here, offsets are to be a max of MAX_ITER / 2.
-#define OFFSET_R (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0)
-#define OFFSET_G (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0.3333)
-#define OFFSET_B (uint8_t)((MAX_COLOR + 1) * (MAX_COLOR + 1) * 0.6666)
+#define SLOWDOWN 5
 
 void setup()
 {
@@ -40,40 +17,36 @@ void setup()
 
 void loop()
 {
-    // this example iterates through ALL available colors in the panel
-    for (uint16_t i = 0; i < MAX_ITER; i++)
+    // this example iterates through colors in the panel
+    for (uint8_t i = 0; i < 255; i++)
     {
         // red
-        if (i <= OFFSET_R)
-            ri = OFFSET_R - i;
-        else if (i < (MAX_ITER / 2) + OFFSET_R)
-            ri = i - OFFSET_R;
+        if (i <= 85)
+            ri = 255 - i * 3;
+        else if (i < 170)
+            ri = 0;
         else
-            ri = MAX_ITER + OFFSET_R - i;
+            ri = (i - 170) * 3;
 
         // green
-        if (i <= OFFSET_G)
-            gi = OFFSET_G - i;
-        else if (i < (MAX_ITER / 2) + OFFSET_G)
-            gi = i - OFFSET_G;
+        if (i <= 85)
+            gi = i * 3;
+        else if (i < 170)
+            gi = (170 - i) * 3;
         else
-            gi = MAX_ITER + OFFSET_G - i;
+            gi = 0;
 
         // blue
-        if (i <= OFFSET_B)
-            bi = OFFSET_B - i;
-        else if (i < (MAX_ITER / 2) + OFFSET_B)
-            bi = i - OFFSET_B;
+        if (i <= 85)
+            bi = 0;
+        else if (i < 170)
+            bi = (i - 85) * 3;
         else
-            bi = MAX_ITER + OFFSET_B - i;
+            bi = (255 - i) * 3;
 
-        r = (ri - 1) / (MAX_COLOR + 1);
-        g = (gi - 1) / (MAX_COLOR + 1);
-        b = (bi - 1) / (MAX_COLOR + 1);
-
-        for (uint8_t j = 0; j < SLOWDOWN; j++)
+        for (size_t s = 0; s < SLOWDOWN; s++)
         {
-            panel.fillScreenColor(r, g, b);
+            panel.fillScreenColor(ri >> (8 - MAX_COLORDEPTH), gi >> (8 - MAX_COLORDEPTH), bi >> (8 - MAX_COLORDEPTH));
         }
     }
 

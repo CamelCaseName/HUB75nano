@@ -585,18 +585,28 @@ public:
         fillScreenColor(red, green, blue);
     }
     void fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
-    {
-        // todo continue work here building it up, but not top priority
-        for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+    { // bitness needs to be between 1 and 8, changes sent bitdepth. the lower, the faster
+        for (uint8_t bitness = MAX_COLORDEPTH - 1; bitness < MAX_COLORDEPTH; bitness--)
         {
-            // bitness needs to be between 1 and 8, changes sent bitdepth. the lower, the faster
-            for (uint8_t bitness = MAX_COLORDEPTH - 1; bitness < MAX_COLORDEPTH; bitness--)
+            set_color((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
+
+            // todo continue work here building it up, but not top priority
+            for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
             {
-                set_color((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
                 SendRow();
+                LATCH;
+                stepRow();
+                CLEAR_OE;
+
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
+                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC >> bitness);
+                if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
+                {
+                    HIGH_OE;
+                    delayMicroseconds((MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC) >> bitness);
+                }
+#endif
             }
-            // advance 1 in row once we are done with one
-            stepRow();
         }
     }
 #pragma GCC push_options
@@ -1546,12 +1556,15 @@ displayBigBuffer()
         LATCH;
         stepRow();
         CLEAR_OE;
+
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
         delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
         if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
         {
             HIGH_OE;
             delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
         }
+#endif
     }
     // lsb
     for (uint8_t y = 0; y < PANEL_Y / 2; y++)
@@ -1714,12 +1727,15 @@ displayBigBuffer()
         LATCH;
         stepRow();
         CLEAR_OE;
-        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
+        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
         if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
         {
             HIGH_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
         }
+#endif
     }
 }
 
@@ -1977,12 +1993,14 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             LATCH;
             stepRow();
             CLEAR_OE;
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
             delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
             if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
                 delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
+#endif
         }
 #pragma endregion // MMSB
 
@@ -2134,12 +2152,14 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
             if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
+                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
+#endif
         }
 #pragma endregion // MMSB
 
@@ -2291,12 +2311,14 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 4);
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
             if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 4 - BRIGHTNESS_SLEEP_MUSEC / 4);
+                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
+#endif
         }
 #pragma endregion // LSB
 
@@ -2448,12 +2470,14 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             LATCH;
             stepRow();
             CLEAR_OE;
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 8);
+#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
             if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
             {
                 HIGH_OE;
-                delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 8 - BRIGHTNESS_SLEEP_MUSEC / 8);
+                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
             }
+#endif
 #pragma endregion // LLSB
         }
     }
