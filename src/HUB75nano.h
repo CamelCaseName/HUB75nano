@@ -1312,6 +1312,7 @@ displaySmallBuffer()
         stepRow();
         CLEAR_OE;
     }
+    HIGH_OE;
 }
 #ifndef PANEL_FLASH
 void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
@@ -1737,6 +1738,7 @@ displayBigBuffer()
         }
 #endif
     }
+    HIGH_OE;
 }
 
 void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
@@ -2480,6 +2482,7 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
 #endif
 #pragma endregion // LLSB
         }
+        HIGH_OE;
     }
 #endif
 #pragma endregion // buffer_specifics
