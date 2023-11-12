@@ -57,7 +57,7 @@
 #define MAX_BRIGHTNESS_SLEEP_MUSEC 100
 #endif
 #ifndef BRIGHTNESS_SLEEP_MUSEC
-#define BRIGHTNESS_SLEEP_MUSEC 100
+#define BRIGHTNESS_SLEEP_MUSEC 40
 #endif
 
 // flash toggle
@@ -362,27 +362,36 @@
 #pragma endregion // definitions
 
 #pragma region color_helpers
-inline void HIGH_TO_FULL_COLOR(uint16_t color, uint8_t *red, uint8_t *green, uint8_t *blue)
+
+#pragma pack(push, 1)
+typedef union Color
 {
-    *red = (color >> (uint8_t)11) & (uint8_t)31;
-    *green = (color >> (uint8_t)5) & (uint8_t)63;
-    *blue = color & (uint8_t)31;
+    struct
+    {
+        uint8_t red : 4;
+        uint8_t green : 4;
+        uint8_t blue : 4;
+        uint8_t invalid_bits : 4;
+    };
+    uint16_t color_444;
+} Color;
+#pragma pack(pop)
+
+constexpr Color COLOR_888_to_444(uint8_t r, uint8_t g, uint8_t b)
+{
+    return {(r & (uint8_t)15), (g & (uint8_t)15), (b & (uint8_t)15)};
 }
-constexpr uint16_t FULL_TO_HIGH_COLOR(uint8_t r, uint8_t g, uint8_t b)
+constexpr Color COLOR_888_to_444_FULL(uint8_t r, uint8_t g, uint8_t b)
 {
-    return (((r & (uint8_t)31) << (uint8_t)11) | ((g & (uint8_t)63) << (uint8_t)5) | (b & (uint8_t)31));
+    return {(int)(((double)r / 8) - 0.5), (int)(((double)g / 4) - 0.5), (int)(((double)b / 8) - 0.5)};
 }
-constexpr uint16_t FULL_TO_HIGH_COLOR_FULL(uint8_t r, uint8_t g, uint8_t b)
+constexpr Color COLOR_888_to_444_CLAMPED(uint8_t r, uint8_t g, uint8_t b)
 {
-    return ((int)(((double)r / 8) - 0.5) << (uint8_t)11) | ((int)(((double)g / 4) - 0.5) << (uint8_t)5) | (int)(((double)b / 8) - 0.5);
+    return {(int)(((double)r / COLOR_CLAMP) + 0.5), (int)(((double)g / COLOR_CLAMP) + 0.5), (int)(((double)b / COLOR_CLAMP) + 0.5)};
 }
-constexpr uint16_t FULL_TO_HIGH_COLOR_CLAMPED(uint8_t r, uint8_t g, uint8_t b)
+constexpr Color COLOR_888_to_444_COLORF(float r, float g, float b)
 {
-    return ((int)(((double)r / COLOR_CLAMP) + 0.5) << 11) | ((int)(((double)g / COLOR_CLAMP) + 0.5) << 5) | (int)(((double)b / COLOR_CLAMP) + 0.5);
-}
-constexpr uint16_t FULL_TO_HIGH_COLORF(float r, float g, float b)
-{
-    return (((int)(r * MAX_COLOR + 0.5f)) << (uint8_t)11) | ((int)((g * MAX_COLOR + 0.5f)) << (uint8_t)5) | (int)((b * MAX_COLOR) + 0.5f);
+    return {((int)(r * MAX_COLOR + 0.5f)), (int)((g * MAX_COLOR + 0.5f)), (int)((b * MAX_COLOR) + 0.5f)};
 }
 #pragma endregion
 
@@ -532,6 +541,41 @@ inline unsigned char getFontLine(unsigned char data, int line_num)
 } //<=============================================================================
 #endif
 #pragma endregion // font
+
+#pragma region color_enum_definition
+typedef class Colors
+{
+public:
+    inline static const Color RED = COLOR_888_to_444(3, 0, 0);
+    inline static const Color GREEN = COLOR_888_to_444(0, 3, 0);
+    inline static const Color BLUE = COLOR_888_to_444(0, 0, 3);
+    inline static const Color WHITE = COLOR_888_to_444(3, 3, 3);
+    inline static const Color BLACK = COLOR_888_to_444(0, 0, 0);
+    inline static const Color PURPLE = COLOR_888_to_444(3, 0, 3);
+    inline static const Color YELLOW = COLOR_888_to_444(3, 3, 0);
+    inline static const Color CYAN = COLOR_888_to_444(0, 3, 3);
+#ifdef PANEL_BIG
+    inline static const Color DARKRED = COLOR_888_to_444(2, 0, 0);
+    inline static const Color DARKGREEN = COLOR_888_to_444(0, 2, 0);
+    inline static const Color DARKBLUE = COLOR_888_to_444(0, 0, 2);
+    inline static const Color DARKWHITE = COLOR_888_to_444(2, 2, 2);
+    inline static const Color DARKPURPLE = COLOR_888_to_444(2, 0, 2);
+    inline static const Color DARKYELLOW = COLOR_888_to_444(2, 2, 0);
+    inline static const Color DARKCYAN = COLOR_888_to_444(0, 2, 2);
+    inline static const Color DARKERRED = COLOR_888_to_444(1, 0, 0);
+    inline static const Color DARKERGREEN = COLOR_888_to_444(0, 1, 0);
+    inline static const Color DARKERBLUE = COLOR_888_to_444(0, 0, 1);
+    inline static const Color DARKERWHITE = COLOR_888_to_444(1, 1, 1);
+    inline static const Color DARKERPURPLE = COLOR_888_to_444(1, 0, 1);
+    inline static const Color DARKERYELLOW = COLOR_888_to_444(1, 1, 0);
+    inline static const Color DARKERCYAN = COLOR_888_to_444(0, 1, 1);
+    inline static const Color ORANGE = COLOR_888_to_444(3, 1, 0);
+#endif
+    inline static const Color NO_COLOR = {0xffff};
+
+} Colors;
+#pragma endregion // color_enum_definition
+
 class Panel
 {
 public:
@@ -577,18 +621,11 @@ public:
 #pragma endregion // constructors
 
 #pragma region immediates
-    void fillScreenColor(uint16_t c)
+    void fillScreenColor(Color color)
     {
-        // fills the screeen with the set color
-        // switches all the colors and sets the values depending on colors
-        HIGH_TO_FULL_COLOR(c, &red, &green, &blue); // gets first couple colors
-        fillScreenColor(red, green, blue);
-    }
-    void fillScreenColor(uint8_t r, uint8_t g, uint8_t b)
-    { // bitness needs to be between 1 and 8, changes sent bitdepth. the lower, the faster
         for (uint8_t bitness = MAX_COLORDEPTH - 1; bitness < MAX_COLORDEPTH; bitness--)
         {
-            set_color((((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((r >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((g >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((b >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
+            set_color((((color.red >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)7) | (((color.green >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)6) | (((color.blue >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)5) | (((color.red >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)4) | (((color.green >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)3) | (((color.blue >> (uint8_t)bitness) & (uint8_t)1) << (uint8_t)2));
 
             // todo continue work here building it up, but not top priority
             for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
@@ -732,29 +769,27 @@ public:
         memcpy(buffer, newBuffer, bufferLength);
     }
 #endif
-    void fillBuffer(uint16_t color)
+    void fillBuffer(Color color)
     {
-        // get colors
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         // fills the buffer
         for (uint8_t x = 0; x < PANEL_X; x++)
         {
             for (uint8_t y = 0; y < PANEL_Y; y++)
             {
-                setBuffer(x, y, red, green, blue);
+                setBuffer(x, y, color);
             }
         }
     }
 #pragma endregion // buffer_copying
 
 #pragma region buffer_setting_definitions:
-    inline void setBuffer(uint8_t x, uint8_t y, uint8_t red_, uint8_t green_, uint8_t blue_)
+    inline void setBuffer(uint8_t x, uint8_t y, Color color)
     {
 #ifdef PANEL_BIG
-        setBigBuffer(x, y, red_, green_, blue_); // 1 bit buffer in ram
+        setBigBuffer(x, y, color); // 1 bit buffer in ram
 #else
 #ifndef PANEL_FLASH
-        setSmallBuffer(x, y, red_, green_, blue_); // 2 bit buffer in ram
+        setSmallBuffer(x, y, color); // 2 bit buffer in ram
 #else
 #endif
 #endif
@@ -762,10 +797,8 @@ public:
 #pragma endregion // buffer_setting_definitions
 
 #pragma region drawing
-    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
+    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
     { // draws a line with color between the coords given
-      // get colors
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         // calculate both gradients
         int8_t dx = abs(x2 - x1);
         int8_t dy = -abs(y2 - y1);
@@ -776,7 +809,7 @@ public:
         float err = dx + dy, e2;
         while (1)
         {
-            setBuffer(x1, y1, red, green, blue);
+            setBuffer(x1, y1, color);
             e2 = 2 * err;
             if (e2 >= dy)
             {
@@ -794,10 +827,8 @@ public:
             }
         }
     }
-    void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, uint16_t color, bool fill)
+    void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color, bool fill)
     {
-        // get colors
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         int8_t x = -a;
         int8_t y = 0; /* II. quadrant from bottom left to top right */
         int16_t a2 = a * a;
@@ -806,10 +837,10 @@ public:
         int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
         do
         {
-            setBuffer(xm - x, ym + y, red, green, blue); /*   I. Quadrant */
-            setBuffer(xm + x, ym + y, red, green, blue); /*  II. Quadrant */
-            setBuffer(xm + x, ym - y, red, green, blue); /* III. Quadrant */
-            setBuffer(xm - x, ym - y, red, green, blue); /*  IV. Quadrant */
+            setBuffer(xm - x, ym + y, color); /*   I. Quadrant */
+            setBuffer(xm + x, ym + y, color); /*  II. Quadrant */
+            setBuffer(xm + x, ym - y, color); /* III. Quadrant */
+            setBuffer(xm - x, ym - y, color); /*  IV. Quadrant */
             e2 = 2 * err;
             if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
                 err += (++x * 2 + 1) * b2;
@@ -817,9 +848,9 @@ public:
                 err += (++y * 2 + 1) * a2;
         } while (x <= 0);
         while (y++ < b)
-        {                                            /* to early stop of flat ellipses a=1, */
-            setBuffer(xm, ym + y, red, green, blue); /* -> finish tip of ellipse */
-            setBuffer(xm, ym - y, red, green, blue);
+        {                                 /* to early stop of flat ellipses a=1, */
+            setBuffer(xm, ym + y, color); /* -> finish tip of ellipse */
+            setBuffer(xm, ym - y, color);
         }
         if (fill)
         {
@@ -829,21 +860,19 @@ public:
             }
         }
     }
-    void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, uint16_t color, bool fill)
+    void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, Color color, bool fill)
     {
         // draws a circle at the coords with radius and color
-        // get colors
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         int8_t x = -radius;
         int8_t y = 0;
         int8_t new_radius = radius;
         int16_t err = 2 - 2 * radius; // bottom left to top right
         do
         {
-            setBuffer(xm - x, ym + y, red, green, blue); //   I. Quadrant +x +y
-            setBuffer(xm - y, ym - x, red, green, blue); //  II. Quadrant -x +y
-            setBuffer(xm + x, ym - y, red, green, blue); // III. Quadrant -x -y
-            setBuffer(xm + y, ym + x, red, green, blue); //  IV. Quadrant +x -y
+            setBuffer(xm - x, ym + y, color); //   I. Quadrant +x +y
+            setBuffer(xm - y, ym - x, color); //  II. Quadrant -x +y
+            setBuffer(xm + x, ym - y, color); // III. Quadrant -x -y
+            setBuffer(xm + y, ym + x, color); //  IV. Quadrant +x -y
             new_radius = err;
             if (new_radius <= y)
                 err += ++y * 2 + 1;        // e_xy+e_y < 0
@@ -859,24 +888,23 @@ public:
                 {
                     if (((int16_t)i * i + (int16_t)j * j) < ((radius - 0.5) * (radius - 0.5)))
                     {
-                        setBuffer(xm + i, ym + j, red, green, blue);
+                        setBuffer(xm + i, ym + j, color);
                     }
                 }
             }
         }
     }
-    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color, bool fill)
+    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, bool fill)
     {
         // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
         // get colors
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
         if (fill)
         {
             for (uint8_t i = x1; i <= x2; i++)
             {
                 for (uint8_t j = y1; j <= y2; j++)
                 {
-                    setBuffer(i, j, red, green, blue);
+                    setBuffer(i, j, color);
                 }
             }
         }
@@ -885,42 +913,38 @@ public:
             // left line
             for (uint8_t j = y1; j <= y2; j++)
             {
-                setBuffer(x1, j, red, green, blue);
+                setBuffer(x1, j, color);
             }
             // right line
             for (uint8_t j = y1; j <= y2; j++)
             {
-                setBuffer(x2, j, red, green, blue);
+                setBuffer(x2, j, color);
             }
             // top line
             for (uint8_t i = x1; i <= x2; i++)
             {
-                setBuffer(i, y1, red, green, blue);
+                setBuffer(i, y1, color);
             }
             // bottom line
             for (uint8_t i = x1; i <= x2; i++)
             {
-                setBuffer(i, y2, red, green, blue);
+                setBuffer(i, y2, color);
             }
         }
     }
-    void drawSquare(uint8_t x, uint8_t y, uint8_t size, uint16_t color, bool fill)
+    void drawSquare(uint8_t x, uint8_t y, uint8_t size, Color color, bool fill)
     {
         drawRect(x, y, x + size, y + size, color, fill);
     }
 #ifndef PANEL_NO_FONT
-    inline void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color)
+    inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
     {
-        drawChar(x, y, letter, color, NO_COLOR);
+        drawChar(x, y, letter, color, Colors::NO_COLOR);
     }
-    void drawChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color)
+    void drawChar(uint8_t x, uint8_t y, char letter, Color color, const Color bg_color)
     {
         bool fill_bg;
-        uint8_t bg_red, bg_green, bg_blue; // color for the char
-        HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
-
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
-        fill_bg = bg_color != NO_COLOR;
+        fill_bg = bg_color.invalid_bits == 0;
         // iterate through the character line by line
         char out;
         for (uint8_t i = 0; i < 5; i++)
@@ -933,27 +957,24 @@ public:
                 if (out & (uint8_t)(1 << (uint8_t)j))
                 {
                     // set pixel at i and j
-                    setBuffer(x + 4 - j, y + i, red, green, blue);
+                    setBuffer(x + 4 - j, y + i, color);
                 }
                 else if (fill_bg)
                 {
-                    setBuffer(x + 4 - j, y + i, bg_red, bg_green, bg_blue);
+                    setBuffer(x + 4 - j, y + i, bg_color);
                 }
             }
         }
     }
-    inline void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint8_t size_modifier)
+    inline void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
     {
-        drawBigChar(x, y, letter, color, NO_COLOR, size_modifier);
+        drawBigChar(x, y, letter, color, Colors::NO_COLOR, size_modifier);
     }
-    void drawBigChar(uint8_t x, uint8_t y, char letter, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
+    void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, Color bg_color, uint8_t size_modifier)
     { // new with scaling, but may be slower
         // color for the char
         bool fill_bg;
-        uint8_t bg_red, bg_green, bg_blue;
-        HIGH_TO_FULL_COLOR(color, &red, &green, &blue);
-        HIGH_TO_FULL_COLOR(bg_color, &bg_red, &bg_green, &bg_blue);
-        fill_bg = bg_color != NO_COLOR;
+        fill_bg = bg_color.invalid_bits == 0;
         uint8_t width = 4 * size_modifier;
         uint8_t height = 5 * size_modifier;
         // iterate through the character line by line
@@ -969,32 +990,32 @@ public:
                 if (out & (1 << (j / size_modifier)))
                 {
                     // set pixel at i and j
-                    setBuffer(x + j, y + i, red, green, blue);
+                    setBuffer(x + j, y + i, color);
                     continue;
                 }
 
                 if (fill_bg)
-                    setBuffer(x + j, y + i, bg_red, bg_green, bg_blue);
+                    setBuffer(x + j, y + i, bg_color);
             }
         }
     }
-    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint16_t bg_color)
+    inline void drawString(uint8_t x, uint8_t y, char *str, Color color, Color bg_color)
     {
         drawString(x, y, str, color, bg_color, 1);
     }
-    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color)
+    inline void drawString(uint8_t x, uint8_t y, char *str, Color color)
     {
-        drawString(x, y, str, color, NO_COLOR, 1);
+        drawString(x, y, str, color, Colors::NO_COLOR, 1);
     }
-    inline void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t size_modifier)
+    inline void drawString(uint8_t x, uint8_t y, char *str, Color color, uint8_t size_modifier)
     {
-        drawString(x, y, str, color, NO_COLOR, size_modifier);
+        drawString(x, y, str, color, Colors::NO_COLOR, size_modifier);
     }
-    void drawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint16_t bg_color, uint8_t size_modifier)
+    void drawString(uint8_t x, uint8_t y, char *str, Color color, Color bg_color, uint8_t size_modifier)
     {
         for (uint8_t i = 0; i < strlen(str); i++)
         {
-            uint16_t xoffset = x + (3 * size_modifier + 1) * i;
+            uint8_t xoffset = x + (3 * size_modifier + 1) * i;
             if (xoffset > PANEL_X)
                 return;
 
@@ -1003,41 +1024,12 @@ public:
         }
     }
 #endif
-    // todo add drawing methods for
-    // - triangle with arbitrary points
-    // - triangle with right angle, rotation and side lengths
-    // - line with given width
-#pragma endregion // drawing
 
-#pragma region color_enum_definition
-    enum Colors
-    {
-        RED = FULL_TO_HIGH_COLOR(3, 0, 0),
-        GREEN = FULL_TO_HIGH_COLOR(0, 3, 0),
-        BLUE = FULL_TO_HIGH_COLOR(0, 0, 3),
-        WHITE = FULL_TO_HIGH_COLOR(3, 3, 3),
-        BLACK = FULL_TO_HIGH_COLOR(0, 0, 0),
-        PURPLE = FULL_TO_HIGH_COLOR(3, 0, 3),
-        YELLOW = FULL_TO_HIGH_COLOR(3, 3, 0),
-        CYAN = FULL_TO_HIGH_COLOR(0, 3, 3),
-        DARKRED = FULL_TO_HIGH_COLOR(2, 0, 0),
-        DARKGREEN = FULL_TO_HIGH_COLOR(0, 2, 0),
-        DARKBLUE = FULL_TO_HIGH_COLOR(0, 0, 2),
-        DARKWHITE = FULL_TO_HIGH_COLOR(2, 2, 2),
-        DARKPURPLE = FULL_TO_HIGH_COLOR(2, 0, 2),
-        DARKYELLOW = FULL_TO_HIGH_COLOR(2, 2, 0),
-        DARKCYAN = FULL_TO_HIGH_COLOR(0, 2, 2),
-        DARKERRED = FULL_TO_HIGH_COLOR(1, 0, 0),
-        DARKERGREEN = FULL_TO_HIGH_COLOR(0, 1, 0),
-        DARKERBLUE = FULL_TO_HIGH_COLOR(0, 0, 1),
-        DARKERWHITE = FULL_TO_HIGH_COLOR(1, 1, 1),
-        DARKERPURPLE = FULL_TO_HIGH_COLOR(1, 0, 1),
-        DARKERYELLOW = FULL_TO_HIGH_COLOR(1, 1, 0),
-        DARKERCYAN = FULL_TO_HIGH_COLOR(0, 1, 1),
-        ORANGE = FULL_TO_HIGH_COLOR(3, 1, 0),
-        NO_COLOR = -1,
-    };
-#pragma endregion // color_enum_definition
+// todo add drawing methods for
+// - triangle with arbitrary points
+// - triangle with right angle, rotation and side lengths
+// - line with given width
+#pragma endregion // drawing
 
 #pragma region buffer_definition
 #ifndef PANEL_NO_BUFFER
@@ -1071,9 +1063,9 @@ public:
 #endif
 #pragma endregion // buffer_definition
 private:
-    uint8_t row = 0, red, green, blue;
+    uint8_t row = 0;
 
-    // we can only set the row fast when the pins are in order
+// we can only set the row fast when the pins are in order
 #ifdef PANEL_MAX_SPEED
     __attribute__((always_inline)) inline void stepRow()
     {
@@ -1106,7 +1098,7 @@ private:
         row = (row + 1) & (uint8_t)31;
     }
 
-    // bulk pin access color, only good if pins are in right order
+// bulk pin access color, only good if pins are in right order
 #ifdef PANEL_MAX_SPEED
     __attribute__((always_inline)) inline void set_color(uint8_t value){
 #else
@@ -1151,6 +1143,7 @@ void
 displaySmallBuffer()
 {
     LED *index;
+    CLEAR_OE;
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
     {
         index = (LED *)(&buffer) + (y << (uint8_t)4);
@@ -1314,8 +1307,9 @@ displaySmallBuffer()
     }
     HIGH_OE;
 }
+
 #ifndef PANEL_FLASH
-void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+void setSmallBuffer(uint8_t x, uint8_t y, Color color)
 {
 #ifdef PANEL_FLIP_VERTICAL
     y = PANEL_Y - y;
@@ -1330,24 +1324,24 @@ void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t bl
         switch (x % 4)
         {
         case 0: /*first pixel*/
-            buffer[index].redUpperBit1Led1 = red;
-            buffer[index].greenUpperBit1Led1 = green;
-            buffer[index].blueUpperBit1Led1 = blue;
+            buffer[index].redUpperBit1Led1 = color.red;
+            buffer[index].greenUpperBit1Led1 = color.green;
+            buffer[index].blueUpperBit1Led1 = color.blue;
             break;
         case 1: /*second pixel*/
-            buffer[index].redUpperBit1Led2 = red;
-            buffer[index].greenUpperBit1Led2 = green;
-            buffer[index].blueUpperBit1Led2 = blue;
+            buffer[index].redUpperBit1Led2 = color.red;
+            buffer[index].greenUpperBit1Led2 = color.green;
+            buffer[index].blueUpperBit1Led2 = color.blue;
             break;
         case 2: /*third pixel*/
-            buffer[index].redUpperBit1Led3 = red;
-            buffer[index].greenUpperBit1Led3 = green;
-            buffer[index].blueUpperBit1Led3 = blue;
+            buffer[index].redUpperBit1Led3 = color.red;
+            buffer[index].greenUpperBit1Led3 = color.green;
+            buffer[index].blueUpperBit1Led3 = color.blue;
             break;
         case 3: /*fourth pixel*/
-            buffer[index].redUpperBit1Led4 = red;
-            buffer[index].greenUpperBit1Led4 = green;
-            buffer[index].blueUpperBit1Led4 = blue;
+            buffer[index].redUpperBit1Led4 = color.red;
+            buffer[index].greenUpperBit1Led4 = color.green;
+            buffer[index].blueUpperBit1Led4 = color.blue;
             break;
         default:
             break;
@@ -1361,24 +1355,24 @@ void setSmallBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t bl
         switch (x % 4)
         {
         case 0: /*first pixel*/
-            buffer[index].redLowerBit1Led1 = red;
-            buffer[index].greenLowerBit1Led1 = green;
-            buffer[index].blueLowerBit1Led1 = blue;
+            buffer[index].redLowerBit1Led1 = color.red;
+            buffer[index].greenLowerBit1Led1 = color.green;
+            buffer[index].blueLowerBit1Led1 = color.blue;
             break;
         case 1: /*second pixel*/
-            buffer[index].redLowerBit1Led2 = red;
-            buffer[index].greenLowerBit1Led2 = green;
-            buffer[index].blueLowerBit1Led2 = blue;
+            buffer[index].redLowerBit1Led2 = color.red;
+            buffer[index].greenLowerBit1Led2 = color.green;
+            buffer[index].blueLowerBit1Led2 = color.blue;
             break;
         case 2: /*third pixel*/
-            buffer[index].redLowerBit1Led3 = red;
-            buffer[index].greenLowerBit1Led3 = green;
-            buffer[index].blueLowerBit1Led3 = blue;
+            buffer[index].redLowerBit1Led3 = color.red;
+            buffer[index].greenLowerBit1Led3 = color.green;
+            buffer[index].blueLowerBit1Led3 = color.blue;
             break;
         case 3: /*fourth pixel*/
-            buffer[index].redLowerBit1Led4 = red;
-            buffer[index].greenLowerBit1Led4 = green;
-            buffer[index].blueLowerBit1Led4 = blue;
+            buffer[index].redLowerBit1Led4 = color.red;
+            buffer[index].greenLowerBit1Led4 = color.green;
+            buffer[index].blueLowerBit1Led4 = color.blue;
             break;
         default:
             break;
@@ -1398,6 +1392,7 @@ displayBigBuffer()
     // 10 -> 66%
     // 11 -> on
     // msb
+
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 16 rows
     {
         index = (LED *)(&buffer) + (y << (uint8_t)4);
@@ -1560,11 +1555,11 @@ displayBigBuffer()
 
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
         delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-        if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-        {
-            HIGH_OE;
-            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-        }
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
+        HIGH_OE;
+#endif
 #endif
     }
     // lsb
@@ -1730,18 +1725,19 @@ displayBigBuffer()
         CLEAR_OE;
 
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-        if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-        {
-            HIGH_OE;
-            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-        }
+        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
+        HIGH_OE;
+
+#endif
 #endif
     }
     HIGH_OE;
 }
 
-void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+void setBigBuffer(uint8_t x, uint8_t y, Color color)
 {
 #ifdef PANEL_FLIP_VERTICAL
     y = PANEL_Y - y;
@@ -1756,36 +1752,36 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
         switch (x % 4)
         {
         case 0: /*first pixel*/
-            buffer[index].redUpperBit1Led1 = red;
-            buffer[index].greenUpperBit1Led1 = green;
-            buffer[index].blueUpperBit1Led1 = blue;
-            buffer[index].redUpperBit2Led1 = red >> (uint8_t)1;
-            buffer[index].greenUpperBit2Led1 = green >> (uint8_t)1;
-            buffer[index].blueUpperBit2Led1 = blue >> (uint8_t)1;
+            buffer[index].redUpperBit1Led1 = color.red;
+            buffer[index].greenUpperBit1Led1 = color.green;
+            buffer[index].blueUpperBit1Led1 = color.blue;
+            buffer[index].redUpperBit2Led1 = color.red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led1 = color.green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led1 = color.blue >> (uint8_t)1;
             break;
         case 1: /*second pixel*/
-            buffer[index].redUpperBit1Led2 = red;
-            buffer[index].greenUpperBit1Led2 = green;
-            buffer[index].blueUpperBit1Led2 = blue;
-            buffer[index].redUpperBit2Led2 = red >> (uint8_t)1;
-            buffer[index].greenUpperBit2Led2 = green >> (uint8_t)1;
-            buffer[index].blueUpperBit2Led2 = blue >> (uint8_t)1;
+            buffer[index].redUpperBit1Led2 = color.red;
+            buffer[index].greenUpperBit1Led2 = color.green;
+            buffer[index].blueUpperBit1Led2 = color.blue;
+            buffer[index].redUpperBit2Led2 = color.red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led2 = color.green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led2 = color.blue >> (uint8_t)1;
             break;
         case 2: /*third pixel*/
-            buffer[index].redUpperBit1Led3 = red;
-            buffer[index].greenUpperBit1Led3 = green;
-            buffer[index].blueUpperBit1Led3 = blue;
-            buffer[index].redUpperBit2Led3 = red >> (uint8_t)1;
-            buffer[index].greenUpperBit2Led3 = green >> (uint8_t)1;
-            buffer[index].blueUpperBit2Led3 = blue >> (uint8_t)1;
+            buffer[index].redUpperBit1Led3 = color.red;
+            buffer[index].greenUpperBit1Led3 = color.green;
+            buffer[index].blueUpperBit1Led3 = color.blue;
+            buffer[index].redUpperBit2Led3 = color.red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led3 = color.green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led3 = color.blue >> (uint8_t)1;
             break;
         case 3: /*fourth pixel*/
-            buffer[index].redUpperBit1Led4 = red;
-            buffer[index].greenUpperBit1Led4 = green;
-            buffer[index].blueUpperBit1Led4 = blue;
-            buffer[index].redUpperBit2Led4 = red >> (uint8_t)1;
-            buffer[index].greenUpperBit2Led4 = green >> (uint8_t)1;
-            buffer[index].blueUpperBit2Led4 = blue >> (uint8_t)1;
+            buffer[index].redUpperBit1Led4 = color.red;
+            buffer[index].greenUpperBit1Led4 = color.green;
+            buffer[index].blueUpperBit1Led4 = color.blue;
+            buffer[index].redUpperBit2Led4 = color.red >> (uint8_t)1;
+            buffer[index].greenUpperBit2Led4 = color.green >> (uint8_t)1;
+            buffer[index].blueUpperBit2Led4 = color.blue >> (uint8_t)1;
             break;
         default:
             break;
@@ -1799,36 +1795,36 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
         switch (x % 4)
         {
         case 0:
-            buffer[index].redLowerBit1Led1 = red;
-            buffer[index].greenLowerBit1Led1 = green;
-            buffer[index].blueLowerBit1Led1 = blue;
-            buffer[index].redLowerBit2Led1 = red >> (uint8_t)1;
-            buffer[index].greenLowerBit2Led1 = green >> (uint8_t)1;
-            buffer[index].blueLowerBit2Led1 = blue >> (uint8_t)1;
+            buffer[index].redLowerBit1Led1 = color.red;
+            buffer[index].greenLowerBit1Led1 = color.green;
+            buffer[index].blueLowerBit1Led1 = color.blue;
+            buffer[index].redLowerBit2Led1 = color.red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led1 = color.green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led1 = color.blue >> (uint8_t)1;
             break;
         case 1: /*second pixel*/
-            buffer[index].redLowerBit1Led2 = red;
-            buffer[index].greenLowerBit1Led2 = green;
-            buffer[index].blueLowerBit1Led2 = blue;
-            buffer[index].redLowerBit2Led2 = red >> (uint8_t)1;
-            buffer[index].greenLowerBit2Led2 = green >> (uint8_t)1;
-            buffer[index].blueLowerBit2Led2 = blue >> (uint8_t)1;
+            buffer[index].redLowerBit1Led2 = color.red;
+            buffer[index].greenLowerBit1Led2 = color.green;
+            buffer[index].blueLowerBit1Led2 = color.blue;
+            buffer[index].redLowerBit2Led2 = color.red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led2 = color.green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led2 = color.blue >> (uint8_t)1;
             break;
         case 2: /*third pixel*/
-            buffer[index].redLowerBit1Led3 = red;
-            buffer[index].greenLowerBit1Led3 = green;
-            buffer[index].blueLowerBit1Led3 = blue;
-            buffer[index].redLowerBit2Led3 = red >> (uint8_t)1;
-            buffer[index].greenLowerBit2Led3 = green >> (uint8_t)1;
-            buffer[index].blueLowerBit2Led3 = blue >> (uint8_t)1;
+            buffer[index].redLowerBit1Led3 = color.red;
+            buffer[index].greenLowerBit1Led3 = color.green;
+            buffer[index].blueLowerBit1Led3 = color.blue;
+            buffer[index].redLowerBit2Led3 = color.red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led3 = color.green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led3 = color.blue >> (uint8_t)1;
             break;
         case 3: /*fourth pixel*/
-            buffer[index].redLowerBit1Led4 = red;
-            buffer[index].greenLowerBit1Led4 = green;
-            buffer[index].blueLowerBit1Led4 = blue;
-            buffer[index].redLowerBit2Led4 = red >> (uint8_t)1;
-            buffer[index].greenLowerBit2Led4 = green >> (uint8_t)1;
-            buffer[index].blueLowerBit2Led4 = blue >> (uint8_t)1;
+            buffer[index].redLowerBit1Led4 = color.red;
+            buffer[index].greenLowerBit1Led4 = color.green;
+            buffer[index].blueLowerBit1Led4 = color.blue;
+            buffer[index].redLowerBit2Led4 = color.red >> (uint8_t)1;
+            buffer[index].greenLowerBit2Led4 = color.green >> (uint8_t)1;
+            buffer[index].blueLowerBit2Led4 = color.blue >> (uint8_t)1;
             break;
         default:
             break;
@@ -1997,11 +1993,11 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             CLEAR_OE;
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
             delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-            }
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+            HIGH_OE;
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
+#endif
 #endif
         }
 #pragma endregion // MMSB
@@ -2155,12 +2151,13 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             stepRow();
             CLEAR_OE;
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-            }
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+            HIGH_OE;
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
+
+#endif
 #endif
         }
 #pragma endregion // MMSB
@@ -2314,12 +2311,12 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             stepRow();
             CLEAR_OE;
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-            }
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 4);
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+            HIGH_OE;
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 4 - BRIGHTNESS_SLEEP_MUSEC / 4);
+#endif
 #endif
         }
 #pragma endregion // LSB
@@ -2473,16 +2470,15 @@ void setBigBuffer(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue
             stepRow();
             CLEAR_OE;
 #if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-            if (BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC)
-            {
-                HIGH_OE;
-                delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-            }
+            delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 8);
+#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
+
+            HIGH_OE;
+            delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 8 - BRIGHTNESS_SLEEP_MUSEC / 8);
+#endif
 #endif
 #pragma endregion // LLSB
         }
-        HIGH_OE;
     }
 #endif
 #pragma endregion // buffer_specifics

@@ -1,5 +1,4 @@
-#define MAX_BRIGHTNESS_SLEEP_MUSEC 400
-#define BRIGHTNESS_SLEEP_MUSEC 40
+#define PANEL_MAX_SPEED
 #define PANEL_FLASH // 4 bit flash buffer
 #include "HUB75nano.h"
 
