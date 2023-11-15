@@ -571,7 +571,7 @@ public:
     inline static const Color DARKERCYAN = COLOR_888_to_444(0, 1, 1);
     inline static const Color ORANGE = COLOR_888_to_444(3, 1, 0);
 #endif
-    inline static const Color NO_COLOR = {0xffff};
+    inline static const Color NO_COLOR = {0, 0, 0, 15};
 
 } Colors;
 #pragma endregion // color_enum_definition
@@ -743,6 +743,25 @@ public:
         uint8_t blueLowerBit2Led4 : 1;
         uint8_t : 0;
     } LED_long;
+
+#define LED_SHORT_MASK_UPPER_1 0b11000111
+#define LED_SHORT_MASK_UPPER_2 0b01110001
+#define LED_SHORT_MASK_UPPER_3 0b00011100
+#define LED_SHORT_MASK_LOWER_1 ~LED_SHORT_MASK_UPPER_1
+#define LED_SHORT_MASK_LOWER_2 ~LED_SHORT_MASK_UPPER_2
+#define LED_SHORT_MASK_LOWER_3 ~LED_SHORT_MASK_UPPER_3
+#define LED_LONG_MASK_UPPER_1 0b11000111
+#define LED_LONG_MASK_UPPER_2 0b01110001
+#define LED_LONG_MASK_UPPER_3 0b00011100
+#define LED_LONG_MASK_UPPER_4 0b11000111
+#define LED_LONG_MASK_UPPER_5 0b01110001
+#define LED_LONG_MASK_UPPER_6 0b00011100
+#define LED_LONG_MASK_LOWER_1 ~LED_LONG_MASK_UPPER_1
+#define LED_LONG_MASK_LOWER_2 ~LED_LONG_MASK_UPPER_2
+#define LED_LONG_MASK_LOWER_3 ~LED_LONG_MASK_UPPER_3
+#define LED_LONG_MASK_LOWER_4 ~LED_LONG_MASK_UPPER_4
+#define LED_LONG_MASK_LOWER_5 ~LED_LONG_MASK_UPPER_5
+#define LED_LONG_MASK_LOWER_6 ~LED_LONG_MASK_UPPER_6
 #pragma endregion // led_struct_definition
 
 #pragma region buffer_copying
@@ -873,85 +892,130 @@ public:
         // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
         // get colors
         if (fill)
-        {
+        { // vertical lines
+
+            if (x1 == x2) // 1 wide ones
+            {
+                for (uint8_t j = y1; j <= y2; j++)
+                {
+                    setBuffer(x1, j, color);
+                }
+                return;
+            }
+            else if (x2 - x1 == 1) // 2 wide
+            {
+                for (uint8_t j = y1; j <= y2; j++)
+                {
+                    setBuffer(x1, j, color);
+                    setBuffer(x1 + 1, j, color);
+                }
+                return;
+            }
+            else if (x2 - x1 == 2) // 3 wide
+            {
+                for (uint8_t j = y1; j <= y2; j++)
+                {
+                    setBuffer(x1, j, color);
+                    setBuffer(x1 + 1, j, color);
+                    setBuffer(x1 + 2, j, color);
+                }
+                return;
+            }
+
+            // go through each horizontal line and fill (try for blocks of 4 led)
+            uint8_t original_x1 = x1, original_x2 = x2 + 1;
+
             for (uint8_t j = y1; j <= y2; j++)
             { // horizontal lines
-                if (x2 - x1 > 4)
+                x1 = original_x1;
+                x2 = original_x2;
+                while ((x1 & 3) != 0 && x1 < x2)
                 {
-                    uint8_t left_i = x1, right_i = x2;
-                    while ((left_i & 3) != 0)
-                    {
-                        setBuffer(left_i, y1, color);
-                        setBuffer(left_i, y2, color);
-                        left_i++;
-                    }
-
-                    while ((right_i & 3) != 0)
-                    {
-                        setBuffer(right_i, y1, color);
-                        setBuffer(right_i, y2, color);
-                        right_i--;
-                    }
-
-                    if (right_i - left_i >= 4)
-                    {
-                        uint8_t block_count = ((right_i - left_i) / 4);
-
-                        setBuffer4xBlockWise(left_i, y1, block_count, color);
-                        setBuffer4xBlockWise(left_i, y2, block_count, color);
-                    }
+                    setBuffer(x1, j, color);
+                    x1++;
                 }
-                else
+
+                while ((x2 & 3) != 0 && x2 > x1)
                 {
-                    for (uint8_t i = x1; i <= x2; i++)
-                    {
-                        setBuffer(i, y1, color);
-                        setBuffer(i, y2, color);
-                    }
+                    x2--;
+                    setBuffer(x2, j, color);
+                }
+
+                // check against overflow
+                if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
+                {
+                    uint8_t block_count = ((x2 - x1) / 4);
+
+                    setBuffer4xBlockWise(x1, j, block_count, color);
                 }
             }
         }
         else
         {
             // vertical lines
+            if (x1 == x2) // 1 wide ones
+            {
+                for (uint8_t j = y1; j <= y2; j++)
+                {
+                    setBuffer(x1, j, color);
+                }
+                return;
+            }
+
             for (uint8_t j = y1; j <= y2; j++)
             {
                 setBuffer(x1, j, color);
                 setBuffer(x2, j, color);
             }
 
-            // horizontal lines
-            if (x2 - x1 >= 4)
+            x1++;
+            //  guard against rects beign 1 high
+            if (y1 == y2)
             {
-                uint8_t left_i = x1, right_i = x2;
-                while ((left_i & 3) != 0)
+                // short horizontal lines
+                while ((x1 & 3) != 0 && x1 < x2)
                 {
-                    setBuffer(left_i, y1, color);
-                    setBuffer(left_i, y2, color);
-                    left_i++;
+                    setBuffer(x1, y1, color);
+                    x1++;
                 }
 
-                while ((right_i & 3) != 0)
+                while ((x2 & 3) != 0 && x2 > x1)
                 {
-                    right_i--;
-                    setBuffer(right_i, y1, color);
-                    setBuffer(right_i, y2, color);
+                    x2--;
+                    setBuffer(x2, y1, color);
                 }
 
-                if (right_i - left_i >= 4)
+                // blocks of horizontal lines
+                if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
                 {
-                    uint8_t block_count = ((right_i - left_i) / 4);
-                    // Serial.println(y1);
-                    setBuffer4xBlockWise(left_i, y1, block_count, color);
-                    // setBuffer4xBlockWise(left_i, y2, block_count, color);
+                    uint8_t block_count = ((x2 - x1) / 4);
+                    setBuffer4xBlockWise(x1, y1, block_count, color);
                 }
             }
             else
             {
-                for (uint8_t i = x1; i <= x2; i++)
+                // short horizontal lines
+                while ((x1 & 3) != 0 && x1 < x2)
                 {
-                    setBuffer(i, y1, color);
-                    setBuffer(i, y2, color);
+                    setBuffer(x1, y1, color);
+                    setBuffer(x1, y2, color);
+                    x1++;
+                }
+
+                while ((x2 & 3) != 0 && x2 > x1)
+                {
+                    x2--;
+                    setBuffer(x2, y1, color);
+                    setBuffer(x2, y2, color);
+                }
+
+                // blocks of horizontal lines
+                if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
+                {
+                    uint8_t block_count = ((x2 - x1) / 4);
+
+                    setBuffer4xBlockWise(x1, y1, block_count, color);
+                    setBuffer4xBlockWise(x1, y2, block_count, color);
                 }
             }
         }
@@ -996,6 +1060,12 @@ public:
     }
     void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, Color bg_color, uint8_t size_modifier)
     { // new with scaling, but may be slower
+        if (size_modifier == 1)
+        {
+            drawChar(x, y, letter, color, bg_color);
+            return;
+        }
+
         // color for the char
         bool fill_bg;
         fill_bg = bg_color.invalid_bits == 0;
@@ -1014,12 +1084,12 @@ public:
                 if (out & (1 << (j / size_modifier)))
                 {
                     // set pixel at i and j
-                    setBuffer(x + j, y + i, color);
+                    setBuffer(x + width - j, y + i, color);
                     continue;
                 }
 
                 if (fill_bg)
-                    setBuffer(x + j, y + i, bg_color);
+                    setBuffer(x + width - j, y + i, bg_color);
             }
         }
     }
@@ -1100,7 +1170,7 @@ private:
         setBigBuffer(x, y, color); // 1 bit buffer in ram
 #else
 #ifndef PANEL_FLASH
-        setSmallBuffer(x, y, color);                // 2 bit buffer in ram
+        setSmallBuffer(x, y, color); // 2 bit buffer in ram
 #else
 #endif
 #endif
@@ -1470,9 +1540,30 @@ void setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         buffer[index].greenUpperBit1Led4 = color.green;
         buffer[index].blueUpperBit1Led4 = color.blue;
 
+        // temp buffers to store the cleaned values
+        uint8_t lower, mid, higher;
+        uint8_t *start = (uint8_t *)&buffer[index];
+
+        // clean and cache the bits needed for thsi half
+        lower = ((*start) & LED_SHORT_MASK_UPPER_1);
+        start++;
+        mid = ((*start) & LED_SHORT_MASK_UPPER_2);
+        start++;
+        higher = ((*start) & LED_SHORT_MASK_UPPER_3);
+        start++;
+
         for (uint8_t i = 1; i < block_count; i++)
         {
-            buffer[index + i] = buffer[index];
+            // apply the masks so we only copy the one half of the pixels we are "allowed" to
+            *start &= LED_SHORT_MASK_LOWER_1;
+            *start |= lower;
+            start++;
+            *start &= LED_SHORT_MASK_LOWER_2;
+            *start |= mid;
+            start++;
+            *start &= LED_SHORT_MASK_LOWER_3;
+            *start |= higher;
+            start++;
         }
     }
     else
@@ -1494,9 +1585,30 @@ void setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         buffer[index].greenLowerBit1Led4 = color.green;
         buffer[index].blueLowerBit1Led4 = color.blue;
 
+        // temp buffers to store the cleaned values
+        uint8_t lower, mid, higher;
+        uint8_t *start = (uint8_t *)&buffer[index];
+
+        // clean and cache the bits needed for thsi half
+        lower = ((*start) & LED_SHORT_MASK_LOWER_1);
+        start++;
+        mid = ((*start) & LED_SHORT_MASK_LOWER_2);
+        start++;
+        higher = ((*start) & LED_SHORT_MASK_LOWER_3);
+        start++;
+
         for (uint8_t i = 1; i < block_count; i++)
         {
-            buffer[index + i] = buffer[index];
+            // apply the masks so we only copy the one half of the pixels we are "allowed" to
+            *start &= LED_SHORT_MASK_UPPER_1;
+            *start |= lower;
+            start++;
+            *start &= LED_SHORT_MASK_UPPER_2;
+            *start |= mid;
+            start++;
+            *start &= LED_SHORT_MASK_UPPER_3;
+            *start |= higher;
+            start++;
         }
     }
 }
@@ -1950,6 +2062,161 @@ void setBigBuffer(uint8_t x, uint8_t y, Color color)
             break;
         default:
             break;
+        }
+    }
+}
+
+void setBigBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+{
+#ifdef PANEL_FLIP_VERTICAL
+    y = PANEL_Y - y;
+#endif
+#ifdef PANEL_FLIP_HORIZONTAL
+    x = PANEL_X - x;
+#endif
+    if (y < (PANEL_Y / 2))
+    {
+        // we are in upper half of pixels
+        uint16_t index = ((y * PANEL_X) + x) / 4;
+
+        buffer[index].redUpperBit1Led1 = color.red;
+        buffer[index].greenUpperBit1Led1 = color.green;
+        buffer[index].blueUpperBit1Led1 = color.blue;
+        buffer[index].redUpperBit1Led2 = color.red;
+        buffer[index].greenUpperBit1Led2 = color.green;
+        buffer[index].blueUpperBit1Led2 = color.blue;
+        buffer[index].redUpperBit1Led3 = color.red;
+        buffer[index].greenUpperBit1Led3 = color.green;
+        buffer[index].blueUpperBit1Led3 = color.blue;
+        buffer[index].redUpperBit1Led4 = color.red;
+        buffer[index].greenUpperBit1Led4 = color.green;
+        buffer[index].blueUpperBit1Led4 = color.blue;
+        // second bit
+        buffer[index].redUpperBit2Led1 = color.red >> (uint8_t)1;
+        buffer[index].greenUpperBit2Led1 = color.green >> (uint8_t)1;
+        buffer[index].blueUpperBit2Led1 = color.blue >> (uint8_t)1;
+        buffer[index].redUpperBit2Led2 = color.red >> (uint8_t)1;
+        buffer[index].greenUpperBit2Led2 = color.green >> (uint8_t)1;
+        buffer[index].blueUpperBit2Led2 = color.blue >> (uint8_t)1;
+        buffer[index].redUpperBit2Led3 = color.red >> (uint8_t)1;
+        buffer[index].greenUpperBit2Led3 = color.green >> (uint8_t)1;
+        buffer[index].blueUpperBit2Led3 = color.blue >> (uint8_t)1;
+        buffer[index].redUpperBit2Led4 = color.red >> (uint8_t)1;
+        buffer[index].greenUpperBit2Led4 = color.green >> (uint8_t)1;
+        buffer[index].blueUpperBit2Led4 = color.blue >> (uint8_t)1;
+
+        // temp buffers to store the cleaned values
+        uint8_t lowest, lower, lowmid, mid, higher, highest;
+        uint8_t *start = (uint8_t *)&buffer[index];
+
+        // clean and cache the bits needed for thsi half
+        lowest = ((*start) & LED_LONG_MASK_UPPER_1);
+        start++;
+        lower = ((*start) & LED_LONG_MASK_UPPER_2);
+        start++;
+        lowmid = ((*start) & LED_LONG_MASK_UPPER_3);
+        start++;
+        mid = ((*start) & LED_LONG_MASK_UPPER_4);
+        start++;
+        higher = ((*start) & LED_LONG_MASK_UPPER_5);
+        start++;
+        highest = ((*start) & LED_LONG_MASK_UPPER_6);
+        start++;
+
+        for (uint8_t i = 1; i < block_count; i++)
+        {
+            // apply the masks so we only copy the one half of the pixels we are "allowed" to
+            *start &= LED_LONG_MASK_LOWER_1;
+            *start |= lowest;
+            start++;
+            *start &= LED_LONG_MASK_LOWER_2;
+            *start |= lower;
+            start++;
+            *start &= LED_LONG_MASK_LOWER_3;
+            *start |= lowmid;
+            start++;
+            *start &= LED_LONG_MASK_LOWER_4;
+            *start |= mid;
+            start++;
+            *start &= LED_LONG_MASK_LOWER_5;
+            *start |= higher;
+            start++;
+            *start &= LED_LONG_MASK_LOWER_6;
+            *start |= highest;
+            start++;
+        }
+    }
+    else
+    {
+        y -= (PANEL_Y / 2);
+        // we are in lower half of pixels
+        uint16_t index = ((y * PANEL_X) + x) / 4;
+
+        buffer[index].redLowerBit1Led1 = color.red;
+        buffer[index].greenLowerBit1Led1 = color.green;
+        buffer[index].blueLowerBit1Led1 = color.blue;
+        buffer[index].redLowerBit1Led2 = color.red;
+        buffer[index].greenLowerBit1Led2 = color.green;
+        buffer[index].blueLowerBit1Led2 = color.blue;
+        buffer[index].redLowerBit1Led3 = color.red;
+        buffer[index].greenLowerBit1Led3 = color.green;
+        buffer[index].blueLowerBit1Led3 = color.blue;
+        buffer[index].redLowerBit1Led4 = color.red;
+        buffer[index].greenLowerBit1Led4 = color.green;
+        buffer[index].blueLowerBit1Led4 = color.blue;
+        // second bit
+        buffer[index].redLowerBit2Led1 = color.red >> (uint8_t)1;
+        buffer[index].greenLowerBit2Led1 = color.green >> (uint8_t)1;
+        buffer[index].blueLowerBit2Led1 = color.blue >> (uint8_t)1;
+        buffer[index].redLowerBit2Led2 = color.red >> (uint8_t)1;
+        buffer[index].greenLowerBit2Led2 = color.green >> (uint8_t)1;
+        buffer[index].blueLowerBit2Led2 = color.blue >> (uint8_t)1;
+        buffer[index].redLowerBit2Led3 = color.red >> (uint8_t)1;
+        buffer[index].greenLowerBit2Led3 = color.green >> (uint8_t)1;
+        buffer[index].blueLowerBit2Led3 = color.blue >> (uint8_t)1;
+        buffer[index].redLowerBit2Led4 = color.red >> (uint8_t)1;
+        buffer[index].greenLowerBit2Led4 = color.green >> (uint8_t)1;
+        buffer[index].blueLowerBit2Led4 = color.blue >> (uint8_t)1;
+
+        // temp buffers to store the cleaned values
+        uint8_t lowest, lower, lowmid, mid, higher, highest;
+        uint8_t *start = (uint8_t *)&buffer[index];
+
+        // clean and cache the bits needed for thsi half
+        lowest = ((*start) & LED_LONG_MASK_LOWER_1);
+        start++;
+        lower = ((*start) & LED_LONG_MASK_LOWER_2);
+        start++;
+        lowmid = ((*start) & LED_LONG_MASK_LOWER_3);
+        start++;
+        mid = ((*start) & LED_LONG_MASK_LOWER_4);
+        start++;
+        higher = ((*start) & LED_LONG_MASK_LOWER_5);
+        start++;
+        highest = ((*start) & LED_LONG_MASK_LOWER_6);
+        start++;
+
+        for (uint8_t i = 1; i < block_count; i++)
+        {
+            // apply the masks so we only copy the one half of the pixels we are "allowed" to
+            *start &= LED_LONG_MASK_UPPER_1;
+            *start |= lowest;
+            start++;
+            *start &= LED_LONG_MASK_UPPER_2;
+            *start |= lower;
+            start++;
+            *start &= LED_LONG_MASK_UPPER_3;
+            *start |= lowmid;
+            start++;
+            *start &= LED_LONG_MASK_UPPER_4;
+            *start |= mid;
+            start++;
+            *start &= LED_LONG_MASK_UPPER_5;
+            *start |= higher;
+            start++;
+            *start &= LED_LONG_MASK_UPPER_6;
+            *start |= highest;
+            start++;
         }
     }
 }
