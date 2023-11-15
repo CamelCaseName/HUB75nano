@@ -46,7 +46,7 @@ void loop()
 
         for (size_t s = 0; s < SLOWDOWN; s++)
         {
-            panel.fillScreenColor(ri >> (8 - MAX_COLORDEPTH), gi >> (8 - MAX_COLORDEPTH), bi >> (8 - MAX_COLORDEPTH));
+            panel.fillScreenColor({{.red = (uint8_t)(ri >> (8 - MAX_COLORDEPTH)), .green = (uint8_t)(gi >> (8 - MAX_COLORDEPTH)), .blue = (uint8_t)(bi >> (8 - MAX_COLORDEPTH))}});
         }
     }
 

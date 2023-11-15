@@ -1,3 +1,5 @@
+
+#define PANEL_BIG
 #include "HUB75nano.h"
 // this sketch should ouptut serial input to the panel
 
@@ -5,8 +7,8 @@ Panel panel = {};
 char out[81];
 uint8_t length = 0;
 uint8_t oldlength;
-uint16_t fcolor = panel.RED;
-uint16_t bgcolor = panel.DARKERBLUE;
+Color fcolor = Colors::RED;
+Color bgcolor = Colors::DARKERBLUE;
 char t;
 
 void setup()
@@ -43,14 +45,11 @@ void loop()
             {
                 if (t < 10)
                 {
-                    fcolor = t; // r>= 0, < 8
+                    fcolor = {.color_444 = (uint16_t)t}; // r>= 0, < 8
                 }
                 else if (t >= 20)
                 {
-                    bgcolor = t - 20;
-                }
-                else
-                {
+                    bgcolor = {.color_444 = (uint16_t)(t - 20)};
                 }
             }
             else

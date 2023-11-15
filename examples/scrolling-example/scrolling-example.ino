@@ -27,7 +27,7 @@ coords cords;
 
 void setup()
 {
-    panel.fillBuffer(panel.RED); // background COLOR
+    panel.fillBuffer(Colors::RED); // background COLOR
 }
 
 void loop()
@@ -36,19 +36,19 @@ void loop()
     {
         for (uint8_t i = 0; i < 10; i++)
         {
-            panel.drawRect(0, 7, 63, 23, panel.BLACK, true);
+            panel.drawRect(0, 7, 63, 23, Colors::BLACK, true);
             cords.x1 = 0 - i;
-            panel.drawBigChar(cords.x1, 7 + (i == 0), srcText[j], panel.WHITE, 3);
+            panel.drawBigChar(cords.x1, 7 + (i == 0), srcText[j], Colors::WHITE, 3);
             cords.x2 = 10 - i;
-            panel.drawBigChar(cords.x2, 8, srcText[j + 1], panel.WHITE, 3);
+            panel.drawBigChar(cords.x2, 8, srcText[j + 1], Colors::WHITE, 3);
             cords.x3 = 20 - i;
-            panel.drawBigChar(cords.x3, 8, srcText[j + 2], panel.WHITE, 3);
+            panel.drawBigChar(cords.x3, 8, srcText[j + 2], Colors::WHITE, 3);
             cords.x4 = 30 - i;
-            panel.drawBigChar(cords.x4, 8, srcText[j + 3], panel.WHITE, 3);
+            panel.drawBigChar(cords.x4, 8, srcText[j + 3], Colors::WHITE, 3);
             cords.x5 = 40 - i;
-            panel.drawBigChar(cords.x5, 8, srcText[j + 4], panel.WHITE, 3);
+            panel.drawBigChar(cords.x5, 8, srcText[j + 4], Colors::WHITE, 3);
             cords.x6 = 50 - i;
-            panel.drawBigChar(cords.x6, 8, srcText[j + 5], panel.WHITE, 3);
+            panel.drawBigChar(cords.x6, 8, srcText[j + 5], Colors::WHITE, 3);
 
             for (uint8_t l = 0; l < 100; l++)
             {

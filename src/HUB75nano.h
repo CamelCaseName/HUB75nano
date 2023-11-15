@@ -646,19 +646,7 @@ public:
             }
         }
     }
-#pragma GCC push_options
-#pragma GCC optimize("unroll-loops")
-    inline void SendRow()
-    {
-        for (uint8_t i = 0; i < PANEL_X; i++)
-        {
-            Clock;
-        }
-    }
-#pragma GCC pop_options
 #pragma endregion // immediates
-
-#pragma region buffer_specifics
 
 #pragma region led_struct_definition
 #ifdef PANEL_BIG
@@ -782,20 +770,6 @@ public:
     }
 #pragma endregion // buffer_copying
 
-#pragma region buffer_setting_definitions:
-    inline void setBuffer(uint8_t x, uint8_t y, Color color)
-    {
-#ifdef PANEL_BIG
-        setBigBuffer(x, y, color); // 1 bit buffer in ram
-#else
-#ifndef PANEL_FLASH
-        setSmallBuffer(x, y, color); // 2 bit buffer in ram
-#else
-#endif
-#endif
-    }
-#pragma endregion // buffer_setting_definitions
-
 #pragma region drawing
     void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
     { // draws a line with color between the coords given
@@ -900,35 +874,85 @@ public:
         // get colors
         if (fill)
         {
-            for (uint8_t i = x1; i <= x2; i++)
-            {
-                for (uint8_t j = y1; j <= y2; j++)
+            for (uint8_t j = y1; j <= y2; j++)
+            { // horizontal lines
+                if (x2 - x1 > 4)
                 {
-                    setBuffer(i, j, color);
+                    uint8_t left_i = x1, right_i = x2;
+                    while ((left_i & 3) != 0)
+                    {
+                        setBuffer(left_i, y1, color);
+                        setBuffer(left_i, y2, color);
+                        left_i++;
+                    }
+
+                    while ((right_i & 3) != 0)
+                    {
+                        setBuffer(right_i, y1, color);
+                        setBuffer(right_i, y2, color);
+                        right_i--;
+                    }
+
+                    if (right_i - left_i >= 4)
+                    {
+                        uint8_t block_count = ((right_i - left_i) / 4);
+
+                        setBuffer4xBlockWise(left_i, y1, block_count, color);
+                        setBuffer4xBlockWise(left_i, y2, block_count, color);
+                    }
+                }
+                else
+                {
+                    for (uint8_t i = x1; i <= x2; i++)
+                    {
+                        setBuffer(i, y1, color);
+                        setBuffer(i, y2, color);
+                    }
                 }
             }
         }
         else
         {
-            // left line
+            // vertical lines
             for (uint8_t j = y1; j <= y2; j++)
             {
                 setBuffer(x1, j, color);
-            }
-            // right line
-            for (uint8_t j = y1; j <= y2; j++)
-            {
                 setBuffer(x2, j, color);
             }
-            // top line
-            for (uint8_t i = x1; i <= x2; i++)
+
+            // horizontal lines
+            if (x2 - x1 >= 4)
             {
-                setBuffer(i, y1, color);
+                uint8_t left_i = x1, right_i = x2;
+                while ((left_i & 3) != 0)
+                {
+                    setBuffer(left_i, y1, color);
+                    setBuffer(left_i, y2, color);
+                    left_i++;
+                }
+
+                while ((right_i & 3) != 0)
+                {
+                    right_i--;
+                    setBuffer(right_i, y1, color);
+                    setBuffer(right_i, y2, color);
+                }
+
+                if (right_i - left_i >= 4)
+                {
+                    uint8_t block_count = ((right_i - left_i) / 4);
+                    // Serial.println(y1);
+                    setBuffer4xBlockWise(left_i, y1, block_count, color);
+                    // setBuffer4xBlockWise(left_i, y2, block_count, color);
+                }
             }
-            // bottom line
-            for (uint8_t i = x1; i <= x2; i++)
+            else
             {
-                setBuffer(i, y2, color);
+                for (uint8_t i = x1; i <= x2; i++)
+                {
+                    setBuffer(i, y1, color);
+                    setBuffer(i, y2, color);
+                }
             }
         }
     }
@@ -1064,6 +1088,46 @@ public:
 #pragma endregion // buffer_definition
 private:
     uint8_t row = 0;
+
+#pragma region buffer_setting_definitions:
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void setBuffer(uint8_t x, uint8_t y, Color color)
+#else
+    inline void setBuffer(uint8_t x, uint8_t y, Color color)
+#endif
+    {
+#ifdef PANEL_BIG
+        setBigBuffer(x, y, color); // 1 bit buffer in ram
+#else
+#ifndef PANEL_FLASH
+        setSmallBuffer(x, y, color);                // 2 bit buffer in ram
+#else
+#endif
+#endif
+    }
+    inline void setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+    {
+#ifdef PANEL_BIG
+        setBigBuffer4x(x, y, block_count, color); // 1 bit buffer in ram
+#else
+#ifndef PANEL_FLASH
+        setSmallBuffer4x(x, y, block_count, color); // 2 bit buffer in ram
+#else
+#endif
+#endif
+    }
+#pragma endregion // buffer_setting_definitions
+
+#pragma GCC push_options
+#pragma GCC optimize("unroll-loops")
+    inline void SendRow()
+    {
+        for (uint8_t i = 0; i < PANEL_X; i++)
+        {
+            Clock;
+        }
+    }
+#pragma GCC pop_options
 
 // we can only set the row fast when the pins are in order
 #ifdef PANEL_MAX_SPEED
@@ -1379,7 +1443,65 @@ void setSmallBuffer(uint8_t x, uint8_t y, Color color)
         }
     }
 }
+
+void setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+{
+#ifdef PANEL_FLIP_VERTICAL
+    y = PANEL_Y - y;
 #endif
+#ifdef PANEL_FLIP_HORIZONTAL
+    x = PANEL_X - x;
+#endif
+    if (y < (PANEL_Y / 2))
+    {
+        // we are in upper half of pixels
+        uint16_t index = ((y * PANEL_X) + x) / 4;
+
+        buffer[index].redUpperBit1Led1 = color.red;
+        buffer[index].greenUpperBit1Led1 = color.green;
+        buffer[index].blueUpperBit1Led1 = color.blue;
+        buffer[index].redUpperBit1Led2 = color.red;
+        buffer[index].greenUpperBit1Led2 = color.green;
+        buffer[index].blueUpperBit1Led2 = color.blue;
+        buffer[index].redUpperBit1Led3 = color.red;
+        buffer[index].greenUpperBit1Led3 = color.green;
+        buffer[index].blueUpperBit1Led3 = color.blue;
+        buffer[index].redUpperBit1Led4 = color.red;
+        buffer[index].greenUpperBit1Led4 = color.green;
+        buffer[index].blueUpperBit1Led4 = color.blue;
+
+        for (uint8_t i = 1; i < block_count; i++)
+        {
+            buffer[index + i] = buffer[index];
+        }
+    }
+    else
+    {
+        y -= (PANEL_Y / 2);
+        // we are in lower half of pixels
+        uint16_t index = ((y * PANEL_X) + x) / 4;
+
+        buffer[index].redLowerBit1Led1 = color.red;
+        buffer[index].greenLowerBit1Led1 = color.green;
+        buffer[index].blueLowerBit1Led1 = color.blue;
+        buffer[index].redLowerBit1Led2 = color.red;
+        buffer[index].greenLowerBit1Led2 = color.green;
+        buffer[index].blueLowerBit1Led2 = color.blue;
+        buffer[index].redLowerBit1Led3 = color.red;
+        buffer[index].greenLowerBit1Led3 = color.green;
+        buffer[index].blueLowerBit1Led3 = color.blue;
+        buffer[index].redLowerBit1Led4 = color.red;
+        buffer[index].greenLowerBit1Led4 = color.green;
+        buffer[index].blueLowerBit1Led4 = color.blue;
+
+        for (uint8_t i = 1; i < block_count; i++)
+        {
+            buffer[index + i] = buffer[index];
+        }
+    }
+}
+#endif
+
 #else
 void
 displayBigBuffer()
