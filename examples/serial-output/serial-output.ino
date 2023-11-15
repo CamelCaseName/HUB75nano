@@ -1,5 +1,6 @@
 
 #define PANEL_BIG
+#define PANEL_MAX_SPEED
 #include "HUB75nano.h"
 // this sketch should ouptut serial input to the panel
 
@@ -45,11 +46,11 @@ void loop()
             {
                 if (t < 10)
                 {
-                    fcolor = {.color_444 = (uint16_t)t}; // r>= 0, < 8
+                    fcolor.color_444 = (uint16_t)t; // r>= 0, < 8
                 }
                 else if (t >= 20)
                 {
-                    bgcolor = {.color_444 = (uint16_t)(t - 20)};
+                    bgcolor.color_444 = (uint16_t)(t - 20);
                 }
             }
             else

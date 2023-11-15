@@ -16,8 +16,7 @@ struct coords
     uint8_t : 2;
 };
 
-// this also doesnt really work yet, its too blinky
-//  + ugly programming
+// a bit broken rn, after the first letters leave the screen it goes haywire
 
 // create an instance of the panel
 Panel panel = {};
