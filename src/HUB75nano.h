@@ -776,6 +776,7 @@ public:
         memcpy(buffer, newBuffer, bufferLength);
     }
 #endif
+
     void fillBuffer(Color color)
     {
         // fills the buffer
@@ -820,6 +821,7 @@ public:
             }
         }
     }
+
     void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color, bool fill)
     {
         int8_t x = -a;
@@ -853,6 +855,7 @@ public:
             }
         }
     }
+
     void drawCircle(uint8_t xm, uint8_t ym, uint8_t radius, Color color, bool fill)
     {
         // draws a circle at the coords with radius and color
@@ -872,6 +875,7 @@ public:
             if (new_radius > x || err > y) // e_xy+e_x > 0 or no 2nd y-step
                 err += ++x * 2 + 1;        // -> x-step now
         } while (x < 0);
+
         if (fill) // fill works
         {
             // check if point in circle, then fill
@@ -887,6 +891,7 @@ public:
             }
         }
     }
+
     void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, bool fill)
     {
         // draws a rect filled ro not filled with the given color at coords (landscape, origin in upper left corner)
@@ -1020,44 +1025,65 @@ public:
             }
         }
     }
-    void drawSquare(uint8_t x, uint8_t y, uint8_t size, Color color, bool fill)
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawSquare(uint8_t x, uint8_t y, uint8_t size, Color color, bool fill)
+#else
+    inline void drawSquare(uint8_t x, uint8_t y, uint8_t size, Color color, bool fill)
+#endif
     {
+        size--;
         drawRect(x, y, x + size, y + size, color, fill);
     }
+
 #ifndef PANEL_NO_FONT
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
+#else
     inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
+#endif
     {
         drawChar(x, y, letter, color, Colors::NO_COLOR);
     }
+
     void drawChar(uint8_t x, uint8_t y, char letter, Color color, const Color bg_color)
     {
-        bool fill_bg;
-        fill_bg = bg_color.invalid_bits == 0;
         // iterate through the character line by line
-        char out;
         for (uint8_t i = 0; i < 5; i++)
         {
-            out = getFontLine(letter, i);
+            char current_line = getFontLine(letter, i);
             // iterate through the character bit by bit
-            for (uint8_t j = 4; j > 0; --j)
+            for (uint8_t j = 0; j < 4; j++)
             {
                 // shift by j and check for bit set
-                if (out & (uint8_t)(1 << (uint8_t)j))
+                if (current_line & (uint8_t)(1 << (uint8_t)(4 - j)))
                 {
                     // set pixel at i and j
-                    setBuffer(x + 4 - j, y + i, color);
+                    setBuffer(x + j, y + i, color);
                 }
-                else if (fill_bg)
+                else if (bg_color.invalid_bits == 0)
                 {
-                    setBuffer(x + 4 - j, y + i, bg_color);
+                    setBuffer(x + j, y + i, bg_color);
                 }
             }
         }
     }
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
+#else
     inline void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
+#endif
     {
+        if (size_modifier == 1)
+        {
+            drawChar(x, y, letter, color, Colors::NO_COLOR);
+            return;
+        }
         drawBigChar(x, y, letter, color, Colors::NO_COLOR, size_modifier);
     }
+
     void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, Color bg_color, uint8_t size_modifier)
     { // new with scaling, but may be slower
         if (size_modifier == 1)
@@ -1066,45 +1092,54 @@ public:
             return;
         }
 
-        // color for the char
-        bool fill_bg;
-        fill_bg = bg_color.invalid_bits == 0;
-        uint8_t width = 4 * size_modifier;
-        uint8_t height = 5 * size_modifier;
         // iterate through the character line by line
-        char out;
-        for (uint8_t i = 0; i < height; i++)
+        for (uint8_t i = 0; i < 5; i++)
         {
-            uint8_t scaled_i = i / size_modifier;
-            out = getFontLine(letter, scaled_i);
+            char current_line = getFontLine(letter, i);
             // iterate through the character bit by bit, so x direction
-            for (uint8_t j = width; j > 0; --j)
+            for (uint8_t j = 0; j < 4; j++)
             {
                 // shift by j and check for bit set
-                if (out & (1 << (j / size_modifier)))
+                if (current_line & (uint8_t)(1 << (uint8_t)(4 - j)))
                 {
                     // set pixel at i and j
-                    setBuffer(x + width - j, y + i, color);
-                    continue;
+                    drawSquare(x + j * size_modifier, y + i * size_modifier, size_modifier, color, true);
                 }
-
-                if (fill_bg)
-                    setBuffer(x + width - j, y + i, bg_color);
+                else if (bg_color.invalid_bits == 0)
+                {
+                    drawSquare(x + j * size_modifier, y + i * size_modifier, size_modifier, bg_color, true);
+                }
             }
         }
     }
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawString(uint8_t x, uint8_t y, char *str, Color color, Color bg_color)
+#else
     inline void drawString(uint8_t x, uint8_t y, char *str, Color color, Color bg_color)
+#endif
     {
         drawString(x, y, str, color, bg_color, 1);
     }
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawString(uint8_t x, uint8_t y, char *str, Color color)
+#else
     inline void drawString(uint8_t x, uint8_t y, char *str, Color color)
+#endif
     {
         drawString(x, y, str, color, Colors::NO_COLOR, 1);
     }
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void drawString(uint8_t x, uint8_t y, char *str, Color color, uint8_t size_modifier)
+#else
     inline void drawString(uint8_t x, uint8_t y, char *str, Color color, uint8_t size_modifier)
+#endif
     {
         drawString(x, y, str, color, Colors::NO_COLOR, size_modifier);
     }
+
     void drawString(uint8_t x, uint8_t y, char *str, Color color, Color bg_color, uint8_t size_modifier)
     {
         for (uint8_t i = 0; i < strlen(str); i++)
@@ -1138,7 +1173,12 @@ public:
 #endif
 
 #pragma region buffer_output_definitions:
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void displayBuffer()
+#else
     inline void displayBuffer()
+#endif
     {
         // puts the  buffer contents onto the panel
 #ifdef PANEL_BIG
@@ -1175,7 +1215,12 @@ private:
 #endif
 #endif
     }
+
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+#else
     inline void setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+#endif
     {
 #ifdef PANEL_BIG
         setBigBuffer4x(x, y, block_count, color); // 1 bit buffer in ram
@@ -1190,7 +1235,11 @@ private:
 
 #pragma GCC push_options
 #pragma GCC optimize("unroll-loops")
+#ifdef PANEL_MAX_SPEED
+    __attribute__((always_inline)) inline void SendRow()
+#else
     inline void SendRow()
+#endif
     {
         for (uint8_t i = 0; i < PANEL_X; i++)
         {
@@ -1455,7 +1504,7 @@ void setSmallBuffer(uint8_t x, uint8_t y, Color color)
     {
         // we are in upper half of pixels
         uint16_t index = ((y * PANEL_X) + x) / 4;
-        switch (x % 4)
+        switch (x & 3)
         {
         case 0: /*first pixel*/
             buffer[index].redUpperBit1Led1 = color.red;
@@ -1486,7 +1535,7 @@ void setSmallBuffer(uint8_t x, uint8_t y, Color color)
         y -= (PANEL_Y / 2);
         // we are in lower half of pixels
         uint16_t index = (y * PANEL_X + x) / 4;
-        switch (x % 4)
+        switch (x & 3)
         {
         case 0: /*first pixel*/
             buffer[index].redLowerBit1Led1 = color.red;
@@ -1983,7 +2032,7 @@ void setBigBuffer(uint8_t x, uint8_t y, Color color)
     {
         // we are in upper half of pixels
         uint8_t index = (y * PANEL_X + x) / 4;
-        switch (x % 4)
+        switch (x & 3)
         {
         case 0: /*first pixel*/
             buffer[index].redUpperBit1Led1 = color.red;
@@ -2026,7 +2075,7 @@ void setBigBuffer(uint8_t x, uint8_t y, Color color)
         y -= (PANEL_Y / 2);
         // we are in lower half of pixels
         uint8_t index = (y * PANEL_X + x) / 4;
-        switch (x % 4)
+        switch (x & 3)
         {
         case 0:
             buffer[index].redLowerBit1Led1 = color.red;
