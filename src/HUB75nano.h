@@ -1160,18 +1160,6 @@ public:
 // - line with given width
 #pragma endregion // drawing
 
-#pragma region buffer_definition
-#ifndef PANEL_NO_BUFFER
-#ifdef PANEL_BIG
-    LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth
-#else
-#ifdef PANEL_FLASH
-    PGM_VOID_P buffer = 0;
-#else
-    LED buffer[PANEL_BUFFERSIZE];
-#endif
-#endif
-
 #pragma region buffer_output_definitions:
 
 #ifdef PANEL_MAX_SPEED
@@ -1192,10 +1180,6 @@ public:
 #endif
     }
 #pragma endregion // buffer_output_definitions
-#else
-    LED buffer[0];
-#endif
-#pragma endregion // buffer_definition
 
 #ifdef PANEL_MAX_SPEED
     __attribute__((always_inline)) inline void setBuffer(uint8_t x, uint8_t y, Color color)
@@ -1215,6 +1199,22 @@ public:
 
 private:
     uint8_t row = 0;
+
+#pragma region buffer_definition
+#ifndef PANEL_NO_BUFFER
+#ifdef PANEL_BIG
+    LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth
+#else
+#ifdef PANEL_FLASH
+    PGM_VOID_P buffer = 0;
+#else
+    LED buffer[PANEL_BUFFERSIZE];
+#endif
+#endif
+#else
+    LED buffer[0];
+#endif
+#pragma endregion // buffer_definition
 
 #pragma region buffer_setting_definitions:
 
