@@ -1196,10 +1196,7 @@ public:
     LED buffer[0];
 #endif
 #pragma endregion // buffer_definition
-private:
-    uint8_t row = 0;
 
-#pragma region buffer_setting_definitions:
 #ifdef PANEL_MAX_SPEED
     __attribute__((always_inline)) inline void setBuffer(uint8_t x, uint8_t y, Color color)
 #else
@@ -1215,6 +1212,11 @@ private:
 #endif
 #endif
     }
+
+private:
+    uint8_t row = 0;
+
+#pragma region buffer_setting_definitions:
 
 #ifdef PANEL_MAX_SPEED
     __attribute__((always_inline)) inline void setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
