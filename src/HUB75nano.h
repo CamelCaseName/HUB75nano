@@ -1,5 +1,5 @@
 /*
-  HUB75nano.h can be used to display stuff on a HUB75 panel with row shift registers with 64x32px in 8, 16 or 4096 colors
+  HUB75nano.h can be used to display stuff on a HUB75 panel with _row shift registers with 64x32px in 8, 16 or 4096 colors
   designed for ARDUINO nano.
   (c) Leonhard Seidel, itsaps, jandlseb, 2023
   This library is free software; you can redistribute it and/or

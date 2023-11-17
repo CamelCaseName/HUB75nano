@@ -162,7 +162,7 @@ void _displaySmallBuffer()
         Clock;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
         Clock;
-        // set row
+        // set _row
         HIGH_OE;
         LATCH;
         _stepRow();

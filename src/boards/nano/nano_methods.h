@@ -42,11 +42,11 @@ _set_color(uint8_t value)
 }
 
 #ifndef PANEL_ROW_VAR
-uint8_t row = 0;
-#define PANEL_ROW_VAR row
+uint8_t _row = 0;
+#define PANEL_ROW_VAR _row
 #endif
 
-// we can only set the row fast when the pins are in order
+// we can only set the _row fast when the pins are in order
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
 #endif
@@ -55,7 +55,7 @@ _stepRow()
 {
 
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17
-    // set the 4 row pins at once
+    // set the 4 _row pins at once
     PORTC = PANEL_ROW_VAR & (uint8_t)31 | PORTC & (uint8_t)224;
 #else
     __asm__ __volatile__("sbrc	%0, 0" ::"r"(PANEL_ROW_VAR));

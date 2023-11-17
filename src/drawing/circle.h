@@ -2,6 +2,7 @@
 #define HUB75NANO_CIRCLE_H
 
 #include "drawing_common.h"
+
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
 #endif
@@ -41,6 +42,7 @@ void drawCircleHollow(uint8_t xm, uint8_t ym, uint8_t radius, Color color)
 
 void fillCircle(uint8_t xm, uint8_t ym, uint8_t radius, Color color)
 {
+    // todo do we need the bresenham if we have to fill it anyways?
     // draws a circle at the coords with radius and color
     int8_t x = -radius;
     int8_t y = 0;

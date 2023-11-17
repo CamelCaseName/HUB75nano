@@ -169,7 +169,7 @@ void _displayBigBuffer()
         Clock;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
         Clock;
-        // display row
+        // display _row
         HIGH_OE;
         LATCH;
         _stepRow();
@@ -340,7 +340,7 @@ void _displayBigBuffer()
         Clock;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
         Clock;
-        // display row
+        // display _row
         HIGH_OE;
         LATCH;
         _stepRow();

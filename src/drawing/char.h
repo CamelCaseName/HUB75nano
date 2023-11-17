@@ -6,10 +6,10 @@
 #include "drawing_common.h"
 
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
-#else
-inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
+__attribute__((always_inline))
 #endif
+inline void
+drawChar(uint8_t x, uint8_t y, char letter, Color color)
 {
     drawChar(x, y, letter, color, Colors::NO_COLOR);
 }
@@ -38,10 +38,10 @@ void drawChar(uint8_t x, uint8_t y, char letter, Color color, const Color bg_col
 }
 
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
-#else
-inline void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
+__attribute__((always_inline))
 #endif
+inline void
+drawBigChar(uint8_t x, uint8_t y, char letter, Color color, uint8_t size_modifier)
 {
     if (size_modifier == 1)
     {

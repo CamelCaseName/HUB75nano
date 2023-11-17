@@ -56,7 +56,7 @@
 // arduino pin number to port number and the respective pin number conversion
 #pragma region pin_to_port_number_conversion
 // todo make script to generate these macros/do two preprocessor passes with makefile
-// first row pin
+// first _row pin
 #if RA < 8
 #define PORT_RA PORTD
 #define PORT_PIN_RA RA
@@ -70,7 +70,7 @@
 #endif
 #endif
 
-// second row pin
+// second _row pin
 #if RB < 8
 #define PORT_RB PORTD
 #define PORT_PIN_RB RB
@@ -84,7 +84,7 @@
 #endif
 #endif
 
-// third row pin
+// third _row pin
 #if RC < 8
 #define PORT_RC PORTD
 #define PORT_PIN_RC RC
@@ -98,7 +98,7 @@
 #endif
 #endif
 
-// fourth row pin
+// fourth _row pin
 #if RD < 8
 #define PORT_RD PORTD
 #define PORT_PIN_RD RC
@@ -112,7 +112,7 @@
 #endif
 #endif
 
-// fifth row pin
+// fifth _row pin
 #if RE < 8
 #define PORT_RE PORTD
 #define PORT_PIN_RE RE
