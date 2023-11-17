@@ -5,12 +5,11 @@
 
 // bulk pin access color, only good if pins are in right order
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void _set_color(uint8_t value)
-{
-#else
-inline void _set_color(uint8_t value)
-{
+__attribute__((always_inline))
 #endif
+inline void
+_set_color(uint8_t value)
+{
 #if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
     // set 6 color pins and keep the rx tx pins as are
     PORTD = value | (PORTD & (uint8_t)3);
@@ -49,12 +48,11 @@ uint8_t row = 0;
 
 // we can only set the row fast when the pins are in order
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void _stepRow()
-{
-#else
-inline void _stepRow()
-{
+__attribute__((always_inline))
 #endif
+inline void
+_stepRow()
+{
 
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17
     // set the 4 row pins at once

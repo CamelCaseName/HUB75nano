@@ -34,4 +34,6 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
     }
 }
 
+// todo add line with width
+
 #endif // HUB75NANO_LINE_H

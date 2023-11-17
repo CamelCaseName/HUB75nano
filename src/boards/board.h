@@ -15,11 +15,11 @@
 #endif
 
 #ifndef PANEL_X
-#error "Panel size (x) has to be defined!"
+#define PANEL_X 0
 #endif
 
 #ifndef PANEL_Y
-#error "Panel size (y) has to be defined!"
+#define PANEL_Y 0
 #endif
 
 #endif // HUB75NANO_BOARD_H

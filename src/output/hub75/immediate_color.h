@@ -8,10 +8,10 @@
 #pragma GCC push_options
 #pragma GCC optimize("unroll-loops")
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void SendRow()
-#else
-inline void SendRow()
+__attribute__((always_inline))
 #endif
+inline void
+SendRow()
 {
     for (uint8_t i = 0; i < PANEL_X; i++)
     {

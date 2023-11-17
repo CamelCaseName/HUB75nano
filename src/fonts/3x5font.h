@@ -120,7 +120,12 @@ const uint8_t font4x6[96][2] PROGMEM = {
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Font retreival function - ugly, but needed.
 // kindly stolen from https://hackaday.io/project/6309-vga-graphics-over-spi-and-serial-vgatonic/log/20759-a-tiny-4x6-pixel-font-that-will-fit-on-almost-any-microcontroller-license-mit#header
-inline unsigned char getFontLine(unsigned char data, int line_num)
+
+#ifdef PANEL_MAX_SPEED
+__attribute__((always_inline))
+#endif
+inline unsigned char
+getFontLine(unsigned char data, int line_num)
 {
     const uint8_t index = (data - 32);
     unsigned char pixel = 0;

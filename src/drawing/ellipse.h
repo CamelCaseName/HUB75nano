@@ -30,6 +30,7 @@ void drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color, bool
     }
     if (fill)
     {
+        // todo there has to be a better way of filling an ellipse
         while (a > 0)
         {
             drawEllipse(xm, ym, --a, b, color, true);

@@ -8,10 +8,10 @@
 #endif
 
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void setBuffer(uint8_t x, uint8_t y, Color color)
-#else
-inline void setBuffer(uint8_t x, uint8_t y, Color color)
+__attribute__((always_inline))
 #endif
+inline void
+setBuffer(uint8_t x, uint8_t y, Color color)
 {
 #ifdef PANEL_BIG
     _setBigBuffer(x, y, color); // 1 bit buffer in ram
@@ -24,10 +24,10 @@ inline void setBuffer(uint8_t x, uint8_t y, Color color)
 }
 
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void _setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
-#else
-inline void _setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
+__attribute__((always_inline))
 #endif
+inline void
+_setBuffer4xBlockWise(uint8_t x, uint8_t y, uint8_t block_count, Color color)
 {
 #ifdef PANEL_BIG
     _setBigBuffer4x(x, y, block_count, color); // 1 bit buffer in ram

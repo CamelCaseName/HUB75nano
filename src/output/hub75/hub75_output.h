@@ -17,10 +17,10 @@
 
 #ifndef PANEL_NO_BUFFER
 #ifdef PANEL_MAX_SPEED
-__attribute__((always_inline)) inline void displayBuffer()
-#else
-inline void displayBuffer()
+__attribute__((always_inline))
 #endif
+inline void
+displayBuffer()
 {
     // puts the  buffer contents onto the panel
 #ifdef PANEL_BIG

@@ -1,8 +1,7 @@
 #ifndef HUB75NANO_1BIT_BUFFER_H
 #define HUB75NANO_1BIT_BUFFER_H
 
-#include "../../boards/board.h"
-#include "../../structs/LED.h"
+#include "../../buffer_setting/buffer_common.h"
 
 void _displaySmallBuffer()
 {

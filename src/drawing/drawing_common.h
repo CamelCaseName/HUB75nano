@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "../structs/Color.h"
-#include "../buffer_setting/buffer_common.h"
+#include "../structs/Colors.h"
+#include "../buffer_setting/buffer.h"
 
 #endif // HUB75NANO_DRAWING_COMMON_H

@@ -3,6 +3,7 @@
 
 #ifndef PANEL_NO_FONT
 #include "../fonts/font_common.h"
+#include "drawing_common.h"
 
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline)) inline void drawChar(uint8_t x, uint8_t y, char letter, Color color)
