@@ -153,16 +153,10 @@ public:
         memcpy(buffer, newBuffer, bufferLength);
     }
 
-    void fillBuffer(Color color)
+    __attribute__((always_inline)) inline void fillBuffer(Color color)
     {
         // fills the buffer
-        for (uint8_t x = 0; x < PANEL_X; x++)
-        {
-            for (uint8_t y = 0; y < PANEL_Y; y++)
-            {
-                setBuffer(x, y, color);
-            }
-        }
+        fillRect(0, 0, PANEL_X - 1, PANEL_Y - 1, color);
     }
 #endif
 #endif
