@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 
+*.zip
 scripts/
 dev/
 .output/
