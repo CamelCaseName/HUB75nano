@@ -268,4 +268,6 @@
     HIGH_LAT; \
     CLEAR_LAT
 
+#define OVERFLOW (SREG & _BV(SREG_C))
+
 #endif // HUB75NANO_NANO_H

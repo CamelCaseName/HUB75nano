@@ -56,7 +56,7 @@ _stepRow()
 
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17
     // set the 4 _row pins at once
-    PORTC = PANEL_ROW_VAR & (uint8_t)31 | PORTC & (uint8_t)224;
+    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)224;
 #else
     __asm__ __volatile__("sbrc	%0, 0" ::"r"(PANEL_ROW_VAR));
     high_pin(PORT_RA, PORT_PIN_RA);
