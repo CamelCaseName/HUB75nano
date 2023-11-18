@@ -4,17 +4,17 @@
 #include <inttypes.h>
 
 // forward declarations
-#ifdef PANEL_MAX_SPEED
-__attribute__((always_inline))
-#endif
-inline void
-_set_color(uint8_t value);
+// #ifdef PANEL_MAX_SPEED
+// __attribute__((always_inline))
+// #endif
+// inline void
+// _set_color(uint8_t value);
 
-#ifdef PANEL_MAX_SPEED
-__attribute__((always_inline))
-#endif
-inline void
-_stepRow();
+// #ifdef PANEL_MAX_SPEED
+// __attribute__((always_inline))
+// #endif
+// inline void
+// _stepRow();
 
 // include the relevant file to get the thingies
 #ifdef ARDUINO_AVR_NANO // nano with avr 328p

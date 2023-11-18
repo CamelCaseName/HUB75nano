@@ -2,6 +2,7 @@
 #define HUB75NANO_IOT_METHODS_H
 
 #include "iot.h"
+#include <port.h>
 
 // bulk pin access color, only good if pins are in right order
 #ifdef PANEL_MAX_SPEED
@@ -10,34 +11,17 @@ __attribute__((always_inline))
 inline void
 _set_color(uint8_t value)
 {
-#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
+#if RF == PA16 and GF == PA17 and BF == PA18 and RS == PA19 and GS == PA20 and BS == PA21
     // set 6 color pins and keep the rx tx pins as are
-    PORTD = value | (PORTD & (uint8_t)3);
+    // todo
+    PORT->Group[port_from_pin(RF)].OUTSET.reg = value << bit_from_pin(RF);
 #else
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
-    high_pin(PORT_RF, PORT_PIN_RF);
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
-    clear_pin(PORT_RF, PORT_PIN_RF);
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
-    high_pin(PORT_GF, PORT_PIN_GF);
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
-    clear_pin(PORT_GF, PORT_PIN_GF);
-    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
-    high_pin(PORT_BF, PORT_PIN_BF);
-    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
-    clear_pin(PORT_BF, PORT_PIN_BF);
-    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
-    high_pin(PORT_RS, PORT_PIN_RS);
-    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
-    clear_pin(PORT_RS, PORT_PIN_RS);
-    __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
-    high_pin(PORT_GS, PORT_PIN_GS);
-    __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
-    clear_pin(PORT_GS, PORT_PIN_GS);
-    __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
-    high_pin(PORT_BS, PORT_PIN_BS);
-    __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
-    clear_pin(PORT_BS, PORT_PIN_BS);
+    PORT->Group[port_from_pin(RF)].OUTSET.reg = (value & 1) << bit_from_pin(RF);
+    PORT->Group[port_from_pin(GF)].OUTSET.reg = ((value >> 1) & 1) << bit_from_pin(GF);
+    PORT->Group[port_from_pin(BF)].OUTSET.reg = ((value >> 2) & 1) << bit_from_pin(BF);
+    PORT->Group[port_from_pin(RS)].OUTSET.reg = ((value >> 3) & 1) << bit_from_pin(RS);
+    PORT->Group[port_from_pin(GS)].OUTSET.reg = ((value >> 4) & 1) << bit_from_pin(GS);
+    PORT->Group[port_from_pin(BS)].OUTSET.reg = ((value >> 5) & 1) << bit_from_pin(BS);
 #endif
 }
 
@@ -54,26 +38,15 @@ inline void
 _stepRow()
 {
 
-#if RA == 14 and RB == 15 and RC == 16 and RD == 17
+#if RA == PA03 and RB == PA04 and RC == PA05 and RD == PA06
     // set the 4 _row pins at once
-    PORTC = PANEL_ROW_VAR & (uint8_t)31 | PORTC & (uint8_t)224;
+    // todo
+    PORT->Group[port_from_pin(RA)].OUTSET.reg = PANEL_ROW_VAR << bit_from_pin(RA);
 #else
-    __asm__ __volatile__("sbrc	%0, 0" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RA, PORT_PIN_RA);
-    __asm__ __volatile__("sbrs	%0, 0" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RA, PORT_PIN_RA);
-    __asm__ __volatile__("sbrc	%0, 1" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RB, PORT_PIN_RB);
-    __asm__ __volatile__("sbrs	%0, 1" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RB, PORT_PIN_RB);
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RC, PORT_PIN_RC);
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RC, PORT_PIN_RC);
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RD, PORT_PIN_RD);
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RD, PORT_PIN_RD);
+    PORT->Group[port_from_pin(RA)].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(RA);
+    PORT->Group[port_from_pin(RB)].OUTSET.reg = ((PANEL_ROW_VAR >> 1) & 1) << bit_from_pin(RB);
+    PORT->Group[port_from_pin(RC)].OUTSET.reg = ((PANEL_ROW_VAR >> 2) & 1) << bit_from_pin(RC);
+    PORT->Group[port_from_pin(RD)].OUTSET.reg = ((PANEL_ROW_VAR >> 3) & 1) << bit_from_pin(RD);
 #endif
     PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)31;
 }
