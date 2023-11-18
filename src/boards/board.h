@@ -52,6 +52,10 @@
 #error "this needs to be defined for the selected board first"
 #endif
 
+#ifndef OVERFLOW
+#error "this needs to be defined for the selected board first"
+#endif
+
 #ifndef RA
 #error "this needs to be defined for the selected board first"
 #endif

@@ -56,7 +56,7 @@ void drawRectHollow(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
         }
 
         // blocks of horizontal lines
-        if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
+        if (x2 - x1 >= 4 && !OVERFLOW)
         {
             uint8_t block_count = ((x2 - x1) / 4);
             _setBuffer4xBlockWise(x1, y1, block_count, color);
@@ -80,7 +80,7 @@ void drawRectHollow(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
         }
 
         // blocks of horizontal lines
-        if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
+        if (x2 - x1 >= 4 && !OVERFLOW)
         {
             uint8_t block_count = ((x2 - x1) / 4);
 
@@ -140,7 +140,7 @@ void fillRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
         }
 
         // check against overflow
-        if (x2 - x1 >= 4 && !(SREG & _BV(SREG_C)))
+        if (x2 - x1 >= 4 && !OVERFLOW)
         {
             uint8_t block_count = ((x2 - x1) / 4);
 
