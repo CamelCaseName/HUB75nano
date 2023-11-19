@@ -26,78 +26,82 @@
 #error "Panel size needs to be defined"
 #endif
 
-// test that everything got defined correctly
+// test that everything got set correctly
 #ifndef HIGH_CLK
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef CLEAR_CLK
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef HIGH_LAT
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef CLEAR_LAT
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef HIGH_OE
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef CLEAR_OE
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef Clock
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef LATCH
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 
 #ifndef OVERFLOW
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
+#endif
+
+#ifndef set_pin_output
+#error "this needs to be set for the selected board first"
 #endif
 
 #ifndef RA
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef RB
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef RC
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef RD
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 // currently unused
 #ifndef RE
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef RF
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef GF
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef BF
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef RS
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef GS
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef BS
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef CLK
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef LAT
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 #ifndef OE
-#error "this needs to be defined for the selected board first"
+#error "this needs to be set for the selected board first"
 #endif
 
 #endif // HUB75NANO_BOARD_H

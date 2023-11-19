@@ -9,7 +9,10 @@
 #define MAX_COLORDEPTH 1
 #endif
 
-#define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH)
+#define MAX_COLOR (MAX_COLORDEPTH * MAX_COLORDEPTH) - 1
+#if MAX_COLOR == 0
+#define MAX_COLOR 1
+#endif
 #define COLOR_CLAMP (255.0 / (MAX_COLOR))
 
 #pragma pack(push, 1)

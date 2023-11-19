@@ -53,6 +53,8 @@
 #define high_pin(port, number) port |= 1 << number
 #define clear_pin(port, number) port &= ~(1 << number)
 
+#define set_pin_output(pin) pinMode(pin, OUTPUT);
+
 // arduino pin number to port number and the respective pin number conversion
 #pragma region pin_to_port_number_conversion
 // todo make script to generate these macros/do two preprocessor passes with makefile

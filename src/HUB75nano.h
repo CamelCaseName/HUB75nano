@@ -103,38 +103,38 @@ public:
     Panel(PGM_VOID_P buffer_in)
     {
         buffer = buffer_in;
-        pinMode(RA, OUTPUT);
-        pinMode(RB, OUTPUT);
-        pinMode(RC, OUTPUT);
-        pinMode(RD, OUTPUT);
-        pinMode(RE, OUTPUT);
-        pinMode(RF, OUTPUT);
-        pinMode(RS, OUTPUT);
-        pinMode(GF, OUTPUT);
-        pinMode(GS, OUTPUT);
-        pinMode(BF, OUTPUT);
-        pinMode(BS, OUTPUT);
-        pinMode(CLK, OUTPUT);
-        pinMode(LAT, OUTPUT);
-        pinMode(OE, OUTPUT);
+        set_pin_output(RA);
+        set_pin_output(RB);
+        set_pin_output(RC);
+        set_pin_output(RD);
+        set_pin_output(RE);
+        set_pin_output(RF);
+        set_pin_output(RS);
+        set_pin_output(GF);
+        set_pin_output(GS);
+        set_pin_output(BF);
+        set_pin_output(BS);
+        set_pin_output(CLK);
+        set_pin_output(LAT);
+        set_pin_output(OE);
     }
 #else
     Panel()
     {
-        pinMode(RA, OUTPUT);
-        pinMode(RB, OUTPUT);
-        pinMode(RC, OUTPUT);
-        pinMode(RD, OUTPUT);
-        pinMode(RE, OUTPUT);
-        pinMode(RF, OUTPUT);
-        pinMode(RS, OUTPUT);
-        pinMode(GF, OUTPUT);
-        pinMode(GS, OUTPUT);
-        pinMode(BF, OUTPUT);
-        pinMode(BS, OUTPUT);
-        pinMode(CLK, OUTPUT);
-        pinMode(LAT, OUTPUT);
-        pinMode(OE, OUTPUT);
+        set_pin_output(RA);
+        set_pin_output(RB);
+        set_pin_output(RC);
+        set_pin_output(RD);
+        set_pin_output(RE);
+        set_pin_output(RF);
+        set_pin_output(RS);
+        set_pin_output(GF);
+        set_pin_output(GS);
+        set_pin_output(BF);
+        set_pin_output(BS);
+        set_pin_output(CLK);
+        set_pin_output(LAT);
+        set_pin_output(OE);
     }
 #endif
 #pragma endregion // constructors
