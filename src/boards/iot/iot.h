@@ -54,6 +54,13 @@
 #define high_pin(pin) PORT->Group[port_from_pin(pin)].OUTSET.reg = 1 << bit_from_pin(pin)
 #define clear_pin(pin) PORT->Group[port_from_pin(pin)].OUTCLR.reg = 1 << bit_from_pin(pin)
 
+// enable input, to support reading back values, with pullups disabled
+
+// Set pin to output mode
+#define set_pin_output(pin)                                                                      \
+    PORT->Group[port_from_pin(pin)].PINCFG[bit_from_pin(pin)].reg = (uint8_t)(PORT_PINCFG_INEN); \
+    PORT->Group[port_from_pin(pin)].DIRSET.reg = (uint32_t)(1 << bit_from_pin(pin));
+
 #define HIGH_CLK high_pin(CLK)
 #define CLEAR_CLK clear_pin(CLK)
 #define HIGH_LAT high_pin(LAT)
