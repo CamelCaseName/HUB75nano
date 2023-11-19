@@ -1,23 +1,28 @@
 Panel   KEYWORD1
 LED   KEYWORD1
 Colors  KEYWORD1
+Color  KEYWORD1
 
-selectLine  KEYWORD2
-fillScreenColor KEYWORD2
-fillScreenShift KEYWORD2
-sendTwoPixels   KEYWORD2
-sendWholeRow    KEYWORD2
-setBuffer   KEYWORD2
-swapBuffer  KEYWORD2
-displayBuffer   KEYWORD2
-fillBuffer  KEYWORD2
-drawRect    KEYWORD2
-drawSquare  KEYWORD2
-drawLine    KEYWORD2
-drawEllipse KEYWORD2
-drawCircle  KEYWORD2
-drawChar    KEYWORD2
-drawBigChar KEYWORD2
+fillScreenColor   KEYWORD2
+setBuffer         KEYWORD2
+swapBuffer        KEYWORD2
+displayBuffer     KEYWORD2
+fillBuffer        KEYWORD2
+fillRect          KEYWORD2
+fillSquare        KEYWORD2
+fillEllipse       KEYWORD2
+fillCircle        KEYWORD2
+drawRectHollow    KEYWORD2
+drawSquareHollow  KEYWORD2
+drawEllipseHollow KEYWORD2
+drawCircleHollow  KEYWORD2
+drawRect          KEYWORD2
+drawSquare        KEYWORD2
+drawLine          KEYWORD2
+drawEllipse       KEYWORD2
+drawCircle        KEYWORD2
+drawChar          KEYWORD2
+drawBigChar       KEYWORD2
 
 
 RED LITERAL1
