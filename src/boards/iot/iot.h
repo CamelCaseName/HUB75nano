@@ -50,7 +50,6 @@
 #endif
 
 // helper definitions for setting/clearing
-// todo!
 #define high_pin(pin) PORT_IOBUS->Group[port_from_pin(pin)].OUTSET.reg = 1 << bit_from_pin(pin)
 #define clear_pin(pin) PORT_IOBUS->Group[port_from_pin(pin)].OUTCLR.reg = 1 << bit_from_pin(pin)
 

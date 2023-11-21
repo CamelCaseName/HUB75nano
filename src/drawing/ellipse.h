@@ -2,25 +2,65 @@
 #define HUB75NANO_ELLIPSE_H
 
 #include "drawing_common.h"
+#include "circle.h"
+#include "rectangle.h"
 
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
 #endif
+/*
+    @param a: pixels to extend in either x direction
+    @param b: pixels to extend in either y direction
+*/
 inline void
-drawEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color, bool fill)
+drawEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color color, bool fill)
 {
+    // circle is faster
+    if (a == b)
+    {
+        drawCircle(xMiddle, yMiddle, a, color, fill);
+        return;
+    }
+
     if (fill)
     {
-        fillEllipse(xm, ym, a, b, color);
+        fillEllipse(xMiddle, yMiddle, a, b, color);
     }
     else
     {
-        drawEllipseHollow(xm, ym, a, b, color);
+        drawEllipseHollow(xMiddle, yMiddle, a, b, color);
     }
 }
 
-void drawEllipseHollow(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color)
+/*
+    @param a: pixels to extend in either x direction
+    @param b: pixels to extend in either y direction
+*/
+void drawEllipseHollow(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color color)
 {
+    // circle is faster
+    if (a == b)
+    {
+        drawCircleHollow(xMiddle, yMiddle, a, color);
+        return;
+    }
+    if (a == 0)
+    {
+        for (uint8_t j = yMiddle - b; j <= yMiddle + b; j++)
+        {
+            setBuffer(xMiddle, j, color);
+        }
+        return;
+    }
+    if (b == 0)
+    {
+        for (uint8_t j = xMiddle - a; j <= xMiddle + a; j++)
+        {
+            setBuffer(j, yMiddle, color);
+        }
+        return;
+    }
+
     int8_t x = -a;
     int8_t y = 0; /* II. quadrant from bottom left to top right */
     int16_t a2 = a * a;
@@ -29,25 +69,47 @@ void drawEllipseHollow(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color
     int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
     do
     {
-        setBuffer(xm - x, ym + y, color); /*   I. Quadrant */
-        setBuffer(xm + x, ym + y, color); /*  II. Quadrant */
-        setBuffer(xm + x, ym - y, color); /* III. Quadrant */
-        setBuffer(xm - x, ym - y, color); /*  IV. Quadrant */
+        setBuffer(xMiddle - x, yMiddle + y, color); /*   I. Quadrant */
+        setBuffer(xMiddle + x, yMiddle + y, color); /*  II. Quadrant */
+        setBuffer(xMiddle + x, yMiddle - y, color); /* III. Quadrant */
+        setBuffer(xMiddle - x, yMiddle - y, color); /*  IV. Quadrant */
         e2 = 2 * err;
         if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
             err += (++x * 2 + 1) * b2;
         if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
             err += (++y * 2 + 1) * a2;
     } while (x <= 0);
-    while (y++ < b)
-    {                                 /* to early stop of flat ellipses a=1, */
-        setBuffer(xm, ym + y, color); /* -> finish tip of ellipse */
-        setBuffer(xm, ym - y, color);
-    }
 }
 
-void fillEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color)
+/*
+    @param a: pixels to extend in either x direction
+    @param b: pixels to extend in either y direction
+*/
+void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color color)
 {
+    // circle is faster
+    if (a == b)
+    {
+        drawCircleHollow(xMiddle, yMiddle, a, color);
+        return;
+    }
+    if (a == 0)
+    {
+        for (uint8_t j = yMiddle - b; j <= yMiddle + b; j++)
+        {
+            setBuffer(xMiddle, j, color);
+        }
+        return;
+    }
+    if (b == 0)
+    {
+        for (uint8_t j = xMiddle - a; j <= xMiddle + a; j++)
+        {
+            setBuffer(j, yMiddle, color);
+        }
+        return;
+    }
+
     int8_t x = -a;
     int8_t y = 0; /* II. quadrant from bottom left to top right */
     int16_t a2 = a * a;
@@ -56,25 +118,20 @@ void fillEllipse(uint8_t xm, uint8_t ym, uint8_t a, uint8_t b, Color color)
     int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
     do
     {
-        setBuffer(xm - x, ym + y, color); /*   I. Quadrant */
-        setBuffer(xm + x, ym + y, color); /*  II. Quadrant */
-        setBuffer(xm + x, ym - y, color); /* III. Quadrant */
-        setBuffer(xm - x, ym - y, color); /*  IV. Quadrant */
+        setBuffer(xMiddle - x, yMiddle + y, color); /*   I. Quadrant */
+        setBuffer(xMiddle + x, yMiddle + y, color); /*  II. Quadrant */
+        setBuffer(xMiddle + x, yMiddle - y, color); /* III. Quadrant */
+        setBuffer(xMiddle - x, yMiddle - y, color); /*  IV. Quadrant */
         e2 = 2 * err;
         if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
             err += (++x * 2 + 1) * b2;
         if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
             err += (++y * 2 + 1) * a2;
     } while (x <= 0);
-    while (y++ < b)
-    {                                 /* to early stop of flat ellipses a=1, */
-        setBuffer(xm, ym + y, color); /* -> finish tip of ellipse */
-        setBuffer(xm, ym - y, color);
-    }
     // todo there has to be a better way of filling an ellipse
     while (a > 0)
     {
-        fillEllipse(xm, ym, --a, b, color);
+        fillEllipse(xMiddle, yMiddle, --a, b, color);
     }
 }
 

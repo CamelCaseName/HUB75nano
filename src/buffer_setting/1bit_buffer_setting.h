@@ -8,6 +8,12 @@
 
 void _setSmallBuffer(uint8_t x, uint8_t y, Color color)
 {
+    // dont bother if outside of the panel
+    if (x >= PANEL_X || y >= PANEL_Y)
+    {
+        return;
+    }
+    // flipping
 #ifdef PANEL_FLIP_VERTICAL
     y = PANEL_Y - y;
 #endif
