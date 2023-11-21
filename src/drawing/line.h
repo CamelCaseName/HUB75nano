@@ -14,13 +14,16 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
             x2 = x1;
             x1 = a;
         }
-        // short horizontal lines
+
+        //  short horizontal lines
         while ((x1 & 3) != 0 && x1 < x2)
         {
             setBuffer(x1, y1, color);
             x1++;
         }
 
+        // lines always appear one short
+        x2++;
         while ((x2 & 3) != 0 && x2 > x1)
         {
             x2--;
