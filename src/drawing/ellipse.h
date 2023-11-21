@@ -3,7 +3,7 @@
 
 #include "drawing_common.h"
 #include "circle.h"
-#include "rectangle.h"
+#include "line.h"
 
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
@@ -95,18 +95,12 @@ void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color c
     }
     if (a == 0)
     {
-        for (uint8_t j = yMiddle - b; j <= yMiddle + b; j++)
-        {
-            setBuffer(xMiddle, j, color);
-        }
+        drawLine(xMiddle, yMiddle - b, xMiddle, yMiddle + b, color);
         return;
     }
     if (b == 0)
     {
-        for (uint8_t j = xMiddle - a; j <= xMiddle + a; j++)
-        {
-            setBuffer(j, yMiddle, color);
-        }
+        drawLine(xMiddle - a, yMiddle, xMiddle + a, yMiddle, color);
         return;
     }
 
@@ -116,6 +110,7 @@ void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color c
     int16_t b2 = b * b;
     int16_t e2 = b * b;
     int16_t err = x * (2 * e2 + x) + e2; /* error of 1.step */
+    drawLine(xMiddle + x, yMiddle, xMiddle - x, yMiddle, color);
     do
     {
         setBuffer(xMiddle - x, yMiddle + y, color); /*   I. Quadrant */
@@ -124,15 +119,17 @@ void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color c
         setBuffer(xMiddle - x, yMiddle - y, color); /*  IV. Quadrant */
         e2 = 2 * err;
         if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
+        {
             err += (++x * 2 + 1) * b2;
+        }
         if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
+        {
             err += (++y * 2 + 1) * a2;
+            // fill on each y step as a  horizontal line can be faster
+            drawLine(xMiddle + x, yMiddle + y, xMiddle - x, yMiddle + y, color);
+            drawLine(xMiddle + x, yMiddle - y, xMiddle - x, yMiddle - y, color);
+        }
     } while (x <= 0);
-    // todo there has to be a better way of filling an ellipse
-    while (a > 0)
-    {
-        fillEllipse(xMiddle, yMiddle, --a, b, color);
-    }
 }
 
 #endif // HUB75NANO_ELLIPSE_H
