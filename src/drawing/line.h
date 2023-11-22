@@ -15,6 +15,11 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
             x1 = a;
         }
 
+        if (x2 >= PANEL_X)
+        {
+            x2 = PANEL_X - 1;
+        }
+
         //  short horizontal lines
         while ((x1 & 3) != 0 && x1 < x2)
         {
