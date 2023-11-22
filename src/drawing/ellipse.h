@@ -113,13 +113,11 @@ void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color c
     drawLine(xMiddle + x, yMiddle, xMiddle - x, yMiddle, color);
     do
     {
-        setBuffer(xMiddle - x, yMiddle + y, color); /*   I. Quadrant */
-        setBuffer(xMiddle + x, yMiddle + y, color); /*  II. Quadrant */
-        setBuffer(xMiddle + x, yMiddle - y, color); /* III. Quadrant */
-        setBuffer(xMiddle - x, yMiddle - y, color); /*  IV. Quadrant */
         e2 = 2 * err;
         if (e2 >= (x * 2 + 1) * b2) /* e_xy+e_x > 0 */
         {
+            setBuffer(xMiddle + x, yMiddle - y, color);
+            setBuffer(xMiddle + x, yMiddle + y, color);
             err += (++x * 2 + 1) * b2;
         }
         if (e2 <= (y * 2 + 1) * a2) /* e_xy+e_y < 0 */
