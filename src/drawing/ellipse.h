@@ -90,7 +90,7 @@ void fillEllipse(uint8_t xMiddle, uint8_t yMiddle, uint8_t a, uint8_t b, Color c
     // circle is faster
     if (a == b)
     {
-        drawCircleHollow(xMiddle, yMiddle, a, color);
+        fillCircle(xMiddle, yMiddle, a, color);
         return;
     }
     if (a == 0)
