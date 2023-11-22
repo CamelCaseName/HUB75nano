@@ -39,7 +39,7 @@ void drawRectHollow(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
     }
 
     x1++;
-    //  guard against rects beign 1 high
+    //  guard against rects being 1 high
     if (y1 == y2)
     {
         // short horizontal lines
