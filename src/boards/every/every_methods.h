@@ -2,6 +2,7 @@
 #define HUB75NANO_EVERY_METHODS_H
 
 #include "every.h"
+#include "every_pin_helpers.h"
 
 // bulk pin access color, only good if pins are in right order
 #ifdef PANEL_MAX_SPEED
@@ -10,34 +11,36 @@ __attribute__((always_inline))
 inline void
 _set_color(uint8_t value)
 {
-#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
+#if RF == A3 and GF == A2 and BF == A1 and RS == A0 and GS == A6 and BS == A7
     // set 6 color pins and keep the rx tx pins as are
-    PORTD = value | (PORTD & (uint8_t)3);
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTSET = value;
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTCLR = (~value) & 63;
+
 #else
     __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
-    high_pin(PORT_RF, PORT_PIN_RF);
+    high_pin(RF);
     __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
-    clear_pin(PORT_RF, PORT_PIN_RF);
+    clear_pin(RF);
     __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
-    high_pin(PORT_GF, PORT_PIN_GF);
+    high_pin(GF);
     __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
-    clear_pin(PORT_GF, PORT_PIN_GF);
+    clear_pin(GF);
     __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
-    high_pin(PORT_BF, PORT_PIN_BF);
+    high_pin(BF);
     __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
-    clear_pin(PORT_BF, PORT_PIN_BF);
+    clear_pin(BF);
     __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
-    high_pin(PORT_RS, PORT_PIN_RS);
+    high_pin(RS);
     __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
-    clear_pin(PORT_RS, PORT_PIN_RS);
+    clear_pin(RS);
     __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
-    high_pin(PORT_GS, PORT_PIN_GS);
+    high_pin(GS);
     __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
-    clear_pin(PORT_GS, PORT_PIN_GS);
+    clear_pin(GS);
     __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
-    high_pin(PORT_BS, PORT_PIN_BS);
+    high_pin(BS);
     __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
-    clear_pin(PORT_BS, PORT_PIN_BS);
+    clear_pin(BS);
 #endif
 }
 
@@ -54,28 +57,29 @@ inline void
 _stepRow()
 {
 
-#if RA == 14 and RB == 15 and RC == 16 and RD == 17
+#if RA == 11 and RB == 12 and RC == 13 and RD == 8
     // set the 4 _row pins at once
-    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)224;
+    ((PORT_t *)&PORTA + PORTE_OFFSET)->OUTSET = PANEL_ROW_VAR;
+    ((PORT_t *)&PORTA + PORTE_OFFSET)->OUTCLR = (~PANEL_ROW_VAR) & 15;
 #else
     __asm__ __volatile__("sbrc	%0, 0" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RA, PORT_PIN_RA);
+    high_pin(RA);
     __asm__ __volatile__("sbrs	%0, 0" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RA, PORT_PIN_RA);
+    clear_pin(RA);
     __asm__ __volatile__("sbrc	%0, 1" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RB, PORT_PIN_RB);
+    high_pin(RB);
     __asm__ __volatile__("sbrs	%0, 1" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RB, PORT_PIN_RB);
+    clear_pin(RB);
     __asm__ __volatile__("sbrc	%0, 2" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RC, PORT_PIN_RC);
+    high_pin(RC);
     __asm__ __volatile__("sbrs	%0, 2" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RC, PORT_PIN_RC);
+    clear_pin(RC);
     __asm__ __volatile__("sbrc	%0, 3" ::"r"(PANEL_ROW_VAR));
-    high_pin(PORT_RD, PORT_PIN_RD);
+    high_pin(RD);
     __asm__ __volatile__("sbrs	%0, 3" ::"r"(PANEL_ROW_VAR));
-    clear_pin(PORT_RD, PORT_PIN_RD);
+    clear_pin(RD);
 #endif
-    PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)31;
+    PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)15;
 }
 
 #endif // HUB75NANO_EVERY_METHODS_H

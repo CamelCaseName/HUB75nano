@@ -5,60 +5,61 @@
 #include "iot_pin_helpers.h"
 
 // this one needs the PA/PBxx type pin numbers found in the arduino pinout datasheet
+// todo add a way to decode the normal arduino numbers to this at compile time
 #ifndef RA
+// this one is PA03, cannot use arduino digital pin numbering as it is the AREF pin and that has no number
 #define RA PA03 // row selector a
 #endif
 #ifndef RB
-#define RB PA04 // row selector b
+#define RB 6 // row selector b
 #endif
 #ifndef RC
-#define RC PA05 // row selector c
+#define RC 5 // row selector c
 #endif
 #ifndef RD
-#define RD PA06 // row selector d
+#define RD 7 // row selector d
 #endif
 // currently unused
 #ifndef RE
-#define RE PA07 // row selector e
+#define RE 4 // row selector e
 #endif
 #ifndef RF
-#define RF PA16 // red first byte
+#define RF 11 // red first byte
 #endif
 #ifndef GF
-#define GF PA17 // green first byte
+#define GF 13 // green first byte
 #endif
 #ifndef BF
-#define BF PA18 // blue first byte
+#define BF 8 // blue first byte
 #endif
 #ifndef RS
-#define RS PA19 // red second byte
+#define RS 12 // red second byte
 #endif
 #ifndef GS
-#define GS PA20 // green second byte
+#define GS 9 // green second byte
 #endif
 #ifndef BS
-#define BS PA21 // blue second byte
+#define BS 10 // blue second byte
 #endif
 #ifndef CLK
-#define CLK PA09 // clock signal
+#define CLK A6 // clock signal
 #endif
 #ifndef LAT
-#define LAT PA11 // data latch
+#define LAT A2 // data latch
 #endif
 #ifndef OE
-#define OE PA10 // output enable
+#define OE A3 // output enable
 #endif
 
 // helper definitions for setting/clearing
-#define high_pin(pin) PORT_IOBUS->Group[port_from_pin(pin)].OUTSET.reg = 1 << bit_from_pin(pin)
-#define clear_pin(pin) PORT_IOBUS->Group[port_from_pin(pin)].OUTCLR.reg = 1 << bit_from_pin(pin)
+#define high_pin(pin) PORT_IOBUS->Group[port_from_pin(arduino_pin_to_avr_pin(pin))].OUTSET.reg = 1 << bit_from_pin(arduino_pin_to_avr_pin(pin))
+#define clear_pin(pin) PORT_IOBUS->Group[port_from_pin(arduino_pin_to_avr_pin(pin))].OUTCLR.reg = 1 << bit_from_pin(arduino_pin_to_avr_pin(pin))
 
 // enable input, to support reading back values, with pullups disabled
-
 // Set pin to output mode
-#define set_pin_output(pin)                                                                      \
-    PORT->Group[port_from_pin(pin)].PINCFG[bit_from_pin(pin)].reg = (uint8_t)(PORT_PINCFG_INEN); \
-    PORT->Group[port_from_pin(pin)].DIRSET.reg = (uint32_t)(1 << bit_from_pin(pin));
+#define set_pin_output(pin)                                                                                                                      \
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(pin))].PINCFG[bit_from_pin(arduino_pin_to_avr_pin(pin))].reg = (uint8_t)(PORT_PINCFG_INEN); \
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(pin))].DIRSET.reg = (uint32_t)(1 << bit_from_pin(arduino_pin_to_avr_pin(pin)));
 
 #define HIGH_CLK high_pin(CLK)
 #define CLEAR_CLK clear_pin(CLK)

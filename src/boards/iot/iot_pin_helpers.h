@@ -80,4 +80,31 @@ constexpr uint8_t bit_from_pin(uint8_t pin)
                      : pin < 64 ? (pin - 32)
                                 : NOT_A_PORT);
 }
+
+constexpr uint8_t arduino_pin_to_avr_pin(uint8_t pin)
+{
+    return (uint8_t)(pin == 0    ? PB22
+                     : pin == 1  ? PB23
+                     : pin == 2  ? PB10
+                     : pin == 3  ? PB11
+                     : pin == 4  ? PA07
+                     : pin == 5  ? PA05
+                     : pin == 6  ? PA04
+                     : pin == 7  ? PA06
+                     : pin == 8  ? PA18
+                     : pin == 9  ? PA20
+                     : pin == 10 ? PA21
+                     : pin == 11 ? PA16
+                     : pin == 12 ? PA19
+                     : pin == 13 ? PA17
+                     : pin == 14 ? PA02
+                     : pin == 15 ? PB02
+                     : pin == 16 ? PA11
+                     : pin == 17 ? PA10
+                     : pin == 18 ? PB08
+                     : pin == 19 ? PB09
+                     : pin == 20 ? PA09
+                     : pin == 21 ? PB03
+                                 : NOT_A_PORT);
+}
 #endif // HUB75NANO_IOT_PIN_HELPERS_H

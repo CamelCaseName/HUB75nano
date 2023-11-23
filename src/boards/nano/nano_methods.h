@@ -75,7 +75,7 @@ _stepRow()
     __asm__ __volatile__("sbrs	%0, 3" ::"r"(PANEL_ROW_VAR));
     clear_pin(PORT_RD, PORT_PIN_RD);
 #endif
-    PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)31;
+    PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)15;
 }
 
 #endif // HUB75NANO_NANO_METHODS_H
