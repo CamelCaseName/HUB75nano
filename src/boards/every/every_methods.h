@@ -13,8 +13,9 @@ _set_color(uint8_t value)
 {
 #if RF == A3 and GF == A2 and BF == A1 and RS == A0 and GS == A6 and BS == A7
     // set 6 color pins and keep the rx tx pins as are
-    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTSET = value;
-    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTCLR = (~value) & 63;
+    // we need to shift two as the reads are optimized for nano and expect the 0 and 1 to be rx/tx
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTSET = value >> 2;
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTCLR = (~(value >> 2)) & 63;
 
 #else
     __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
