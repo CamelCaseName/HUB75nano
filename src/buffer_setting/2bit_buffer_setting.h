@@ -14,10 +14,10 @@ void _setBigBuffer(uint8_t x, uint8_t y, Color color)
     }
     // flipping
 #ifdef PANEL_FLIP_VERTICAL
-    y = PANEL_Y - y;
+    y = PANEL_Y - y - 1;
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-    x = PANEL_X - x;
+    x = PANEL_X - x - 1;
 #endif
     if (y < (PANEL_Y / 2))
     {
@@ -109,10 +109,10 @@ void _setBigBuffer(uint8_t x, uint8_t y, Color color)
 void _setBigBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
 {
 #ifdef PANEL_FLIP_VERTICAL
-    y = PANEL_Y - y;
+    y = PANEL_Y - y - 1;
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-    x = PANEL_X - x;
+    x = PANEL_X - x - 1;
 #endif
     if (y < (PANEL_Y / 2))
     {
@@ -162,6 +162,10 @@ void _setBigBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         start++;
         highest = ((*start) & LED_LONG_MASK_UPPER_6);
         start++;
+
+#ifdef PANEL_FLIP_HORIZONTAL
+        start -= block_count * 6;
+#endif
 
         for (uint8_t i = 1; i < block_count; i++)
         {
@@ -235,6 +239,10 @@ void _setBigBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         start++;
         highest = ((*start) & LED_LONG_MASK_LOWER_6);
         start++;
+
+#ifdef PANEL_FLIP_HORIZONTAL
+        start -= block_count * 6;
+#endif
 
         for (uint8_t i = 1; i < block_count; i++)
         {

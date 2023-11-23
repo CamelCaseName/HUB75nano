@@ -15,10 +15,10 @@ void _setSmallBuffer(uint8_t x, uint8_t y, Color color)
     }
     // flipping
 #ifdef PANEL_FLIP_VERTICAL
-    y = PANEL_Y - y;
+    y = PANEL_Y - y - 1;
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-    x = PANEL_X - x;
+    x = PANEL_X - x - 1;
 #endif
     if (y < (PANEL_Y / 2))
     {
@@ -86,10 +86,10 @@ void _setSmallBuffer(uint8_t x, uint8_t y, Color color)
 void _setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
 {
 #ifdef PANEL_FLIP_VERTICAL
-    y = PANEL_Y - y;
+    y = PANEL_Y - y - 1;
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-    x = PANEL_X - x;
+    x = PANEL_X - x - 1;
 #endif
     if (y < (PANEL_Y / 2))
     {
@@ -120,6 +120,10 @@ void _setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         start++;
         higher = ((*start) & LED_SHORT_MASK_UPPER_3);
         start++;
+
+#ifdef PANEL_FLIP_HORIZONTAL
+        start -= block_count * 3;
+#endif
 
         for (uint8_t i = 1; i < block_count; i++)
         {
@@ -166,6 +170,9 @@ void _setSmallBuffer4x(uint8_t x, uint8_t y, uint8_t block_count, Color color)
         higher = ((*start) & LED_SHORT_MASK_LOWER_3);
         start++;
 
+#ifdef PANEL_FLIP_HORIZONTAL
+        start -= block_count * 3;
+#endif
         for (uint8_t i = 1; i < block_count; i++)
         {
             // apply the masks so we only copy the one half of the pixels we are "allowed" to
