@@ -23,10 +23,22 @@
 #ifdef ARDUINO_AVR_UNO
 #include "boards/uno/uno_methods.h"
 #else
-#ifdef ARDUINO_ARCH_SAMD // nano 33 iot
+#ifdef ARDUINO_SAMD_NANO_33_IOT // nano 33 iot
 #include "boards/iot/iot_methods.h"
 #else
-#error "This library only supports the Arduino nano and Uno, so the atm368p with 2kb sram, 1kb eeprom and 32kb flash. For other chips/boards, please see the internet or try to adapt this library here, but no guarantees"
+#ifdef ARDUINO_ARDUINO_NANO33BLE
+#include "boards/ble/ble_methods.h"
+#else
+#ifdef ARDUINO_AVR_NANO_EVERY
+#include "boards/every/every_methods.h"
+#else
+#ifdef ARDUINO_NANO_RP2040_CONNECT
+#include "boards/rp2040/rp2040_methods.h"
+#else
+#error "This library currently only supports the Arduino Nano or Uno with Atmega328(p), Nano Every, Nano 33 IOT, Nano 33 BLE, Nano RP2040"
+#endif
+#endif
+#endif
 #endif
 #endif
 #endif
