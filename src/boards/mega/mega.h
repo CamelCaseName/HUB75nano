@@ -51,8 +51,8 @@
 #endif
 
 // helper definitions for setting/clearing
-#define high_pin(pin) _SFR_IO8(PORTA + port_from_pin(arduino_pin_to_avr_pin(pin)) * 3) |= (uint8_t)(1 << bit_from_pin(arduino_pin_to_avr_pin(pin)))
-#define clear_pin(pin) _SFR_IO8(PORTA + port_from_pin(arduino_pin_to_avr_pin(pin)) * 3) &= (uint8_t)(~(1 << bit_from_pin(arduino_pin_to_avr_pin(pin))))
+#define high_pin(pin) *port_from_pin(arduino_pin_to_avr_pin(pin)) |= (uint8_t)(1 << bit_from_pin(arduino_pin_to_avr_pin(pin)))
+#define clear_pin(pin) *port_from_pin(arduino_pin_to_avr_pin(pin)) &= (uint8_t)(~(1 << bit_from_pin(arduino_pin_to_avr_pin(pin))))
 
 // Set pin to output mode
 #define set_pin_output(pin) pinMode(pin, OUTPUT)

@@ -1,6 +1,8 @@
 #ifndef HUB75NANO_MEGA_PIN_HELPERS_H
 #define HUB75NANO_MEGA_PIN_HELPERS_H
 
+#include <Arduino.h>
+
 #define PA0 0
 #define PA1 1
 #define PA2 2
@@ -110,20 +112,20 @@
 #define PORTK_OFFSET 9
 #define PORTL_OFFSET 10
 
-constexpr uint8_t port_from_pin(uint8_t pin)
+constexpr volatile uint8_t *port_from_pin(uint8_t pin)
 {
-    return (uint8_t)(pin < 8    ? PORTA_OFFSET
-                     : pin < 16 ? PORTB_OFFSET
-                     : pin < 24 ? PORTC_OFFSET
-                     : pin < 32 ? PORTD_OFFSET
-                     : pin < 40 ? PORTE_OFFSET
-                     : pin < 48 ? PORTF_OFFSET
-                     : pin < 56 ? PORTG_OFFSET
-                     : pin < 64 ? PORTH_OFFSET
-                     : pin < 72 ? PORTJ_OFFSET
-                     : pin < 80 ? PORTK_OFFSET
-                     : pin < 88 ? PORTL_OFFSET
-                                : NOT_A_PORT);
+    return (pin < 8    ? &PORTA
+            : pin < 16 ? &PORTB
+            : pin < 24 ? &PORTC
+            : pin < 32 ? &PORTD
+            : pin < 40 ? &PORTE
+            : pin < 48 ? &PORTF
+            : pin < 56 ? &PORTG
+            : pin < 64 ? &PORTH
+            : pin < 72 ? &PORTJ
+            : pin < 80 ? &PORTK
+            : pin < 88 ? &PORTL
+                       : (volatile uint8_t *)NOT_A_PORT);
 }
 
 constexpr uint8_t bit_from_pin(uint8_t pin)
