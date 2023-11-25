@@ -1,52 +1,52 @@
-#ifndef HUB75NANO_IOT_PIN_HELPERS_H
-#define HUB75NANO_IOT_PIN_HELPERS_H
+#ifndef HUB75NANO_EVERY_PIN_HELPER_H
+#define HUB75NANO_EVERY_PIN_HELPER_H
 
-#define PA00 0
-#define PA01 1
-#define PA02 2
-#define PA03 3
-#define PA04 4
-#define PA05 5
-#define PA06 6
-#define PA07 7
+#define PA0 0
+#define PA1 1
+#define PA2 2
+#define PA3 3
+#define PA4 4
+#define PA5 5
+#define PA6 6
+#define PA7 7
 
-#define PB00 8
-#define PB01 9
-#define PB02 10
-#define PB03 11
-#define PB04 12
-#define PB05 13
+#define PB0 8
+#define PB1 9
+#define PB2 10
+#define PB3 11
+#define PB4 12
+#define PB5 13
 
-#define PC00 16
-#define PC01 17
-#define PC02 18
-#define PC03 19
-#define PC04 20
-#define PC05 21
-#define PC06 22
-#define PC07 23
+#define PC0 16
+#define PC1 17
+#define PC2 18
+#define PC3 19
+#define PC4 20
+#define PC5 21
+#define PC6 22
+#define PC7 23
 
-#define PD00 24
-#define PD01 25
-#define PD02 26
-#define PD03 27
-#define PD04 28
-#define PD05 29
-#define PD06 30
-#define PD07 31
+#define PD0 24
+#define PD1 25
+#define PD2 26
+#define PD3 27
+#define PD4 28
+#define PD5 29
+#define PD6 30
+#define PD7 31
 
-#define PE00 32
-#define PE01 33
-#define PE02 34
-#define PE03 35
+#define PE0 32
+#define PE1 33
+#define PE2 34
+#define PE3 35
 
-#define PF00 40
-#define PF01 41
-#define PF02 42
-#define PF03 43
-#define PF04 44
-#define PF05 45
-#define PF06 46
+#define PF0 40
+#define PF1 41
+#define PF2 42
+#define PF3 43
+#define PF4 44
+#define PF5 45
+#define PF6 46
 
 #define PORTA_OFFSET 0
 #define PORTB_OFFSET 1
@@ -79,29 +79,29 @@ constexpr uint8_t bit_from_pin(uint8_t pin)
 
 constexpr uint8_t arduino_pin_to_avr_pin(uint8_t pin)
 {
-    return (uint8_t)(pin == 0    ? PC04
-                     : pin == 1  ? PC05
-                     : pin == 2  ? PA00
-                     : pin == 3  ? PF05
-                     : pin == 4  ? PC06
-                     : pin == 5  ? PB02
-                     : pin == 6  ? PF04
-                     : pin == 7  ? PA01
-                     : pin == 8  ? PE03
-                     : pin == 9  ? PB00
-                     : pin == 10 ? PB01
-                     : pin == 11 ? PE00
-                     : pin == 12 ? PE01
-                     : pin == 13 ? PE02
-                     : pin == 14 ? PD03
-                     : pin == 15 ? PD02
-                     : pin == 16 ? PD01
-                     : pin == 17 ? PD00
-                     : pin == 18 ? PA02
-                     : pin == 19 ? PA03
-                     : pin == 20 ? PD04
-                     : pin == 21 ? PD05
+    return (uint8_t)(pin == 0    ? PC4
+                     : pin == 1  ? PC5
+                     : pin == 2  ? PA0
+                     : pin == 3  ? PF5
+                     : pin == 4  ? PC6
+                     : pin == 5  ? PB2
+                     : pin == 6  ? PF4
+                     : pin == 7  ? PA1
+                     : pin == 8  ? PE3
+                     : pin == 9  ? PB0
+                     : pin == 10 ? PB1
+                     : pin == 11 ? PE0
+                     : pin == 12 ? PE1
+                     : pin == 13 ? PE2
+                     : pin == 14 ? PD3
+                     : pin == 15 ? PD2
+                     : pin == 16 ? PD1
+                     : pin == 17 ? PD0
+                     : pin == 18 ? PA2
+                     : pin == 19 ? PA3
+                     : pin == 20 ? PD4
+                     : pin == 21 ? PD5
                                  : NOT_A_PIN);
 }
 
-#endif // HUB75NANO_IOT_PIN_HELPERS_H
+#endif // HUB75NANO_EVERY_PIN_HELPER_H
