@@ -1,7 +1,9 @@
 #ifndef HUB75NANO_IMMEDIATE_COLOR_H
 #define HUB75NANO_IMMEDIATE_COLOR_H
 
+#ifndef MAX_FRAMETIME
 #define MAX_FRAMETIME 127
+#endif
 
 #include "../../buffer_setting/buffer_common.h"
 

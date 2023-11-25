@@ -1,9 +1,7 @@
 #define PANEL_X 64
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
-// disable wait on the color output
-#define MAX_BRIGHTNESS_SLEEP_MUSEC 255
-#define BRIGHTNESS_SLEEP_MUSEC 0
+#define MAX_FRAMETIME 127
 #define MAX_COLORDEPTH 8
 #include "HUB75nano.h"
 
