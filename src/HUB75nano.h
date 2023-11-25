@@ -46,11 +46,8 @@
 #endif
 
 // sleep for brightnesses
-#ifndef MAX_BRIGHTNESS_SLEEP_MUSEC
-#define MAX_BRIGHTNESS_SLEEP_MUSEC 100
-#endif
-#ifndef BRIGHTNESS_SLEEP_MUSEC
-#define BRIGHTNESS_SLEEP_MUSEC 40
+#ifndef MAX_FRAMETIME
+#define MAX_FRAMETIME 127
 #endif
 
 // flash toggle

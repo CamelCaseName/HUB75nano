@@ -175,13 +175,10 @@ void _displayBigBuffer()
         _stepRow();
         CLEAR_OE;
 
-#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
-#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
-
+#if MAX_FRAMETIME > 0
+        delayMicroseconds(MAX_FRAMETIME);
         HIGH_OE;
-        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
-#endif
+        delayMicroseconds(MAX_FRAMETIME);
 #endif
     }
     // lsb
@@ -346,14 +343,10 @@ void _displayBigBuffer()
         _stepRow();
         CLEAR_OE;
 
-#if MAX_BRIGHTNESS_SLEEP_MUSEC > 0
-        delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
-#if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
-
+#if MAX_FRAMETIME > 0
+        delayMicroseconds(MAX_FRAMETIME >> (1));
         HIGH_OE;
-        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
-
-#endif
+        delayMicroseconds(MAX_FRAMETIME >> (1));
 #endif
     }
     HIGH_OE;
