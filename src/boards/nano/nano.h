@@ -53,7 +53,7 @@
 #define high_pin(port, number) port |= 1 << number
 #define clear_pin(port, number) port &= ~(1 << number)
 
-#define set_pin_output(pin) pinMode(pin, OUTPUT);
+#define set_pin_output(pin) pinMode(pin, OUTPUT)
 
 #include "nano_pin_helpers.h"
 

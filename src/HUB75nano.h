@@ -104,7 +104,7 @@ public:
         set_pin_output(RB);
         set_pin_output(RC);
         set_pin_output(RD);
-        set_pin_output(RE);
+        // set_pin_output(RE);
         set_pin_output(RF);
         set_pin_output(RS);
         set_pin_output(GF);
@@ -122,7 +122,7 @@ public:
         set_pin_output(RB);
         set_pin_output(RC);
         set_pin_output(RD);
-        set_pin_output(RE);
+        // set_pin_output(RE);
         set_pin_output(RF);
         set_pin_output(RS);
         set_pin_output(GF);

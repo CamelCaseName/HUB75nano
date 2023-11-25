@@ -35,7 +35,11 @@
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include "boards/rp2040/rp2040_methods.h"
 #else
+#ifdef ARDUINO_AVR_MEGA2560
+#include "boards/mega/mega_methods.h"
+#else
 #error "This library currently only supports the Arduino Nano or Uno with Atmega328(p), Nano Every, Nano 33 IOT, Nano 33 BLE, Nano RP2040"
+#endif
 #endif
 #endif
 #endif
