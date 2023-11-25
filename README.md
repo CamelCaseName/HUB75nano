@@ -52,7 +52,7 @@ You can deviate from this mapping but it comes at a speed cost. To use your own 
 
 Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
 
-# Supported boards
+# Supported Arduino boards
     ✅: Fully supported and tested  
     ❌: Not yet supported, some maybe never will be supported
     🅿️ : Support in progress 
