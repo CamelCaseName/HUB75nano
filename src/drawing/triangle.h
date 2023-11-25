@@ -53,6 +53,36 @@ SOFTWARE.
 // adapted from https://github.com/gustavopezzi/triangle-rasterizer-int
 void fillTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3, Color color)
 {
+    // assure order
+    if (x1 > x2)
+    {
+        uint8_t temp = x2;
+        x2 = x1;
+        x1 = temp;
+        temp = y2;
+        y2 = y1;
+        y1 = temp;
+    }
+    else if (x1 > x3)
+    {
+        uint8_t temp = x3;
+        x3 = x1;
+        x1 = temp;
+        temp = y3;
+        y3 = y1;
+        y1 = temp;
+    }
+
+    if (y2 > y3)
+    {
+        uint8_t temp = x3;
+        x3 = x2;
+        x2 = temp;
+        temp = y3;
+        y3 = y2;
+        y2 = temp;
+    }
+
     // fill outline
     drawLine(x1, y1, x2, y2, color);
     drawLine(x1, y1, x3, y3, color);
