@@ -2,14 +2,40 @@
 #define PANEL_Y 32
 #define PANEL_NO_BUFFER 1
 // disable wait on the color output
-#define MAX_BRIGHTNESS_SLEEP_MUSEC 0
-#define BRIGHTNESS_SLEEP_MUSEC 20
+#define MAX_BRIGHTNESS_SLEEP_MUSEC 255
+#define BRIGHTNESS_SLEEP_MUSEC 0
+#define MAX_COLORDEPTH 8
 #include "HUB75nano.h"
 
 Panel panel = {};
 uint8_t ri, gi, bi;
 
-#define SLOWDOWN 5
+template <int base, unsigned int exp>
+struct Pow
+{
+    enum
+    {
+        value = base * Pow<base, exp - 1>::value
+    };
+};
+// stopping condition
+template <int base>
+struct Pow<base, 0>
+{
+    enum
+    {
+        value = 1
+    };
+};
+
+#define SLOWDOWN (uint8_t)(((8 - MAX_COLORDEPTH) * 10) + 1)
+
+#define COLOR_COUNT (uint16_t)((Pow<2, MAX_COLORDEPTH>::value) * 3)
+#define FIRST_THIRD (uint16_t)((COLOR_COUNT / 3)) - 1
+#define SECOND_THIRD (uint16_t)((COLOR_COUNT / 3 * 2)) - 1
+#define THIRD_THIRD (uint16_t)((COLOR_COUNT - 1))
+#define MAX_COLOR (uint16_t)((Pow<2, MAX_COLORDEPTH>::value) - 1)
+#define MAX_COLOR_TWO_THIRD (uint16_t)(MAX_COLOR / 3 * 2) + 1
 
 void setup()
 {
@@ -17,36 +43,35 @@ void setup()
 
 void loop()
 {
-    // this example iterates through colors in the panel
-    for (uint8_t i = 0; i < 255; i++)
+    for (uint16_t i = 0; i < COLOR_COUNT; i++)
     {
         // red
-        if (i <= 85)
-            ri = 255 - i * 3;
-        else if (i < 170)
+        if (i <= FIRST_THIRD)
+            ri = (uint8_t)(MAX_COLOR - i);
+        else if (i <= SECOND_THIRD)
             ri = 0;
         else
-            ri = (i - 170) * 3;
+            ri = (uint8_t)(i + 1 - SECOND_THIRD);
 
         // green
-        if (i <= 85)
-            gi = i * 3;
-        else if (i < 170)
-            gi = (170 - i) * 3;
+        if (i <= FIRST_THIRD)
+            gi = (uint8_t)i;
+        else if (i <= SECOND_THIRD)
+            gi = (uint8_t)(MAX_COLOR - (i - FIRST_THIRD) - 1);
         else
             gi = 0;
 
         // blue
-        if (i <= 85)
+        if (i <= FIRST_THIRD)
             bi = 0;
-        else if (i < 170)
-            bi = (i - 85) * 3;
+        else if (i <= SECOND_THIRD)
+            bi = (uint8_t)(i + 1 - FIRST_THIRD);
         else
-            bi = (255 - i) * 3;
+            bi = (uint8_t)(MAX_COLOR - (i - SECOND_THIRD) - 1);
 
         for (size_t s = 0; s < SLOWDOWN; s++)
         {
-            panel.fillScreenColor({{.red = (uint8_t)(ri >> (8 - MAX_COLORDEPTH)), .green = (uint8_t)(gi >> (8 - MAX_COLORDEPTH)), .blue = (uint8_t)(bi >> (8 - MAX_COLORDEPTH))}});
+            panel.fillScreenColor({{.red = ri, .green = gi, .blue = bi}});
         }
     }
 

@@ -16,6 +16,19 @@
 #define COLOR_CLAMP (255.0 / (MAX_COLOR))
 
 #pragma pack(push, 1)
+#ifdef PANEL_NO_BUFFER
+typedef union Color
+{
+    struct
+    {
+        uint8_t red : 8;
+        uint8_t green : 8;
+        uint8_t blue : 8;
+        uint8_t invalid_bits : 8;
+    };
+    uint32_t color_444;
+} Color;
+#else
 typedef union Color
 {
     struct
@@ -27,6 +40,7 @@ typedef union Color
     };
     uint16_t color_444;
 } Color;
+#endif
 #pragma pack(pop)
 
 constexpr Color COLOR_888_to_444(uint8_t r, uint8_t g, uint8_t b)

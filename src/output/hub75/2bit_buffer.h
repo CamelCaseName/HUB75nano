@@ -179,8 +179,8 @@ void _displayBigBuffer()
         delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC);
 #if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
 
-        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
         HIGH_OE;
+        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC - BRIGHTNESS_SLEEP_MUSEC);
 #endif
 #endif
     }
@@ -350,8 +350,8 @@ void _displayBigBuffer()
         delayMicroseconds(BRIGHTNESS_SLEEP_MUSEC / 2);
 #if BRIGHTNESS_SLEEP_MUSEC < MAX_BRIGHTNESS_SLEEP_MUSEC
 
-        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
         HIGH_OE;
+        delayMicroseconds(MAX_BRIGHTNESS_SLEEP_MUSEC / 2 - BRIGHTNESS_SLEEP_MUSEC / 2);
 
 #endif
 #endif
