@@ -3,12 +3,14 @@
 
 #ifdef PANEL_FLASH
 
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 #include "../../buffer_setting/buffer_common.h"
+
+typedef const uint16_t *buffer_t;
 
 void _displayFlashBuffer()
 {
-    uint16_t index = 0;
+    buffer_t index = 0;
 #ifdef PANEL_FLIP_HORIZONTAL
 #define INDEX_MOVE index--
 #else
@@ -17,7 +19,7 @@ void _displayFlashBuffer()
     for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
     {
         // we send first the MMSB, then MSB, LSB, LLSB
-        index = (uint16_t)(buffer + (y << (uint8_t)6));
+        index = (buffer_t)(buffer + (y << (uint8_t)6));
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X;
 #endif
@@ -173,7 +175,7 @@ void _displayFlashBuffer()
 
     for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
     {
-        index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 4);
+        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 4);
 
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X;
@@ -329,7 +331,7 @@ void _displayFlashBuffer()
 
     for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
     {
-        index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 2);
+        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 2);
 
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X;
@@ -485,7 +487,7 @@ void _displayFlashBuffer()
 
     for (uint8_t y = 0; y < PANEL_Y; y++) // 32 rows
     {
-        index = (uint16_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE * 3 / 4); // advance index to next section
+        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE * 3 / 4); // advance index to next section
 
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X;

@@ -92,6 +92,10 @@
 // toggle is in there, decided by the definitions we set before the include
 #include "fonts/font_common.h"
 
+#ifdef ARDUINO_ARCH_SAMD
+#define PGM_VOID_P const void *
+#endif
+
 class Panel
 {
 public:
