@@ -93,7 +93,9 @@
 #include "fonts/font_common.h"
 
 #ifdef ARDUINO_ARCH_SAMD
+#ifndef PGM_VOID_P
 #define PGM_VOID_P const void *
+#endif
 #endif
 
 class Panel

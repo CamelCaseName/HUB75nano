@@ -8,7 +8,7 @@
 // todo add a way to decode the normal arduino numbers to this at compile time
 #ifndef RA
 // this was planned as PA03, cannot use arduino digital pin numbering as it is the AREF pin and that has no number so we define our own
-// using PA03/AREF is possible but for out application we would need to desolder the two filter capacitors on this line
+// using PA03/AREF is possible but for our application with high frequencies we would need to desolder the two filter capacitors on this line
 #define RA A0 // row selector a
 #endif
 #ifndef RB
@@ -92,12 +92,16 @@ OE      PA10    12
 #define CLEAR_LAT clear_pin(LAT)
 #define HIGH_OE high_pin(OE)
 #define CLEAR_OE clear_pin(OE)
-#define Clock \
-    HIGH_CLK; \
-    CLEAR_CLK
-#define LATCH \
-    HIGH_LAT; \
-    CLEAR_LAT
+#define Clock             \
+    HIGH_CLK;             \
+    delayMicroseconds(5); \
+    CLEAR_CLK;            \
+    delayMicroseconds(5)
+#define LATCH             \
+    HIGH_LAT;             \
+    delayMicroseconds(5); \
+    CLEAR_LAT;            \
+    delayMicroseconds(5)
 
 // todo, no idea how
 #define OVERFLOW 0

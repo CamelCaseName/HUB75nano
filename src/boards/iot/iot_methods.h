@@ -10,11 +10,11 @@ __attribute__((always_inline))
 inline void
 _set_color(uint8_t value)
 {
-    uint8_t invertedValue = (~(value >> 2)) & 63;
+    uint8_t invertedValue = (~value) & 252;
 #if RF == 11 and GF == 13 and BF == 8 and RS == 12 and GS == 9 and BS == 10
     // set 6 color pins and keep the rx tx pins as are
     PORT->Group[0].OUTSET.reg = (value << 14);
-    PORT->Group[0].OUTCLR.reg = invertedValue << 16;
+    PORT->Group[0].OUTCLR.reg = invertedValue << 14;
 #else
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RF))].OUTSET.reg = (value & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RF))].OUTCLR.reg = (invertedValue & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));
@@ -45,8 +45,8 @@ _stepRow()
 {
 
 #if RA == A0 and RB == 6 and RC == 5 and RD == 7
-    uint8_t adjustedRow = (PANEL_ROW_VAR & 1) | (PANEL_ROW_VAR & 14) << 1;
-    uint8_t invertedRow = (~adjustedRow) & 15;
+    uint8_t adjustedRow = (PANEL_ROW_VAR & 1) | ((PANEL_ROW_VAR & 14) << 1);
+    uint8_t invertedRow = (~adjustedRow) & 29;
     // set the 4 _row pins at once
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTSET.reg = adjustedRow << bit_from_pin(arduino_pin_to_avr_pin(RA));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTCLR.reg = invertedRow << bit_from_pin(arduino_pin_to_avr_pin(RA));
