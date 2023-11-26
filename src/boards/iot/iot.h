@@ -7,8 +7,9 @@
 // this one needs the PA/PBxx type pin numbers found in the arduino pinout datasheet
 // todo add a way to decode the normal arduino numbers to this at compile time
 #ifndef RA
-// this one is PA03, cannot use arduino digital pin numbering as it is the AREF pin and that has no number
-#define RA PA03 // row selector a
+// this was planned as PA03, cannot use arduino digital pin numbering as it is the AREF pin and that has no number so we define our own
+// using PA03/AREF is possible but for out application we would need to desolder the two filter capacitors on this line
+#define RA A0 // row selector a
 #endif
 #ifndef RB
 #define RB 6 // row selector b
@@ -50,6 +51,30 @@
 #ifndef OE
 #define OE A3 // output enable
 #endif
+
+/*
+as the pins are locked by the shield i can make a tabel here with the direct translation between the pins
+
+hub     iot     scope
+RA      PA02    6
+RB      PA04    7
+RC      PA05    8
+RD      PA06    9
+RE      PA07    /
+
+RF      PA16    0
+GF      PA17    1
+BF      PA18    2
+
+RS      PA19    3
+GS      PA20    4
+BS      PA21    5
+
+CLK     PA09    10
+LAT     PA11    11
+OE      PA10    12
+
+*/
 
 // helper definitions for setting/clearing
 #define high_pin(pin) PORT_IOBUS->Group[port_from_pin(arduino_pin_to_avr_pin(pin))].OUTSET.reg = 1 << bit_from_pin(arduino_pin_to_avr_pin(pin))

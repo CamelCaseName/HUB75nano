@@ -43,13 +43,15 @@ __attribute__((always_inline))
 inline void
 _stepRow()
 {
-    uint8_t invertedRow = (~PANEL_ROW_VAR) & 15;
 
-#if RA == PA03 and RB == 6 and RC == 5 and RD == 7
+#if RA == A0 and RB == 6 and RC == 5 and RD == 7
+    uint8_t adjustedRow = (PANEL_ROW_VAR & 1) | (PANEL_ROW_VAR & 14) << 1;
+    uint8_t invertedRow = (~adjustedRow) & 15;
     // set the 4 _row pins at once
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTSET.reg = PANEL_ROW_VAR << bit_from_pin(arduino_pin_to_avr_pin(RA));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTSET.reg = adjustedRow << bit_from_pin(arduino_pin_to_avr_pin(RA));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTCLR.reg = invertedRow << bit_from_pin(arduino_pin_to_avr_pin(RA));
 #else
+    uint8_t invertedRow = (~PANEL_ROW_VAR) & 15;
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RA));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RA));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RB))].OUTSET.reg = ((PANEL_ROW_VAR >> 1) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RB));

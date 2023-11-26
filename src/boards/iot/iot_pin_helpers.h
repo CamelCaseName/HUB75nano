@@ -1,6 +1,9 @@
 #ifndef HUB75NANO_IOT_PIN_HELPERS_H
 #define HUB75NANO_IOT_PIN_HELPERS_H
 
+// this is the package pin number
+#define AREF 33
+
 #define PA00 0
 #define PA01 1
 #define PA02 2
@@ -105,6 +108,7 @@ constexpr uint8_t arduino_pin_to_avr_pin(uint8_t pin)
                      : pin == 19 ? PB09
                      : pin == 20 ? PA09
                      : pin == 21 ? PB03
+                     : pin == 33 ? PA03
                                  : NOT_A_PORT);
 }
 #endif // HUB75NANO_IOT_PIN_HELPERS_H
