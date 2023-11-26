@@ -69,13 +69,14 @@ Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
 | Arduino Mega               | ATmega2560    | 5V                | ✅         |
 
 
-### 3.3V boards, needs a level shifter like [this](https://github.com/CamelCaseName/Nano33IOTShield)
-| board                                  | chip                          | operating voltage | supported |
-| -------------------------------------- | ----------------------------- | ----------------- | --------- |
-| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         |
-| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         |
-| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         |
-| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         |
+### 3.3V boards, usually need level shifters
+You can use a dedicated shield like [this](https://github.com/CamelCaseName/Nano33IOTShield) or build one out of jumper wires and the [adafruit](https://www.adafruit.com/product/1787)(or similar) shifters for example.
+| board                                  | chip                          | operating voltage | supported | shield                                                              |
+| -------------------------------------- | ----------------------------- | ----------------- | --------- |---------------------------------------------------------------------|
+| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         |[nano33IOTShield](https://github.com/CamelCaseName/Nano33IOTShield) |
+| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         | -                                                                  |
+| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         | -                                                                  |
+| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         | -                                                                  |
 
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 
