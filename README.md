@@ -1,7 +1,7 @@
 # HUB75nano
 This Arduino library adds the basic functionality needed to drive a HUB 75 protocol LED Panel up to 64x32 Pixels RGB (only tested with 64x32).
 
-It can display colors up to 8 bit colors for a full screen, a 1 or 2 bit rgb image buffer (dynamic) or 4 bit rgb buffers (static). It was originally written for the Arduino Nano (It should also work with the Arduino Uno), but is now being ported to a number of other chips in the nano formfactor (or with similar architecture). Refer to the [list below](#supported-boards) for the current state of support.
+It can display colors up to 8 bit colors for a full screen, a 1 or 2 bit rgb image buffer (dynamic) or 4 bit rgb buffers (static). It was originally written for the Arduino Nano (It should also work with the Arduino Uno), but is now being ported to a number of other chips in the nano formfactor (or with similar architecture). Refer to the [list below](#Supported-Arduino-boards) for the current state of support.
 
 # Setup
 Clone or download the archive and put it inside your Arduino IDE custom library folder. 
