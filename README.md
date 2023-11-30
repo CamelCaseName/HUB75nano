@@ -16,7 +16,7 @@ You can use these macros to configure the library and your desired modes
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
 // #define PANEL_NO_FONT // disables everything font related, saves some flash
 // #define PANEL_MAX_SPEED // uses more space but is faster, usually not needed
-// #define PANEL_FLIP_VERTICAL // flips the panel vertically
+// #define PANEL_FLIP_VERTICAL // flips the panel vertically (in flash mode it flips the upper and lower half, but doesnt flip the whole panel)
 // #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
 // #define PANEL_X 64 // width in pixels
 // #define PANEL_Y 32 // panel height in pixels

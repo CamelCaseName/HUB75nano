@@ -17,10 +17,10 @@ void _displayFlashBuffer()
 #else
 #define INDEX_MOVE index++
 #endif
-#ifdef PANEL_FLIP_VERTICAL
+#ifndef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
 #else
-    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+    for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
         // we send first the MMSB, then MSB, LSB, LLSB
@@ -194,10 +194,10 @@ void _displayFlashBuffer()
     }
 #pragma endregion // MMSB
 
-#ifdef PANEL_FLIP_VERTICAL
+#ifndef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
 #else
-    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+    for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
 #if PANEL_Y > 32
@@ -370,10 +370,10 @@ void _displayFlashBuffer()
     }
 #pragma endregion // MMSB
 
-#ifdef PANEL_FLIP_VERTICAL
+#ifndef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
 #else
-    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+    for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
 #if PANEL_Y > 32
@@ -545,10 +545,10 @@ void _displayFlashBuffer()
     }
 #pragma endregion // LSB
 
-#ifdef PANEL_FLIP_VERTICAL
+#ifndef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
 #else
-    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+    for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
 #if PANEL_Y > 32
