@@ -17,7 +17,11 @@ void _displayFlashBuffer()
 #else
 #define INDEX_MOVE index++
 #endif
+#ifdef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+#else
+    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+#endif
     {
         // we send first the MMSB, then MSB, LSB, LLSB
 #if PANEL_Y > 32
@@ -36,7 +40,7 @@ void _displayFlashBuffer()
 #endif
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-        index += PANEL_X;
+        index += PANEL_X - 1;
 #endif
 
 #pragma region MMSB
@@ -190,7 +194,11 @@ void _displayFlashBuffer()
     }
 #pragma endregion // MMSB
 
+#ifdef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+#else
+    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+#endif
     {
 #if PANEL_Y > 32
         index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE / 4);
@@ -209,7 +217,7 @@ void _displayFlashBuffer()
 #endif
 
 #ifdef PANEL_FLIP_HORIZONTAL
-        index += PANEL_X;
+        index += PANEL_X - 1;
 #endif
 #pragma region MSB
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -362,7 +370,11 @@ void _displayFlashBuffer()
     }
 #pragma endregion // MMSB
 
+#ifdef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+#else
+    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+#endif
     {
 #if PANEL_Y > 32
         index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE / 2);
@@ -380,7 +392,7 @@ void _displayFlashBuffer()
 #endif
 #endif
 #ifdef PANEL_FLIP_HORIZONTAL
-        index += PANEL_X;
+        index += PANEL_X - 1;
 #endif
 #pragma region LSB
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -533,7 +545,11 @@ void _displayFlashBuffer()
     }
 #pragma endregion // LSB
 
+#ifdef PANEL_FLIP_VERTICAL
     for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+#else
+    for (uint8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
+#endif
     {
 #if PANEL_Y > 32
         index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE * 3 / 4);
@@ -552,7 +568,7 @@ void _displayFlashBuffer()
 #endif
 
 #ifdef PANEL_FLIP_HORIZONTAL
-        index += PANEL_X;
+        index += PANEL_X - 1;
 #endif
 #pragma region LLSB
         _set_color(pgm_read_byte(INDEX_MOVE));

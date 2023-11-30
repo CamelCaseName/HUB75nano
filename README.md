@@ -6,9 +6,9 @@ It can display colors up to 8 bit colors for a full screen, a 1 or 2 bit rgb ima
 # Setup
 Clone or download the archive and put it inside your Arduino IDE custom library folder. 
 
-Then just put `#import <Panel.h>` and everything should work.
+Then just put `#import <HUB75nano.h>` and everything should work.
 	
-Definitions you can use to change how the library works
+You can use these macros to configure the library and your desired modes
 ```
 /////////////////////
 // #define PANEL_BIG // use 2 bit rgb image buffer
@@ -18,6 +18,9 @@ Definitions you can use to change how the library works
 // #define PANEL_MAX_SPEED // uses more space but is faster, usually not needed
 // #define PANEL_FLIP_VERTICAL // flips the panel vertically
 // #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
+// #define PANEL_X 64 // width in pixels
+// #define PANEL_Y 32 // panel height in pixels
+// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be of the form of (2^n - 1)
 /////////////////////
 ```
 
@@ -72,11 +75,11 @@ Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
 ### 3.3V boards, usually need level shifters
 You can use a dedicated shield like [this](https://github.com/CamelCaseName/Nano33IOTShield) or build one out of jumper wires and the [adafruit](https://www.adafruit.com/product/1787)(or similar) shifters for example.
 | board                                  | chip                          | operating voltage | supported | shield                                                              |
-| -------------------------------------- | ----------------------------- | ----------------- | --------- |---------------------------------------------------------------------|
-| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         |[nano33IOTShield](https://github.com/CamelCaseName/Nano33IOTShield) |
-| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         | -                                                                  |
-| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         | -                                                                  |
-| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         | -                                                                  |
+| -------------------------------------- | ----------------------------- | ----------------- | --------- | ------------------------------------------------------------------- |
+| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         | [nano33IOTShield](https://github.com/CamelCaseName/Nano33IOTShield) |
+| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         | -                                                                   |
+| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         | -                                                                   |
+| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         | -                                                                   |
 
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 

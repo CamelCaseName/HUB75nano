@@ -32,9 +32,6 @@
 // flash toggle
 #ifdef PANEL_FLASH
 #undef PANEL_BIG
-#ifdef PANEL_FLIP_VERTICAL
-#error "vertical flip cannot be done on flash output, only horizontal"
-#endif
 #endif
 
 // color transformatuion values (no idea if )
