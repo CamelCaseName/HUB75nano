@@ -6,18 +6,6 @@
 #include "../boards/board.h"
 #include "../boards/board_methods.h"
 
-#ifndef PANEL_BUFFERSIZE
-#define PANEL_BUFFERSIZE 0
-#endif
-
-#ifndef PANEL_X
-#define PANEL_X 0
-#endif
-
-#ifndef PANEL_Y
-#define PANEL_Y 0
-#endif
-
 #pragma region buffer_definition
 #ifndef PANEL_NO_BUFFER
 #ifdef PANEL_BIG

@@ -2,6 +2,8 @@
 #define HUB75NANO_NANO_METHODS_H
 
 #include "nano.h"
+#include "../method_helper.h"
+#include "../../Settings.h"
 
 // bulk pin access color, only good if pins are in right order
 #ifdef PANEL_MAX_SPEED
@@ -54,10 +56,39 @@ inline void
 _stepRow()
 {
 
-#if RA == 14 and RB == 15 and RC == 16 and RD == 17
-    // set the 4 _row pins at once
+// row pin check
+#if PANEL_Y > 32
+#if RA == 14 and RB == 15 and RC == 16 and RD == 17 and RE == 18
     PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)224;
 #else
+#define PANEL_ROW_PINS_OOO
+#endif
+#else
+#if PANEL_Y > 16
+#if RA == 14 and RB == 15 and RC == 16 and RD == 17
+    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)240;
+#else
+#define PANEL_ROW_PINS_OOO
+#endif
+#else
+#if PANEL_Y > 8
+#if RA == 14 and RB == 15 and RC == 16
+    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)248;
+#else
+#define PANEL_ROW_PINS_OOO
+#endif
+#else
+#if PANEL_Y > 4
+#if RA == 14 and RB == 15
+    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)252;
+#else
+#define PANEL_ROW_PINS_OOO
+#endif
+#endif
+#endif
+#endif
+#endif
+#ifdef PANEL_ROW_PINS_OOO
     __asm__ __volatile__("sbrc	%0, 0" ::"r"(PANEL_ROW_VAR));
     high_pin(PORT_RA, PORT_PIN_RA);
     __asm__ __volatile__("sbrs	%0, 0" ::"r"(PANEL_ROW_VAR));
@@ -66,16 +97,26 @@ _stepRow()
     high_pin(PORT_RB, PORT_PIN_RB);
     __asm__ __volatile__("sbrs	%0, 1" ::"r"(PANEL_ROW_VAR));
     clear_pin(PORT_RB, PORT_PIN_RB);
+#if PANEL_Y > 8
     __asm__ __volatile__("sbrc	%0, 2" ::"r"(PANEL_ROW_VAR));
     high_pin(PORT_RC, PORT_PIN_RC);
     __asm__ __volatile__("sbrs	%0, 2" ::"r"(PANEL_ROW_VAR));
     clear_pin(PORT_RC, PORT_PIN_RC);
+#endif
+#if PANEL_Y > 16
     __asm__ __volatile__("sbrc	%0, 3" ::"r"(PANEL_ROW_VAR));
     high_pin(PORT_RD, PORT_PIN_RD);
     __asm__ __volatile__("sbrs	%0, 3" ::"r"(PANEL_ROW_VAR));
     clear_pin(PORT_RD, PORT_PIN_RD);
 #endif
-    PANEL_ROW_VAR = (PANEL_ROW_VAR + 1) & (uint8_t)15;
+#if PANEL_Y > 32
+    __asm__ __volatile__("sbrc	%0, 4" ::"r"(PANEL_ROW_VAR));
+    high_pin(PORT_RE, PORT_PIN_RE);
+    __asm__ __volatile__("sbrs	%0, 4" ::"r"(PANEL_ROW_VAR));
+    clear_pin(PORT_RE, PORT_PIN_RE);
+#endif
+#endif
+    PANEL_ADVANCE_ROW;
 }
 
 #endif // HUB75NANO_NANO_METHODS_H

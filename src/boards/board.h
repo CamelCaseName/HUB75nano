@@ -82,15 +82,21 @@
 #ifndef RB
 #error "this needs to be set for the selected board first"
 #endif
+#if PANEL_Y > 8
 #ifndef RC
 #error "this needs to be set for the selected board first"
 #endif
+#endif
+#if PANEL_Y > 16
 #ifndef RD
 #error "this needs to be set for the selected board first"
 #endif
+#endif
 // currently unused
+#if PANEL_Y > 32
 #ifndef RE
 #error "this needs to be set for the selected board first"
+#endif
 #endif
 #ifndef RF
 #error "this needs to be set for the selected board first"

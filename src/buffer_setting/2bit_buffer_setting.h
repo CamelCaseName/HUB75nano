@@ -4,6 +4,7 @@
 #ifdef PANEL_BIG
 
 #include "buffer_common.h"
+#include "../Settings.h"
 
 void _setBigBuffer(uint8_t x, uint8_t y, Color color)
 {
