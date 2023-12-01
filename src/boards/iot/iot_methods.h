@@ -94,22 +94,22 @@ _stepRow()
 #endif
 #endif
 #ifdef PANEL_ROW_PINS_OOO
-    uint8_t invertedRow = (~PANEL_ROW_VAR) & 15;
+    uint8_t invertedRow = (~PANEL_ROW_VAR) & ((PANEL_Y / 2) - 1);
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RA));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RA))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RA));
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RB))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RB));
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RB))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RB));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RB))].OUTSET.reg = ((PANEL_ROW_VAR >> 1) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RB));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RB))].OUTCLR.reg = ((invertedRow >> 1) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RB));
 #if PANEL_Y > 8
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RC))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RC));
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RC))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RC));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RC))].OUTSET.reg = ((PANEL_ROW_VAR >> 2) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RC));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RC))].OUTCLR.reg = ((invertedRow >> 2) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RC));
 #endif
 #if PANEL_Y > 16
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RD))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RD));
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RD))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RD));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RD))].OUTSET.reg = ((PANEL_ROW_VAR >> 3) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RD));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RD))].OUTCLR.reg = ((invertedRow >> 3) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RD));
 #endif
 #if PANEL_Y > 32
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTSET.reg = (PANEL_ROW_VAR & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
-    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTCLR.reg = (invertedRow & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTSET.reg = ((PANEL_ROW_VAR >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
+    PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTCLR.reg = ((invertedRow >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
 #endif
 #endif
     PANEL_ADVANCE_ROW;

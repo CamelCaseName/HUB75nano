@@ -1,5 +1,5 @@
 # HUB75nano
-This Arduino library adds the basic functionality needed to drive a HUB 75 protocol LED Panel up to 64x32 Pixels RGB (only tested with 64x32).
+This Arduino library can be used to drive a HUB 75 protocol LED Panel up to 64x32 Pixels RGB (tested with 64x32 and 32x16).
 
 It can display colors up to 8 bit colors for a full screen, a 1 or 2 bit rgb image buffer (dynamic) or 4 bit rgb buffers (static). It was originally written for the Arduino Nano (It should also work with the Arduino Uno), but is now being ported to a number of other chips in the nano formfactor (or with similar architecture). Refer to the [list below](#Supported-Arduino-boards) for the current state of support.
 
@@ -62,14 +62,15 @@ Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
     Ⓜ️ : Maybe works, should in theory (probably needs a custom pin assignment)
 
 ### 5V boards, work just like that
-| board                      | chip          | operating voltage | supported |
-| -------------------------- | ------------- | ----------------- | --------- |
-| Arduino Nano               | ATmega328(p)  | 5V                | ✅         |
-| Arduino Uno R3             | Atmega328p    | 5V                | Ⓜ️         |
-| Arduino Uno WiFi Rev2      | ATmega4809    | 5V                | Ⓜ️         |
-| Arduino Uno R4 Minima/WiFi | Renesas RA4M1 | 5V                | ❌         |
-| Arduino Nano Every         | ATMega4809    | 5V                | ✅         |
-| Arduino Mega               | ATmega2560    | 5V                | ✅         |
+| board                 | chip          | operating voltage | supported                       |
+| --------------------- | ------------- | ----------------- | ------------------------------- |
+| Arduino Nano          | ATmega328(p)  | 5V                | ✅                               |
+| Arduino Uno R3        | Atmega328p    | 5V                | Ⓜ️                               |
+| Arduino Uno WiFi Rev2 | ATmega4809    | 5V                | Ⓜ️                               |
+| Arduino Uno R4 Minima | Renesas RA4M1 | 5V                | ✅                               |
+| Arduino Uno R4 WiFi   | Renesas RA4M1 | 5V                | Ⓜ️(pinout different than minima) |
+| Arduino Nano Every    | ATMega4809    | 5V                | ✅                               |
+| Arduino Mega          | ATmega2560    | 5V                | ✅                               |
 
 
 ### 3.3V boards, usually need level shifters
