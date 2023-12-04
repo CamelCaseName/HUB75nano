@@ -78,7 +78,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 
-#if PANEL_X < 32
+#if PANEL_X >= 32
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -113,7 +113,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
-#if PANEL_X < 64
+#if PANEL_X >= 64
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -255,7 +255,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 
-#if PANEL_X < 32
+#if PANEL_X >= 32
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -290,7 +290,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
-#if PANEL_X < 64
+#if PANEL_X >= 64
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -431,7 +431,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 
-#if PANEL_X < 32
+#if PANEL_X >= 32
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -466,7 +466,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
-#if PANEL_X < 64
+#if PANEL_X >= 64
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -608,7 +608,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 
-#if PANEL_X < 32
+#if PANEL_X >= 32
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
@@ -643,7 +643,7 @@ void _displayFlashBuffer()
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
-#if PANEL_X < 64
+#if PANEL_X >= 64
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));

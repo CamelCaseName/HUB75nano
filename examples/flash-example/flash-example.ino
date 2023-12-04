@@ -1,6 +1,8 @@
 #define PANEL_MAX_SPEED
 #define PANEL_FLASH // 4 bit flash buffer
 #define MAX_FRAMETIME 63
+#define PANEL_X 64
+#define PANEL_Y 32
 #include "HUB75nano.h"
 
 // buffer which contains the image we want to display, important to use the PROGMEM so it is saved to flash!

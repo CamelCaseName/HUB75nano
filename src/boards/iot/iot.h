@@ -94,14 +94,14 @@ OE      PA10    12
 #define CLEAR_OE clear_pin(OE)
 #define Clock             \
     HIGH_CLK;             \
-    delayMicroseconds(5); \
+    delayMicroseconds(2); \
     CLEAR_CLK;            \
-    delayMicroseconds(5)
+    delayMicroseconds(2)
 #define LATCH             \
     HIGH_LAT;             \
-    delayMicroseconds(5); \
+    delayMicroseconds(2); \
     CLEAR_LAT;            \
-    delayMicroseconds(5)
+    delayMicroseconds(2)
 
 // todo, no idea how
 #define OVERFLOW 0

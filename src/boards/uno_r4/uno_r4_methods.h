@@ -48,7 +48,7 @@ _stepRow()
 {
 // row pin check
 #if PANEL_Y > 32
-#if RA == 11 and RB == 12 and RC == 10 and RD == 13 and RE == 8
+#if RA == 11 and RB == 12 and RC == 13 and RD == 10 and RE == 8
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.POSR = (PANEL_ROW_VAR & 15) << bit_from_pin(arduino_pin_to_avr_pin(RA));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.PORR = ((~PANEL_ROW_VAR) & 15) << bit_from_pin(arduino_pin_to_avr_pin(RA));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RE))].PCNTR3.POSR = ((PANEL_ROW_VAR >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
@@ -58,7 +58,7 @@ _stepRow()
 #endif
 #else
 #if PANEL_Y > 16
-#if RA == 11 and RB == 12 and RC == 10 and RD == 13
+#if RA == 11 and RB == 12 and RC == 13 and RD == 10
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.POSR = PANEL_ROW_VAR << bit_from_pin(arduino_pin_to_avr_pin(RA));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.PORR = ((~PANEL_ROW_VAR) & 15) << bit_from_pin(arduino_pin_to_avr_pin(RA));
 #else
@@ -66,7 +66,7 @@ _stepRow()
 #endif
 #else
 #if PANEL_Y > 8
-#if RA == 11 and RB == 12 and RC == 10
+#if RA == 11 and RB == 12 and RC == 13
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.POSR = PANEL_ROW_VAR << bit_from_pin(arduino_pin_to_avr_pin(RA));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RA))].PCNTR3.PORR = ((~PANEL_ROW_VAR) & 7) << bit_from_pin(arduino_pin_to_avr_pin(RA));
 #else

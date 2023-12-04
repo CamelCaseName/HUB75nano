@@ -32,22 +32,23 @@ The corresponding pins on the arduino are as follows:
 
 ### Pin mapping
 
-| Connector | Nano | Every | Mega2560 | def. name | function                                                     |
-| --------- | ---- | ----- | -------- | --------- | ------------------------------------------------------------ |
-| A         | A0   | 11    | 22       | RA        | First/Least significant row bit                              |
-| B         | A1   | 12    | 23       | RB        | Second row bit                                               |
-| C         | A2   | 13    | 24       | RC        | Third row bit                                                |
-| D         | A3   | 8     | 25       | RD        | Fourth/Most significant row bit                              |
-| R1        | 2    | A3    | 47       | RF        | Set red LED on upper half                                    |
-| G1        | 3    | A2    | 46       | GF        | Set green LED on upper half                                  |
-| B1        | 4    | A1    | 45       | BF        | Set blue LED on upper half                                   |
-| R2        | 5    | A0    | 44       | RS        | Set red LED on lower half                                    |
-| G2        | 6    | A6    | 43       | GS        | Set green LED on lower half                                  |
-| B2        | 7    | A7    | 42       | BS        | Set blue LED on lower half                                   |
-| CLK       | 9    | 9     | 37       | CLK       | Shifts the data on rising edge                               |
-| LAT       | 10   | 10    | 36       | LAT       | Latches the data from the shift registers to the LED drivers |
-| OE        | 11   | 5     | 35       | OE        | Enables the output of the LED drivers                        |
-| GND       | GND  | GND   | GND      | -         | Ground reference                                             |
+| Connector | Nano | Every | Mega2560 | UNO R4 MINIMA | def. name | function                                                          |
+| --------- | ---- | ----- | -------- | ------------- | --------- | ----------------------------------------------------------------- |
+| A         | A0   | 11    | 22       | 11            | RA        | First/Least significant row bit                                   |
+| B         | A1   | 12    | 23       | 12            | RB        | Second row bit                                                    |
+| C         | A2   | 13    | 24       | 10            | RC        | Third row bit (needed for Panels with 9+ rows)                    |
+| D         | A3   | 8     | 25       | 13            | RD        | Fourth/Most significant row bit (needed for panels with 17+ rows) |
+| E         | A4   | 2     | 26       | 8             | RE        | (Only needed for Panels with 33+ rows)                            |
+| R1        | 2    | A3    | 47       | A5            | RF        | Set red LED on upper half                                         |
+| G1        | 3    | A2    | 46       | A4            | GF        | Set green LED on upper half                                       |
+| B1        | 4    | A1    | 45       | 5             | BF        | Set blue LED on upper half                                        |
+| R2        | 5    | A0    | 44       | 4             | RS        | Set red LED on lower half                                         |
+| G2        | 6    | A6    | 43       | 3             | GS        | Set green LED on lower half                                       |
+| B2        | 7    | A7    | 42       | 2             | BS        | Set blue LED on lower half                                        |
+| CLK       | 9    | 9     | 37       | A1            | CLK       | Shifts the data on rising edge                                    |
+| LAT       | 10   | 10    | 36       | A2            | LAT       | Latches the data from the shift registers to the LED drivers      |
+| OE        | 11   | 5     | 35       | A3            | OE        | Enables the output of the LED drivers                             |
+| GND       | GND  | GND   | GND      | GND           | -         | Ground reference                                                  |
 
 Connector refers to the HUB75 input connector on the panel. The pin names for the Arduino are the ones printed on the pcb.
 

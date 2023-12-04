@@ -168,49 +168,33 @@ constexpr uint8_t arduino_pin_to_avr_pin(uint8_t pin)
 #pragma pack(push, 1)
 typedef struct IOPORT
 {
-    union PCNTR1
+    struct
     {
-        struct
-        {
-            // 1 is output high
-            uint16_t PDR;
-            // data direction, 1 is output
-            uint16_t PODR;
-        };
-        uint32_t reg;
+        // 1 is output high
+        uint16_t PODR;
+        // data direction, 1 is output
+        uint16_t PDR;
     } PCNTR1;
-    union PCNTR2
+    struct
     {
-        struct
-        {
-            // pin state
-            uint16_t PIDR;
-            // event input data, 1 is high
-            uint16_t EIDR;
-        };
-        uint32_t reg;
+        // pin state
+        uint16_t EIDR;
+        // event input data, 1 is high
+        uint16_t PIDR;
     } PCNTR2;
-    union PCNTR3
+    struct
     {
-        struct
-        {
-            // pin output set, 1 is high
-            uint16_t POSR;
-            // pin output clear, 1 is low
-            uint16_t PORR;
-        };
-        uint32_t reg;
+        // pin output set, 1 is high
+        uint16_t PORR;
+        // pin output clear, 1 is low
+        uint16_t POSR;
     } PCNTR3;
-    union PCNTR4
+    struct
     {
-        struct
-        {
-            // pin event ouput set
-            uint16_t EOSR;
-            // pin event output clear
-            uint16_t EORR;
-        };
-        uint32_t reg;
+        // pin event ouput set
+        uint16_t EORR;
+        // pin event output clear
+        uint16_t EOSR;
     } PCNTR4;
     uint8_t padding[16];
 } IOPORT;

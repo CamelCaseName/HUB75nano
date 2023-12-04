@@ -61,7 +61,7 @@
 // toggle is in there, decided by the definitions we set before the include
 #include "fonts/font_common.h"
 
-#ifdef ARDUINO_ARCH_SAMD
+#ifndef ARDUINO_ARCH_AVR
 #ifndef PGM_VOID_P
 #define PGM_VOID_P const void *
 #endif

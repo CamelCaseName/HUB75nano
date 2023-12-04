@@ -12,10 +12,10 @@
 #define RB 12 // row selector b
 #endif
 #ifndef RC
-#define RC 10 // row selector c
+#define RC 13 // row selector c
 #endif
 #ifndef RD
-#define RD 13 // row selector d
+#define RD 10 // row selector d
 #endif
 // currently unused
 #ifndef RE
@@ -61,14 +61,21 @@
 #define CLEAR_CLK clear_pin(CLK)
 #define HIGH_LAT high_pin(LAT)
 #define CLEAR_LAT clear_pin(LAT)
-#define HIGH_OE high_pin(OE)
-#define CLEAR_OE clear_pin(OE)
-#define Clock \
-    HIGH_CLK; \
-    CLEAR_CLK
-#define LATCH \
-    HIGH_LAT; \
-    CLEAR_LAT
+#define HIGH_OE   \
+    high_pin(OE); \
+    __asm__ __volatile__("nop;")
+#define CLEAR_OE \
+    clear_pin(OE);
+#define Clock                     \
+    HIGH_CLK;                     \
+    __asm__ __volatile__("nop;"); \
+    CLEAR_CLK;                    \
+    __asm__ __volatile__("nop;")
+#define LATCH                     \
+    HIGH_LAT;                     \
+    __asm__ __volatile__("nop;"); \
+    CLEAR_LAT;                    \
+    __asm__ __volatile__("nop;")
 
 // todo, no idea how
 #define OVERFLOW 0
