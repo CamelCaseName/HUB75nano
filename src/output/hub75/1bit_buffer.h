@@ -64,6 +64,7 @@ void _displaySmallBuffer()
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
         Clock;
 
+#if PANEL_X > 16
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
         Clock;
@@ -101,6 +102,7 @@ void _displaySmallBuffer()
         Clock;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
         Clock;
+#endif
 #if PANEL_X > 32
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);

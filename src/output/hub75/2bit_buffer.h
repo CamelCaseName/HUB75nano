@@ -71,6 +71,7 @@ void _displayBigBuffer()
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
         Clock;
 
+#if PANEL_X > 16
         ++index;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
         Clock;
@@ -108,7 +109,7 @@ void _displayBigBuffer()
         Clock;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 5))));
         Clock;
-
+#endif
 #if PANEL_X > 32
         ++index;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
@@ -255,6 +256,7 @@ void _displayBigBuffer()
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
         Clock;
 
+#if PANEL_X > 16
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
         Clock;
@@ -293,6 +295,7 @@ void _displayBigBuffer()
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index)) + (sizeof(uint8_t) * 4)))) >> (uint8_t)2));
         Clock;
 
+#endif
 #if PANEL_X > 32
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
