@@ -1,5 +1,5 @@
 # HUB75nano
-This Arduino library can be used to drive a HUB 75 protocol LED Panel up to 64x32 Pixels RGB (tested with 64x32 and 32x16).
+This Arduino library can be used to drive a HUB75 protocol LED Panel up to 64x32 Pixels RGB (tested with 64x32 and 32x16). It can also drive HUB75E type panels (icnd2153, stp1612pw05, FM6124C or similar chips) in 128x64 pixel resolutions (tested only with that size, but it should work with smaller panels as well)
 
 It can display colors up to 8 bit colors for a full screen, a 1 or 2 bit rgb image buffer (dynamic) or 4 bit rgb buffers (static). It was originally written for the Arduino Nano (It should also work with the Arduino Uno), but is now being ported to a number of other chips in the nano formfactor (or with similar architecture). Refer to the [list below](#Supported-Arduino-boards) for the current state of support.
 
@@ -11,6 +11,13 @@ Then just put `#import <HUB75nano.h>` and everything should work.
 You can use these macros to configure the library and your desired modes
 ```
 /////////////////////
+// #define PANEL_HUB75E // switches output to a format compatible with most 128x64 flex panels (chips: icnd2153, stp1612pw05, FM6124C or similar)
+// ######## ONLY WHEN IN THE HUB75E MODE:
+// #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
+// #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
+// #define PANEL_5_PIN_ROWS // swaps the row addressing in hub75e from 3 to 5 pin
+// #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
+// ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
@@ -20,7 +27,7 @@ You can use these macros to configure the library and your desired modes
 // #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
 // #define PANEL_X 64 // width in pixels
 // #define PANEL_Y 32 // panel height in pixels
-// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be of the form of (2^n - 1)
+// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be one of these (255, 127, 63, 31, 15, 7)
 /////////////////////
 ```
 
@@ -76,12 +83,12 @@ Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
 
 ### 3.3V boards, usually need level shifters
 You can use a dedicated shield like [this](https://github.com/CamelCaseName/Nano33IOTShield) or build one out of jumper wires and the [adafruit](https://www.adafruit.com/product/1787)(or similar) shifters for example.
-| board                                  | chip                          | operating voltage | supported | shield                                                              |
-| -------------------------------------- | ----------------------------- | ----------------- | --------- | ------------------------------------------------------------------- |
-| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         | [nano33IOTShield](https://github.com/CamelCaseName/Nano33IOTShield) |
-| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         | -                                                                   |
-| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         | -                                                                   |
-| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         | -                                                                   |
+| board                                  | chip                          | operating voltage | supported | shield                                                                        |
+| -------------------------------------- | ----------------------------- | ----------------- | --------- | ----------------------------------------------------------------------------- |
+| Arduino Nano 33 IOT                    | Arm® Cortex®-M0 32-bit SAMD21 | 3.3V              | 🅿️         | [nano33IOTShield](https://github.com/CamelCaseName/Nano33IOTShield) still WIP |
+| Arduino Nano 33 BLE (Sense/Sense Rev2) | nRF52840                      | 3.3V              | ❌         | -                                                                             |
+| Arduino Nano Esp32                     | u-blox® NORA-W106             | 3.3V              | ❌         | -                                                                             |
+| Arduino Nano RP2040 Connect            | Raspberry Pi RP2040           | 3.3V              | 🅿️         | -                                                                             |
 
 # Examples
 This library also contains some examples on how to use it. The examples all are functioning arduino sketches ending with *.ino. 
@@ -93,4 +100,4 @@ A writeup on very very early stages of development is [here](https://create.ardu
 ### voltage issues
 - when running more than 800 LEDs on full white, the color starts to deterioate quickly. this happens because the blue LEDs need more voltage to run than the others, therefore it turns into an orange color. You can get more white LEDs when running them in coloumns (max about 25\*31) than rows (63\*23). With full white rows it starts to turn orange at about 4 to 5 rows. this can be helped by overvolting the panel supply voltage to above 5V, but it is not recommended. Tests have shown 6 full rows of white at 5.7V and no rows at 4.6V. 
 
-### No Panel Chaining / other sizes really supported yet, is planned
+### No Panel Chaining really supported yet, is planned

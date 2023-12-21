@@ -26,12 +26,44 @@
 #ifdef PANEL_NO_BUFFER
 #undef PANEL_FLASH
 #undef PANEL_BIG
+#undef PANEL_SMALL_BRIGHT
+#undef PANEL_HIGH_RES
 #define PANEL_NO_FONT
 #endif
 
 // flash toggle
 #ifdef PANEL_FLASH
 #undef PANEL_BIG
+#endif
+
+// hub75e 1bit bright mode
+#ifdef PANEL_SMALL_BRIGHT
+#ifdef PANEL_BIG
+#error "The super bright mode is only available with the small 1 bit buffer"
+#else
+#ifdef PANEL_FLASH
+#error "The super bright mode is only available with the small 1 bit buffer"
+#endif
+#endif
+#endif
+
+// safeguard size
+#ifdef PANEL_HUB75E
+#if PANEL_X == 128
+#define PANEL_X 64
+#endif
+#if PANEL_Y == 64
+#define PANEL_Y 32
+#endif
+#endif
+
+// hub75e high res mode toggle
+#ifdef PANEL_HIGH_RES
+#ifdef PANEL_BIG
+#error "The high resolution mode is only available with the flash buffer or 1 bit buffer"
+#endif
+#define PANEL_X 64
+#define PANEL_Y 64
 #endif
 
 // color transformatuion values (no idea if )
@@ -85,6 +117,10 @@ public:
 #endif
 #if PANEL_Y > 32
         set_pin_output(RE);
+#else
+#ifdef PANEL_5_PIN_ROWS
+        set_pin_output(RE);
+#endif
 #endif
         set_pin_output(RF);
         set_pin_output(RS);

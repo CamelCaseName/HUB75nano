@@ -47,85 +47,75 @@
 #endif
 
 // test that everything got set correctly
-#ifndef HIGH_CLK
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef CLEAR_CLK
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef HIGH_LAT
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef CLEAR_LAT
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef HIGH_OE
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef CLEAR_OE
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef Clock
-#error "this needs to be set for the selected board first"
-#endif
-#ifndef LATCH
-#error "this needs to be set for the selected board first"
-#endif
-
-#ifndef OVERFLOW
-#error "this needs to be set for the selected board first"
-#endif
-
-#ifndef set_pin_output
-#error "this needs to be set for the selected board first"
-#endif
 
 #ifndef RA
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef RB
 #error "this needs to be set for the selected board first"
 #endif
+
 #if PANEL_Y > 8
 #ifndef RC
+#ifdef PANEL_5_PIN_ROWS
 #error "this needs to be set for the selected board first"
 #endif
 #endif
+#endif
+
 #if PANEL_Y > 16
 #ifndef RD
+#ifdef PANEL_5_PIN_ROWS
 #error "this needs to be set for the selected board first"
 #endif
 #endif
-// currently unused
+#endif
+
 #if PANEL_Y > 32
 #ifndef RE
 #error "this needs to be set for the selected board first"
 #endif
+#else
+#ifdef PANEL_5_PIN_ROWS
+#ifndef RE
+#error "this needs to be set for the selected board first"
 #endif
+#endif
+#endif
+
 #ifndef RF
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef GF
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef BF
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef RS
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef GS
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef BS
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef CLK
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef LAT
 #error "this needs to be set for the selected board first"
 #endif
+
 #ifndef OE
 #error "this needs to be set for the selected board first"
 #endif

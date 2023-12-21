@@ -2,13 +2,23 @@
 #ifndef PANEL_SETTINGS_H
 #define PANEL_SETTINGS_H
 /////////////////////
+// #define PANEL_HUB75E // switches output to a format compatible with most 128x64 flex panels (chips: icnd2153, stp1612pw05, FM6124C or similar)
+// ######## ONLY WHEN IN THE HUB75E MODE:
+// #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
+// #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
+// #define PANEL_5_PIN_ROWS // swaps the row addressing in hub75e from 3 to 5 pin
+// #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
+// ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
 // #define PANEL_NO_FONT // disables everything font related, saves some flash
-// #define PANEL_MAX_SPEED // aggresively inlines the 4 draw assembly instructions, else its kept as a method to keep size down
-// #define PANEL_FLIP_VERTICAL // flips the panel vertically
+// #define PANEL_MAX_SPEED // uses more space but is faster, usually not needed
+// #define PANEL_FLIP_VERTICAL // flips the panel vertically (in flash mode it flips the upper and lower half, but doesnt flip the whole panel)
 // #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
+// #define PANEL_X 64 // width in pixels
+// #define PANEL_Y 32 // panel height in pixels
+// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be of the form of (2^n - 1)
 /////////////////////
 
 // board size (currently max 1 board supported)

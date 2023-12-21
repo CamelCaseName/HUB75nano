@@ -51,4 +51,45 @@
 #endif
 #endif
 
+#ifndef HIGH_CLK
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef CLEAR_CLK
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef HIGH_LAT
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef CLEAR_LAT
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef HIGH_OE
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef CLEAR_OE
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef Clock
+#error "this needs to be set for the selected board first"
+#endif
+#ifndef LATCH
+#error "this needs to be set for the selected board first"
+#endif
+
+#ifndef OVERFLOW
+#error "this needs to be set for the selected board first"
+#endif
+
+#ifndef set_pin_output
+#error "this needs to be set for the selected board first"
+#endif
+
+#ifndef high_pin
+#error "this needs to be set for the selected board first"
+#endif
+
+#ifndef clear_pin
+#error "this needs to be set for the selected board first"
+#endif
+
 #endif // HUB75NANO_BOARD_METHODS
