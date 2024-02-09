@@ -8,6 +8,9 @@
 
 #pragma region buffer_definition
 #ifndef PANEL_NO_BUFFER
+#ifdef PANEL_HUB75E
+// int8_t update_needed = 1;
+#endif
 #ifdef PANEL_BIG
 LED buffer[PANEL_BUFFERSIZE]; // uses 768 bytes on max size display with 1 bit, 1536 bytes with 2 bits of depth
 #else

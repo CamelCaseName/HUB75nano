@@ -75,6 +75,19 @@
 #ifndef LATCH
 #error "this needs to be set for the selected board first"
 #endif
+// todo is this the correct order to avoid half definitions?
+#ifndef DCLK_GCLK
+#define DCLK_GCLK \
+    HIGH_OE;      \
+    HIGH_CLK;     \
+    CLEAR_CLK;    \
+    CLEAR_OE
+#warning "No DCLK_GCLK defined for this board, using slower substitute"
+#endif
+#ifndef LATCH_GCLK
+#define LATCH_GCLK DCLK_GCLK
+#warning "No LATCH_GCLK defined for this board, using slower substitute"
+#endif
 
 #ifndef OVERFLOW
 #error "this needs to be set for the selected board first"

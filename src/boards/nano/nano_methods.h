@@ -59,15 +59,15 @@ _stepRow()
 
     if (PANEL_ROW_VAR == 0)
     {
-        HIGH_RC;
-        HIGH_RA;
-        CLEAR_RA;
-        CLEAR_RC;
+        high_pin(PORT_RC, PORT_PIN_RC);
+        high_pin(PORT_RA, PORT_PIN_RA);
+        clear_pin(PORT_RA, PORT_PIN_RA);
+        clear_pin(PORT_RC, PORT_PIN_RC);
     }
     else
     {
-        HIGH_RA;
-        CLEAR_RA;
+        high_pin(PORT_RA, PORT_PIN_RA);
+        clear_pin(PORT_RA, PORT_PIN_RA);
     }
 #else
 // row pin check

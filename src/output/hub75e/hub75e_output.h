@@ -33,6 +33,7 @@ displayBuffer()
 #endif
 #endif
 }
+
 #endif
 
 // shout out to sebitimewaster for his implementation on the esp32 as an arduino sketch, in the end i rebuilt it all from scratch tho, as none of the available implementations worked.
