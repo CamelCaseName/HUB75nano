@@ -55,7 +55,21 @@ __attribute__((always_inline))
 inline void
 _stepRow()
 {
+#ifdef PANEL_3_PIN_ROWS
 
+    if (PANEL_ROW_VAR == 0)
+    {
+        HIGH_RC;
+        HIGH_RA;
+        CLEAR_RA;
+        CLEAR_RC;
+    }
+    else
+    {
+        HIGH_RA;
+        CLEAR_RA;
+    }
+#else
 // row pin check
 #if PANEL_Y > 32
 #if RA == 14 and RB == 15 and RC == 16 and RD == 17 and RE == 18
@@ -114,6 +128,7 @@ _stepRow()
     high_pin(PORT_RE, PORT_PIN_RE);
     __asm__ __volatile__("sbrs	%0, 4" ::"r"(PANEL_ROW_VAR));
     clear_pin(PORT_RE, PORT_PIN_RE);
+#endif
 #endif
 #endif
     PANEL_ADVANCE_ROW;

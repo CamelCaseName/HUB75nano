@@ -15,7 +15,6 @@ You can use these macros to configure the library and your desired modes
 // ######## ONLY WHEN IN THE HUB75E MODE:
 // #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
 // #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
-// #define PANEL_5_PIN_ROWS // swaps the row addressing in hub75e from 3 to 5 pin
 // #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
 // ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
 // #define PANEL_BIG // use 2 bit rgb image buffer
@@ -28,6 +27,7 @@ You can use these macros to configure the library and your desired modes
 // #define PANEL_X 64 // width in pixels
 // #define PANEL_Y 32 // panel height in pixels
 // #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be one of these (255, 127, 63, 31, 15, 7)
+// #define PANEL_3_PIN_ROWS // swaps the row addressing in 5(binary) to 3 pins(shift register)
 /////////////////////
 ```
 

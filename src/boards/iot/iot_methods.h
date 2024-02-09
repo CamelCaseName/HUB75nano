@@ -45,6 +45,21 @@ __attribute__((always_inline))
 inline void
 _stepRow()
 {
+#ifdef PANEL_3_PIN_ROWS
+
+    if (PANEL_ROW_VAR == 0)
+    {
+        HIGH_RC;
+        HIGH_RA;
+        CLEAR_RA;
+        CLEAR_RC;
+    }
+    else
+    {
+        HIGH_RA;
+        CLEAR_RA;
+    }
+#else
 // row pin check
 #if PANEL_Y > 32
 #if RA == A0 and RB == 6 and RC == 5 and RD == 7 and RE == 4
@@ -110,6 +125,7 @@ _stepRow()
 #if PANEL_Y > 32
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTSET.reg = ((PANEL_ROW_VAR >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RE))].OUTCLR.reg = ((invertedRow >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
+#endif
 #endif
 #endif
     PANEL_ADVANCE_ROW;

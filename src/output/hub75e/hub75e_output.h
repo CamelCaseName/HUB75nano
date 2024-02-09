@@ -39,7 +39,6 @@ displayBuffer()
 // also thanks to http://kuku.eu.org/?projects/hub75e/index for reverse engineering the row selection shift registers.
 // i also retraced them and came to the same conclusion, so i can be very certain that the chips are equivalent, led drivers and row drivers
 
-// the DCLK is also going through the buffer shift registers so we need to set clock it in with the other stuff.
 // it is however split 4 times for each coloumn of drivers. so we must also clock the pwclock with the serial clock, no hardware clock sadly
 
 // BIGGEST help overall was the stp1612pw05 datasheet https://www.st.com/resource/en/datasheet/stp1612pw05.pdf,

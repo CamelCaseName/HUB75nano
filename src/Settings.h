@@ -6,9 +6,9 @@
 // ######## ONLY WHEN IN THE HUB75E MODE:
 // #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
 // #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
-// #define PANEL_5_PIN_ROWS // swaps the row addressing in hub75e from 3 to 5 pin
 // #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
 // ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
+// #define PANEL_3_PIN_ROWS // swaps the row addressing in from 5(binary) pin to 3 pin(shift register)
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
@@ -42,6 +42,14 @@
 // standard LED struct buffer
 #ifndef PANEL_BUFFERSIZE
 #define PANEL_BUFFERSIZE (PANEL_X * PANEL_Y / 8)
+#endif
+
+#ifdef PANEL_HUB75E
+#ifdef PANEL_3_PIN_ROWS
+#undef PANEL_3_PIN_ROWS
+#else
+#define PANEL_3_PIN_ROWS
+#endif
 #endif
 
 #endif // PANEL_SETTINGS_H

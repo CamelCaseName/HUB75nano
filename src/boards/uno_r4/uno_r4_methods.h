@@ -46,6 +46,21 @@ __attribute__((always_inline))
 inline void
 _stepRow()
 {
+#ifdef PANEL_3_PIN_ROWS
+
+    if (PANEL_ROW_VAR == 0)
+    {
+        HIGH_RC;
+        HIGH_RA;
+        CLEAR_RA;
+        CLEAR_RC;
+    }
+    else
+    {
+        HIGH_RA;
+        CLEAR_RA;
+    }
+#else
 // row pin check
 #if PANEL_Y > 32
 #if RA == 11 and RB == 12 and RC == 13 and RD == 10 and RE == 8
@@ -101,6 +116,7 @@ _stepRow()
 #if PANEL_Y > 32
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RE))].PCNTR3.POSR = ((PANEL_ROW_VAR >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RE))].PCNTR3.PORR = ((invertedRow >> 4) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RE));
+#endif
 #endif
 #endif
     PANEL_ADVANCE_ROW;
