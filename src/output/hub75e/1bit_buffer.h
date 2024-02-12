@@ -3,6 +3,7 @@
 
 #include "../../buffer_setting/buffer_common.h"
 #include "../../Settings.h"
+#include "hub75e_common.h"
 
 void _displaySmallBuffer()
 {
@@ -255,148 +256,7 @@ void _displaySmallBuffer()
         CLEAR_LAT;
 
         // fake new data so we fill the buffer
-#pragma region LSB_fake
-        _set_color(0);
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        HIGH_LAT;
-        LATCH_GCLK;
-        CLEAR_LAT;
-#pragma endregion // LSB_fake
+        LSB_FAKE;
 #endif
         //  display row once done, so move data from latch registers to pwm modules
         HIGH_LAT;

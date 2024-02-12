@@ -2,6 +2,7 @@
 #define HUB75NANO_HIGH_RES_1BIT_BUFFER_E_H
 #include "../../buffer_setting/buffer_common.h"
 #include "../../Settings.h"
+#include "hub75e_common.h"
 
 void _displaySmallHighResBuffer()
 {
@@ -16,41 +17,11 @@ void _displaySmallHighResBuffer()
 
         // chip 0
         _set_color(0);
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK16X;
 
         // chip 1
 
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK16X;
 
         // chip 2
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
@@ -205,37 +176,10 @@ void _displaySmallHighResBuffer()
 
         // chip 6
         _set_color(0);
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK16X;
 
         // chip 7
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK16X;
 
 #ifdef PANEL_SMALL_BRIGHT
 
@@ -253,148 +197,7 @@ void _displaySmallHighResBuffer()
         CLEAR_LAT;
 
         // fake new data so we fill the buffer
-#pragma region LSB_fake
-        // no need to set color to 0 as it already is
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-        DCLK_GCLK;
-
-        HIGH_LAT;
-        LATCH_GCLK;
-        CLEAR_LAT;
-#pragma endregion // LSB_fake
+        LSB_FAKE;
 #endif
 
         //  display row once done, so move data from latch registers to pwm modules
