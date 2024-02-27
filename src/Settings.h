@@ -4,7 +4,6 @@
 /////////////////////
 // #define PANEL_HUB75E // switches output to a format compatible with most 128x64 flex panels (chips: icnd2153, stp1612pw05, FM6124C or similar)
 // ######## ONLY WHEN IN THE HUB75E MODE:
-// #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
 // #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
 // #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
 // #define PANEL_HUB75E_SIZE //tells the library that the given panel size is meant for hub75e panels, else the given size is simulated

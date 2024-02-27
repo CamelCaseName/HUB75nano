@@ -82,11 +82,11 @@
     HIGH_CLK;     \
     CLEAR_CLK;    \
     CLEAR_OE
-#warning "No DCLK_GCLK defined for this board, using slower substitute"
+#pragma GCC warning "No DCLK_GCLK defined for this board, using slower substitute"
 #endif
 #ifndef LATCH_GCLK
 #define LATCH_GCLK DCLK_GCLK
-#warning "No LATCH_GCLK defined for this board, using slower substitute"
+#pragma GCC warning "No LATCH_GCLK defined for this board, using slower substitute"
 #endif
 
 #ifndef OVERFLOW

@@ -71,6 +71,31 @@
     HIGH_LAT; \
     CLEAR_LAT
 
+#if (OE < 8 && CLK < 8 && LAT < 8) || (OE < 14 && CLK < 14 && LAT < 14) || (OE > 13 && CLK > 13 && LAT > 13)
+#define PANEL_GPIO_NON_INTRUSIVE
+#endif
+
+#ifdef PANEL_GPIO_NON_INTRUSIVE
+#define DCLK_GCLK                           \
+    PORTB |= 5 << (uint8_t)1;               \
+    /*turn on clk and oe at the same time*/ \
+    PORTB &= (uint8_t) ~(5 << (uint8_t)1);  \
+    /*turn off clk and oe at the same time*/
+#define LATCH_GCLK DCLK_GCLK
+#else
+// todo find a way to decouple the pin and leave it floating
+#define DCLK_GCLK                                                            \
+    PORT_CLK = (1 << (uint8_t)PORT_PIN_CLK) + (1 << (uint8_t)PORT_PIN_OE);   \
+    /*turn on clk and oe at the same time, with no regards to other values*/ \
+    PORT_CLK = 0;                                                            \
+    /*turn off clk and oe at the same time, with no regards to other values*/
+#define LATCH_GCLK                                                                                                                     \
+    PORT_CLK = (1 << (uint8_t)PORT_PIN_CLK) + (1 << (uint8_t)PORT_PIN_OE) + (1 << (uint8_t)PORT_PIN_LAT); /*pin 1, 2 and 3 of byte b*/ \
+    /*turn on clk and oe at the same time, with no regards to other values*/                                                           \
+    PORT_CLK = (1 << (uint8_t)PORT_PIN_LAT); /*pin 2 of byte b*/                                                                       \
+    /*turn off clk and oe at the same time, with no regards to other values*/
+#endif
+
 #define OVERFLOW (SREG & _BV(SREG_C))
 
 #endif // HUB75NANO_NANO_H
