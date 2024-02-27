@@ -2,10 +2,12 @@
 #define HUB75NANO_1BIT_LED_H
 
 #include <inttypes.h>
+#include "../Settings.h"
 
 #pragma pack(push, 1)
 typedef struct LED_short
 { // 3 bytes long, contains 8 leds at 1 bit color depth
+#ifndef PANEL_COLOR_INVERSION
     uint8_t redUpperBit1Led1 : 1;
     uint8_t greenUpperBit1Led1 : 1;
     uint8_t blueUpperBit1Led1 : 1;
@@ -33,6 +35,35 @@ typedef struct LED_short
     uint8_t greenLowerBit1Led4 : 1;
     uint8_t blueLowerBit1Led4 : 1;
     uint8_t : 0;
+#else
+    uint8_t blueUpperBit1Led1 : 1;
+    uint8_t greenUpperBit1Led1 : 1;
+    uint8_t redUpperBit1Led1 : 1;
+    uint8_t blueLowerBit1Led1 : 1;
+    uint8_t greenLowerBit1Led1 : 1;
+    uint8_t redLowerBit1Led1 : 1;
+    uint8_t blueUpperBit1Led2 : 1;
+    uint8_t greenUpperBit1Led2 : 1;
+    uint8_t : 0;
+    uint8_t redUpperBit1Led2 : 1;
+    uint8_t blueLowerBit1Led2 : 1;
+    uint8_t greenLowerBit1Led2 : 1;
+    uint8_t redLowerBit1Led2 : 1;
+    uint8_t blueUpperBit1Led3 : 1;
+    uint8_t greenUpperBit1Led3 : 1;
+    uint8_t redUpperBit1Led3 : 1;
+    uint8_t blueLowerBit1Led3 : 1;
+    uint8_t : 0;
+    uint8_t greenLowerBit1Led3 : 1;
+    uint8_t redLowerBit1Led3 : 1;
+    uint8_t blueUpperBit1Led4 : 1;
+    uint8_t greenUpperBit1Led4 : 1;
+    uint8_t redUpperBit1Led4 : 1;
+    uint8_t blueLowerBit1Led4 : 1;
+    uint8_t greenLowerBit1Led4 : 1;
+    uint8_t redLowerBit1Led4 : 1;
+    uint8_t : 0;
+#endif
 } LED_short;
 #pragma pack(pop);
 

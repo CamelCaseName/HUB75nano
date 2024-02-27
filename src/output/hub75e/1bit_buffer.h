@@ -54,10 +54,6 @@ void _displaySmallBuffer()
         _stepRow();
 
         index = (LED *)(&buffer) + ((y & (uint8_t)~1) << (uint8_t)3); // advance over last row
-        Serial.print(y);
-        Serial.print(": ");
-        Serial.print(((y & (uint8_t)~1) << (uint8_t)3));
-        Serial.print("\n");
 
         // we integer divide the screen by 2 and then set 16 led to 8 values in pairs
 

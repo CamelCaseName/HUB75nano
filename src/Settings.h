@@ -19,6 +19,7 @@
 // #define PANEL_X 64 // width in pixels
 // #define PANEL_Y 32 // panel height in pixels
 // #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be of the form of (2^n - 1)
+// #define PANEL_COLOR_INVERSION //swaps red and blue
 /////////////////////
 
 // board size (currently max 1 board supported)
@@ -45,6 +46,7 @@
 #endif
 
 #ifdef PANEL_HUB75E
+#define PANEL_COLOR_INVERSION
 #ifdef PANEL_3_PIN_ROWS
 #undef PANEL_3_PIN_ROWS
 #else
@@ -58,6 +60,9 @@
 #define PANEL_E_X 128
 #define PANEL_E_Y 64
 #endif
+#else
+#define PANEL_E_X PANEL_X
+#define PANEL_E_Y PANEL_Y
 #endif
 
 #endif // PANEL_SETTINGS_H
