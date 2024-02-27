@@ -7,6 +7,7 @@
 // #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
 // #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
 // #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
+// #define PANEL_HUB75E_SIZE //tells the library that the given panel size is meant for hub75e panels, else the given size is simulated
 // ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
 // #define PANEL_3_PIN_ROWS // swaps the row addressing in from 5(binary) pin to 3 pin(shift register)
 // #define PANEL_BIG // use 2 bit rgb image buffer
@@ -49,6 +50,14 @@
 #undef PANEL_3_PIN_ROWS
 #else
 #define PANEL_3_PIN_ROWS
+#endif
+#ifdef PANEL_HUB75E_SIZE
+#define PANEL_E_X PANEL_X
+#define PANEL_E_Y PANEL_Y
+#else
+// default size for a hub75e panel, usually
+#define PANEL_E_X 128
+#define PANEL_E_Y 64
 #endif
 #endif
 

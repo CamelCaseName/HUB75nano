@@ -8,7 +8,7 @@
 void _displaySmallBuffer()
 {
     LED *index = (LED *)&buffer;
-    for (uint8_t y = 0; y < PANEL_Y / 2; y++) // 32 rows
+    for (uint8_t y = 0; y < PANEL_E_Y / 2; y++) // 32 rows
     {
 #ifndef PANEL_SMALL_BRIGHT
         _stepRow();
@@ -19,224 +19,162 @@ void _displaySmallBuffer()
 
         // chip 0
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 1
 
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 2
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 3
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 4
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 5
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 6
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
         // chip 7
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         ++index;
         _set_color(*(uint8_t *)(index) << (uint8_t)2);
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));
-        DCLK_GCLK;
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
         _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2));
-        DCLK_GCLK;
+        DCLK_GCLK_SCALED;
 
 #ifdef PANEL_SMALL_BRIGHT
 
@@ -246,9 +184,12 @@ void _displaySmallBuffer()
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
 
 #else
-        DCLK_GCLK;
         _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
         DCLK_GCLK;
+
+#if PANEL_X > 64
+        _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));
+#endif
 
         //  latch data from shift registers to latch register, "buffer" for global release to pwm
         HIGH_LAT;
