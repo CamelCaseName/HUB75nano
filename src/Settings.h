@@ -65,4 +65,11 @@
 #define PANEL_E_Y PANEL_Y
 #endif
 
+// font default here
+#ifndef PANEL_NO_FONT
+#ifndef PANEL_FONT
+#define PANEL_FONT 0
+#endif
+#endif
+
 #endif // PANEL_SETTINGS_H

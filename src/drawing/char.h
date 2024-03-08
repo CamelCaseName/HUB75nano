@@ -2,8 +2,9 @@
 #define HUB75NANO_CHAR_H
 
 #ifndef PANEL_NO_FONT
-#include "../fonts/font_common.h"
 #include "drawing_common.h"
+#include "rectangle.h"
+#include "../fonts/font_common.h"
 
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
@@ -17,14 +18,14 @@ drawChar(uint8_t x, uint8_t y, char letter, Color color)
 void drawChar(uint8_t x, uint8_t y, char letter, Color color, const Color bg_color)
 {
     // iterate through the character line by line
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < PANEL_FONT_Y; i++)
     {
-        char current_line = getFontLine(letter, i);
+        uint8_t current_line = getFontLine(letter, i);
         // iterate through the character bit by bit
-        for (uint8_t j = 0; j < 4; j++)
+        for (uint8_t j = 0; j < PANEL_FONT_X; j++)
         {
             // shift by j and check for bit set
-            if (current_line & (uint8_t)(1 << (uint8_t)(4 - j)))
+            if (current_line & (uint8_t)(1 << (uint8_t)(PANEL_FONT_X - j)))
             {
                 // set pixel at i and j
                 setBuffer(x + j, y + i, color);
@@ -60,14 +61,14 @@ void drawBigChar(uint8_t x, uint8_t y, char letter, Color color, Color bg_color,
     }
 
     // iterate through the character line by line
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < PANEL_FONT_Y; i++)
     {
-        char current_line = getFontLine(letter, i);
+        uint8_t current_line = getFontLine(letter, i);
         // iterate through the character bit by bit, so x direction
-        for (uint8_t j = 0; j < 4; j++)
+        for (uint8_t j = 0; j < PANEL_FONT_X; j++)
         {
             // shift by j and check for bit set
-            if (current_line & (uint8_t)(1 << (uint8_t)(4 - j)))
+            if (current_line & (uint8_t)(1 << (uint8_t)(PANEL_FONT_X - j)))
             {
                 // set pixel at i and j
                 drawSquare(x + j * size_modifier, y + i * size_modifier, size_modifier, color, true);

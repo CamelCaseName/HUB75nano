@@ -1,7 +1,7 @@
 #ifndef HUB75NANO_3X5FONT_H
 #define HUB75NANO_3x5FONT_H
 
-#include <Arduino.h>
+#include "Arduino.h"
 
 #pragma region font
 #ifndef PANEL_NO_FONT
@@ -124,7 +124,7 @@ const uint8_t font4x6[96][2] PROGMEM = {
 #ifdef PANEL_MAX_SPEED
 __attribute__((always_inline))
 #endif
-inline unsigned char
+inline uint8_t
 getFontLine(unsigned char data, int line_num)
 {
     const uint8_t index = (data - 32);
