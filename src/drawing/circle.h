@@ -42,8 +42,9 @@ void drawCircleHollow(uint8_t xMiddle, uint8_t yMiddle, uint8_t radius, Color co
         int8_t y = 0;
         // for bigger circles than can fit on the panel
         // int16_t error = radius >> 4, temp_error;
-        int8_t error = 0, temp_error;
-        while (x >= y)
+        int8_t error = 0;
+
+	    while (x - y > 0)
         {
             setBuffer(xMiddle - x, yMiddle - y, color);
             setBuffer(xMiddle - x, yMiddle + y, color);
@@ -55,13 +56,16 @@ void drawCircleHollow(uint8_t xMiddle, uint8_t yMiddle, uint8_t radius, Color co
             setBuffer(xMiddle + y, yMiddle + x, color);
             y++;
             error += y;
-            temp_error = error - x;
-            if (temp_error >= 0)
+            if (error - x >= 0)
             {
-                error = temp_error;
+                error -= x;
                 x--;
             }
         };
+            // setBuffer(xMiddle - x, yMiddle - x, color);
+            // setBuffer(xMiddle - x, yMiddle + x, color);
+            // setBuffer(xMiddle + x, yMiddle - x, color);
+            // setBuffer(xMiddle + x, yMiddle + x, color);
         break;
     }
 }
