@@ -155,6 +155,11 @@ getFontLine(unsigned char data, int line_num)
     return pixel & (uint8_t)0xE;
 } //<=============================================================================
 #endif
+
+// keep empty as we cannot yet change font here
+inline void setFont() {}
+inline void setFont(PGM_VOID_P fontArray) {}
+
 #pragma endregion // font
 
 #endif // HUB75NANO_3X5FONT_h
