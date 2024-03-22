@@ -43,8 +43,8 @@ The corresponding pins on the arduino are as follows:
 | --------- | ---- | ----- | -------- | ------------- | --------- | ----------------------------------------------------------------- |
 | A         | A0   | 11    | 22       | 11            | RA        | First/Least significant row bit                                   |
 | B         | A1   | 12    | 23       | 12            | RB        | Second row bit                                                    |
-| C         | A2   | 13    | 24       | 10            | RC        | Third row bit (needed for Panels with 9+ rows)                    |
-| D         | A3   | 8     | 25       | 13            | RD        | Fourth/Most significant row bit (needed for panels with 17+ rows) |
+| C         | A2   | 13    | 24       | 13            | RC        | Third row bit (needed for Panels with 9+ rows)                    |
+| D         | A3   | 8     | 25       | 10            | RD        | Fourth/Most significant row bit (needed for panels with 17+ rows) |
 | E         | A4   | 2     | 26       | 8             | RE        | (Only needed for Panels with 33+ rows)                            |
 | R1        | 2    | A3    | 47       | A5            | RF        | Set red LED on upper half                                         |
 | G1        | 3    | A2    | 46       | A4            | GF        | Set green LED on upper half                                       |
