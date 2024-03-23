@@ -6,6 +6,7 @@
 #include "ellipse.h"
 #include "line.h"
 #include "rectangle.h"
+#include "thickLine.h"
 #include "string.h"
 #include "triangle.h"
 

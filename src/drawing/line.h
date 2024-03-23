@@ -3,6 +3,56 @@
 
 #include "drawing_common.h"
 
+__attribute__((always_inline)) inline void _drawLineNoChecks(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, const Color &color)
+{
+    // draws a line with color between the coords given
+    // calculate both gradients
+    int8_t dx = abs(x2 - x1);
+    int8_t dy = -abs(y2 - y1);
+    int8_t sy = y1 < y2 ? 1 : -1;
+    int8_t sx = x1 < x2 ? 1 : -1;
+    // error corerction
+    int16_t err = dx + dy, e2;
+    while (1)
+    {
+        setBuffer(x1, y1, color);
+        setBuffer(x2, y2, color);
+        e2 = 2 * err;
+        if (e2 >= dy)
+        {
+            if (sx == 1)
+            {
+                if (x1 >= x2)
+                    break;
+            }
+            else
+            {
+                if (x2 >= x1)
+                    break;
+            }
+            err += dy;
+            x1 += sx;
+            x2 -= sx;
+        }
+        if (e2 <= dx)
+        {
+            if (sy == 1)
+            {
+                if (y1 >= y2)
+                    break;
+            }
+            else
+            {
+                if (y2 >= y1)
+                    break;
+            }
+            err += dx;
+            y1 += sy;
+            y2 -= sy;
+        }
+    }
+}
+
 void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
 {
     // horizontal lines
@@ -59,54 +109,7 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color)
         return;
     }
 
-    // draws a line with color between the coords given
-    // calculate both gradients
-    int8_t dx = abs(x2 - x1);
-    int8_t dy = -abs(y2 - y1);
-    int8_t sy = y1 < y2 ? 1 : -1;
-    int8_t sx = x1 < x2 ? 1 : -1;
-    // error corerction
-    int16_t err = dx + dy, e2;
-    while (1)
-    {
-        setBuffer(x1, y1, color);
-        setBuffer(x2, y2, color);
-        e2 = 2 * err;
-        if (e2 >= dy)
-        {
-            if (sx == 1)
-            {
-                if (x1 >= x2)
-                    break;
-            }
-            else
-            {
-                if (x2 >= x1)
-                    break;
-            }
-            err += dy;
-            x1 += sx;
-            x2 -= sx;
-        }
-        if (e2 <= dx)
-        {
-            if (sy == 1)
-            {
-                if (y1 >= y2)
-                    break;
-            }
-            else
-            {
-                if (y2 >= y1)
-                    break;
-            }
-            err += dx;
-            y1 += sy;
-            y2 -= sy;
-        }
-    }
+    _drawLineNoChecks(x1, y1, x2, y2, color);
 }
-
-// todo add line with width
 
 #endif // HUB75NANO_LINE_H
