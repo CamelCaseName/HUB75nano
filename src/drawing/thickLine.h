@@ -1,6 +1,8 @@
 #include "drawing_common.h"
 #include "rectangle.h"
 #include "line.h"
+#include "circle.h"
+#include "triangle.h"
 
 void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, uint8_t width)
 {
@@ -13,6 +15,8 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, uint8
 
     width++;
     width >>= 1;
+    fillCircle(x1, y1, width, color);
+    fillCircle(x2, y2, width, color);
 
     // always go from left to right, 0 to +
     if (x1 > x2)
@@ -47,7 +51,16 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, uint8
     int8_t sy = y1 < y2 ? 1 : -1;
     int16_t err = dx - dy, e2; /* error value e_xy */
     uint8_t x3, y3;
-    float ed = dx + dy == 0 ? 1 : sqrt((float)dx * dx + (float)dy * dy);
+    float ed = (dx + dy == 0 ? 1 : sqrt((float)dx * dx + (float)dy * dy)) * width;
+
+    if (dy >= 0)
+    {
+        fillTriangle(x1 + 1, y1 + width, x1, y1, x1 + (dx >> 1), y1 - (dy >> 1), color);
+    }
+    else
+    {
+        fillTriangle(x1 + 1, y1 - width, x1, y1, x1 + (dx >> 1), y1 + (dy >> 1), color);
+    }
 
     while (1)
     { /* pixel loop */
@@ -56,7 +69,7 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, uint8
         x3 = x1;
         if (2 * e2 >= -dx)
         { /* x step */
-            for (e2 += dy, y3 = y1; e2 < ed * width && (y2 != y3 || dx > dy); e2 += dx)
+            for (e2 += dy, y3 = y1; e2 < ed && (y2 != y3 || dx > dy); e2 += dx)
                 setBuffer(x1, y3 += sy, color);
             if (x1 == x2)
                 break;
@@ -66,7 +79,7 @@ void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, Color color, uint8
         }
         if (2 * e2 <= dy)
         { /* y step */
-            for (e2 = dx - e2; e2 < ed * width && (x2 != x3 || dx < dy); e2 += dy)
+            for (e2 = dx - e2; e2 < ed && (x2 != x3 || dx < dy); e2 += dy)
                 setBuffer(x3 += sx, y1, color);
             if (y1 == y2)
                 break;
