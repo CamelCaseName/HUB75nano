@@ -70,15 +70,16 @@ Example: `#define RA 12` This puts the first row bit on D12 instead of A0.
     Ⓜ️ : Maybe works, should in theory (probably needs a custom pin assignment)
 
 ### 5V boards, work just like that
-| board                 | chip          | operating voltage | supported                       |
-| --------------------- | ------------- | ----------------- | ------------------------------- |
-| Arduino Nano          | ATmega328(p)  | 5V                | ✅                               |
-| Arduino Uno R3        | Atmega328p    | 5V                | Ⓜ️                               |
-| Arduino Uno WiFi Rev2 | ATmega4809    | 5V                | Ⓜ️                               |
-| Arduino Uno R4 Minima | Renesas RA4M1 | 5V                | ✅                               |
-| Arduino Uno R4 WiFi   | Renesas RA4M1 | 5V                | Ⓜ️(pinout different than minima) |
-| Arduino Nano Every    | ATMega4809    | 5V                | ✅                               |
-| Arduino Mega          | ATmega2560    | 5V                | ✅                               |
+| board                 | chip          | operating voltage | supported                        |
+| --------------------- | ------------- | ----------------- | -------------------------------- |
+| Arduino Nano          | ATmega328(p)  | 5V                | ✅                                |
+| Arduino Pro Mini      | ATmega328(p)  | 5V                | ✅ (pinout is the same as nano)   |
+| Arduino Uno R3        | Atmega328p    | 5V                | Ⓜ️                                |
+| Arduino Uno WiFi Rev2 | ATmega4809    | 5V                | Ⓜ️                                |
+| Arduino Uno R4 Minima | Renesas RA4M1 | 5V                | ✅                                |
+| Arduino Uno R4 WiFi   | Renesas RA4M1 | 5V                | Ⓜ️ (pinout different than minima) |
+| Arduino Nano Every    | ATMega4809    | 5V                | ✅                                |
+| Arduino Mega          | ATmega2560    | 5V                | ✅                                |
 
 
 ### 3.3V boards, usually need level shifters

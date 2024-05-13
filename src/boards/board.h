@@ -4,7 +4,8 @@
 #include <Arduino.h>
 
 // check we are on uno or nano, get pinout and how we access them
-#ifdef ARDUINO_AVR_NANO // nano avr 328p
+// mini pro is the exact same as nano
+#ifdef ARDUINO_AVR_NANO || defined(ARDUINO_AVR_PRO) // nano avr 328p
 #include "boards/nano/nano.h"
 #if PANEL_X * PANEL_Y > 4096
 #pragma GCC warning "this panel size may be too large for the mighty nano ram, please choose a smaller size and let the library simulate bigger pixels"

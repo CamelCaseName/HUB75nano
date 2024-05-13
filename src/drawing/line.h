@@ -20,15 +20,9 @@ __attribute__((always_inline)) inline void _drawLineNoChecks(uint8_t x1, uint8_t
         e2 = 2 * err;
         if (e2 >= dy)
         {
-            if (sx == 1)
+            if ((sx == 1 && x1 >= x2) || (sx != 1 && x2 >= x1))
             {
-                if (x1 >= x2)
-                    break;
-            }
-            else
-            {
-                if (x2 >= x1)
-                    break;
+                break;
             }
             err += dy;
             x1 += sx;
@@ -36,15 +30,9 @@ __attribute__((always_inline)) inline void _drawLineNoChecks(uint8_t x1, uint8_t
         }
         if (e2 <= dx)
         {
-            if (sy == 1)
+            if ((sy == 1 && y1 >= y2) || (sy != 1 && y2 >= y1))
             {
-                if (y1 >= y2)
-                    break;
-            }
-            else
-            {
-                if (y2 >= y1)
-                    break;
+                break;
             }
             err += dx;
             y1 += sy;

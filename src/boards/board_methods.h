@@ -17,7 +17,8 @@
 // _stepRow();
 
 // include the relevant file to get the thingies
-#ifdef ARDUINO_AVR_NANO // nano with avr 328p
+// mini pro is the exact same as nano
+#ifdef ARDUINO_AVR_NANO || defined(ARDUINO_AVR_PRO) // nano with avr 328p
 #include "boards/nano/nano_methods.h"
 #else
 #ifdef ARDUINO_AVR_UNO
