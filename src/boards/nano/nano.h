@@ -5,38 +5,38 @@
 
 // actual pin numbers like in the arduino digitalwrite, can be changed here or in your project
 #ifndef RA
-#define RA 14 // row selector a
+#define RA 2 // row selector a
 #endif
 #ifndef RB
-#define RB 15 // row selector b
+#define RB 3 // row selector b
 #endif
 #ifndef RC
-#define RC 16 // row selector c
+#define RC 4 // row selector c
 #endif
 #ifndef RD
-#define RD 17 // row selector d
+#define RD 5 // row selector d
 #endif
 // currently unused
 #ifndef RE
-#define RE 18 // row selector e
+#define RE 6 // row selector e
 #endif
 #ifndef RF
-#define RF 2 // red first byte
+#define RF 14 // red first byte
 #endif
 #ifndef GF
-#define GF 3 // green first byte
+#define GF 15 // green first byte
 #endif
 #ifndef BF
-#define BF 4 // blue first byte
+#define BF 16 // blue first byte
 #endif
 #ifndef RS
-#define RS 5 // red second byte
+#define RS 17 // red second byte
 #endif
 #ifndef GS
-#define GS 6 // green second byte
+#define GS 18 // green second byte
 #endif
 #ifndef BS
-#define BS 7 // blue second byte
+#define BS 19 // blue second byte
 #endif
 #ifndef CLK
 #define CLK 9 // clock signal

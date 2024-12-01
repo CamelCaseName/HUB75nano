@@ -15,31 +15,31 @@ _set_color(uint8_t value)
 {
 #if RF == 47 and GF == 46 and BF == 45 and RS == 44 and GS == 43 and BS == 42
     // pins are chosen carefully to allow for this
-    PORTL = value;
+    PORTL = value << 2;
 #else
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 0" ::"r"(value));
     high_pin(RF);
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 0" ::"r"(value));
     clear_pin(RF);
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 1" ::"r"(value));
     high_pin(GF);
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 1" ::"r"(value));
     clear_pin(GF);
-    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
     high_pin(BF);
-    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
     clear_pin(BF);
-    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
     high_pin(RS);
-    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
     clear_pin(RS);
-    __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
     high_pin(GS);
-    __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
     clear_pin(GS);
-    __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
     high_pin(BS);
-    __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
     clear_pin(BS);
 #endif
 }

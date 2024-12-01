@@ -12,11 +12,11 @@ __attribute__((always_inline))
 inline void
 _set_color(uint8_t value)
 {
-    uint8_t invertedValue = (~value) & 252;
+    uint8_t invertedValue = (~value) & 63;
 #if RF == 11 and GF == 13 and BF == 8 and RS == 12 and GS == 9 and BS == 10
     // set 6 color pins and keep the rx tx pins as are
-    PORT->Group[0].OUTSET.reg = (value << 14);
-    PORT->Group[0].OUTCLR.reg = invertedValue << 14;
+    PORT->Group[0].OUTSET.reg = (value << 16);
+    PORT->Group[0].OUTCLR.reg = invertedValue << 16;
 #else
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RF))].OUTSET.reg = (value & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));
     PORT->Group[port_from_pin(arduino_pin_to_avr_pin(RF))].OUTCLR.reg = (invertedValue & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));

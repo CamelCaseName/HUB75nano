@@ -14,35 +14,34 @@ inline void
 _set_color(uint8_t value)
 {
 #if RF == A3 and GF == A2 and BF == A1 and RS == A0 and GS == A6 and BS == A7
-    // set 6 color pins and keep the rx tx pins as are
-    // we need to shift two as the reads are optimized for nano and expect the 0 and 1 to be rx/tx
-    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTSET = value >> 2;
-    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTCLR = (~(value >> 2)) & 63;
+    // set 6 color pins
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTSET = value;
+    ((PORT_t *)&PORTA + PORTD_OFFSET)->OUTCLR = (~(value)) & 63;
 
 #else
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 0" ::"r"(value));
     high_pin(RF);
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 0" ::"r"(value));
     clear_pin(RF);
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 1" ::"r"(value));
     high_pin(GF);
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 1" ::"r"(value));
     clear_pin(GF);
-    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
     high_pin(BF);
-    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
     clear_pin(BF);
-    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
     high_pin(RS);
-    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
     clear_pin(RS);
-    __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
     high_pin(GS);
-    __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
     clear_pin(GS);
-    __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
     high_pin(BS);
-    __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
     clear_pin(BS);
 #endif
 }

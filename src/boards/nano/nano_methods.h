@@ -12,33 +12,33 @@ __attribute__((always_inline))
 inline void
 _set_color(uint8_t value)
 {
-#if RF == 2 and GF == 3 and BF == 4 and RS == 5 and GS == 6 and BS == 7
+#if RF == 14 and GF == 15 and BF == 16 and RS == 17 and GS == 18 and BS == 19
     // set 6 color pins and keep the rx tx pins as are
-    PORTD = value | (PORTD & (uint8_t)3);
+    PORTC = value;
 #else
-    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 0" ::"r"(value));
     high_pin(PORT_RF, PORT_PIN_RF);
-    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 0" ::"r"(value));
     clear_pin(PORT_RF, PORT_PIN_RF);
-    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 1" ::"r"(value));
     high_pin(PORT_GF, PORT_PIN_GF);
-    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 1" ::"r"(value));
     clear_pin(PORT_GF, PORT_PIN_GF);
-    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 2" ::"r"(value));
     high_pin(PORT_BF, PORT_PIN_BF);
-    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 2" ::"r"(value));
     clear_pin(PORT_BF, PORT_PIN_BF);
-    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 3" ::"r"(value));
     high_pin(PORT_RS, PORT_PIN_RS);
-    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 3" ::"r"(value));
     clear_pin(PORT_RS, PORT_PIN_RS);
-    __asm__ __volatile__("sbrc	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 4" ::"r"(value));
     high_pin(PORT_GS, PORT_PIN_GS);
-    __asm__ __volatile__("sbrs	%0, 6" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 4" ::"r"(value));
     clear_pin(PORT_GS, PORT_PIN_GS);
-    __asm__ __volatile__("sbrc	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrc	%0, 5" ::"r"(value));
     high_pin(PORT_BS, PORT_PIN_BS);
-    __asm__ __volatile__("sbrs	%0, 7" ::"r"(value));
+    __asm__ __volatile__("sbrs	%0, 5" ::"r"(value));
     clear_pin(PORT_BS, PORT_PIN_BS);
 #endif
 }
@@ -72,29 +72,29 @@ _stepRow()
 #else
 // row pin check
 #if PANEL_Y > 32
-#if RA == 14 and RB == 15 and RC == 16 and RD == 17 and RE == 18
-    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)224;
+#if RA == 2 and RB == 3 and RC == 4 and RD == 5 and RE == 6
+    PORTD = (PANEL_ROW_VAR << 2) | PORTD & (uint8_t)0b11000001;
 #else
 #define PANEL_ROW_PINS_OOO
 #endif
 #else
 #if PANEL_Y > 16
-#if RA == 14 and RB == 15 and RC == 16 and RD == 17
-    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)240;
+#if RA == 2 and RB == 3 and RC == 4 and RD == 5
+    PORTD = (PANEL_ROW_VAR << 2) | PORTD & (uint8_t)0b11000011;
 #else
 #define PANEL_ROW_PINS_OOO
 #endif
 #else
 #if PANEL_Y > 8
-#if RA == 14 and RB == 15 and RC == 16
-    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)248;
+#if RA == 2 and RB == 3 and RC == 4
+    PORTD = (PANEL_ROW_VAR << 2) | PORTD & (uint8_t)0b11000111;
 #else
 #define PANEL_ROW_PINS_OOO
 #endif
 #else
 #if PANEL_Y > 4
-#if RA == 14 and RB == 15
-    PORTC = PANEL_ROW_VAR | PORTC & (uint8_t)252;
+#if RA == 2 and RB == 3
+    PORTD = (PANEL_ROW_VAR << 2) | PORTD & (uint8_t)0b11001111;
 #else
 #define PANEL_ROW_PINS_OOO
 #endif

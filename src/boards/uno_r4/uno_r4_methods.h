@@ -16,8 +16,8 @@ _set_color(uint8_t value)
 #if RF == A5 and GF == A4 and BF == 5 and RS == 4 and GS == 3 and BS == 2
     // set 6 color pins and keep the rx tx pins as are
     // we need to shift two as the reads are optimized for nano and expect the 0 and 1 to be rx/tx
-    ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.POSR = value >> 2;
-    ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.PORR = (~(value >> 2)) & 63;
+    ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.POSR = value;
+    ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.PORR = (~(value)) & 63;
 #else
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.POSR = (value & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));
     ((PORTS *)IO_PORT_START)->port[port_from_pin(arduino_pin_to_avr_pin(RF))].PCNTR3.PORR = ((~value) & 1) << bit_from_pin(arduino_pin_to_avr_pin(RF));

@@ -5,14 +5,14 @@
 #include "../../Settings.h"
 #include "hub75e_common.h"
 
-#define SET_4_PIXELS_LAST                                                                           \
-    _set_color(*(uint8_t *)(index) << (uint8_t)2);                                                  \
-    DCLK_GCLK_SCALED;                                                                               \
-    _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)4)));                                  \
-    DCLK_GCLK_SCALED;                                                                               \
-    _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)2)); \
-    DCLK_GCLK_SCALED;                                                                               \
-    _set_color((*(((uint8_t *)(index)) + (sizeof(uint8_t) * 2))));                                  \
+#define SET_4_PIXELS_LAST                                                                                         \
+    _set_color((*(uint8_t *)(index)) & (uint8_t)63);                                                              \
+    DCLK_GCLK_SCALED;                                                                                             \
+    _set_color((uint8_t)((*((uint16_t *)(index)) >> (uint8_t)6)) & (uint8_t)63);                                  \
+    DCLK_GCLK_SCALED;                                                                                             \
+    _set_color((uint8_t)((*((uint16_t *)(((uint8_t *)(index) + sizeof(uint8_t))))) >> (uint8_t)4) & (uint8_t)63); \
+    DCLK_GCLK_SCALED;                                                                                             \
+    _set_color(*((((uint8_t *)(index)) + (sizeof(uint8_t) * 2))) >> (uint8_t)2);                                  \
     DCLK_GCLK_SCALED_MINUS_ONE
 
 #define SET_4_PIXELS   \
