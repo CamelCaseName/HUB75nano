@@ -2,13 +2,7 @@
 #ifndef PANEL_SETTINGS_H
 #define PANEL_SETTINGS_H
 /////////////////////
-// #define PANEL_HUB75E // switches output to a format compatible with most 128x64 flex panels (chips: icnd2153, stp1612pw05, FM6124C or similar)
-// ######## ONLY WHEN IN THE HUB75E MODE:
-// #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
-// #define PANEL_GPIO_NON_INTRUSIVE // this saves the other pins on GPIOB on the nano and other smaller boards in hub75e mode
-// #define PANEL_HUB75E_SIZE //tells the library that the given panel size is meant for hub75e panels, else the given size is simulated
 // ######## THE FOLLOWING WORK REGARDLESS OF PANEL TYPE
-// #define PANEL_3_PIN_ROWS // swaps the row addressing in from 5(binary) pin to 3 pin(shift register)
 // #define PANEL_BIG // use 2 bit rgb image buffer
 // #define PANEL_FLASH // 4 bit flash buffer
 // #define PANEL_NO_BUFFER // no buffer, immediate mode only
@@ -18,8 +12,14 @@
 // #define PANEL_FLIP_HORIZONTAL // flips the panel horizontally
 // #define PANEL_X 64 // width in pixels
 // #define PANEL_Y 32 // panel height in pixels
-// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be of the form of (2^n - 1)
-// #define PANEL_COLOR_INVERSION //swaps red and blue
+// #define PANEL_MAX_FRAMETIME 127 // shades all colors, should be one of these (255, 127, 63, 31, 15, 7)
+// #define PANEL_3_PIN_ROWS // swaps the row addressing in 5(binary) to 3 pins(shift register)
+// #define PANEL_GPIO_NON_INTRUSIVE // this keeps the library from setting random pins on smaller boards, makes it a bit slower but you gain back the ports unused onthe block which is used by color (e.g PC6 on the avr328p)
+// #define PANEL_HUB75E // switches output to a format compatible with most 128x64 flex panels (chips: icnd2153, stp1612pw05, FM6124C or similar)
+// ######## ONLY WHEN IN THE HUB75E MODE:
+// #define PANEL_SMALL_BRIGHT // gets the image muuuuch brighter on the hub75e 1 bit buffer at the cost of some slight ghosting
+// #define PANEL_HIGH_RES // changes the size from effective 64x32 on the hub7e 128x64 panels to a full 64x64
+// #define PANEL_HUB75E_SIZE //tells the library that the given panel size is meant for hub75e panels, else the given size is simulated
 /////////////////////
 
 // board size (currently max 1 board supported)

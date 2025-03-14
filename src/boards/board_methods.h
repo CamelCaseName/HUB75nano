@@ -18,11 +18,8 @@
 
 // include the relevant file to get the thingies
 // mini pro is the exact same as nano
-#ifdef ARDUINO_AVR_NANO || defined(ARDUINO_AVR_PRO) // nano with avr 328p
+#if (defined(ARDUINO_AVR_NANO) || defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_UNO)) && defined(AVR) // all with avr 328(p)
 #include "boards/nano/nano_methods.h"
-#else
-#ifdef ARDUINO_AVR_UNO
-#include "boards/uno/uno_methods.h"
 #else
 #ifdef ARDUINO_SAMD_NANO_33_IOT // nano 33 iot
 #include "boards/iot/iot_methods.h"

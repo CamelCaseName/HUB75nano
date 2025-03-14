@@ -13,8 +13,12 @@ inline void
 _set_color(uint8_t value)
 {
 #if RF == 14 and GF == 15 and BF == 16 and RS == 17 and GS == 18 and BS == 19
-    // set 6 color pins and keep the rx tx pins as are
+// set 6 color pins and keep the rx tx pins as are
+#ifdef PANEL_GPIO_NON_INTRUSIVE
+    PORTC = value | (PORTC & 192);
+#else
     PORTC = value;
+#endif
 #else
     __asm__ __volatile__("sbrc	%0, 0" ::"r"(value));
     high_pin(PORT_RF, PORT_PIN_RF);
