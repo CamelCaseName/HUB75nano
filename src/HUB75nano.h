@@ -117,10 +117,6 @@ public:
 #endif
 #if PANEL_Y > 32
         set_pin_output(RE);
-#else
-#ifdef PANEL_5_PIN_ROWS
-        set_pin_output(RE);
-#endif
 #endif
         set_pin_output(RF);
         set_pin_output(RS);

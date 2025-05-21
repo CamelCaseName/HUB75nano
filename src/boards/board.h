@@ -57,20 +57,20 @@
 #endif
 
 #ifndef RB
+#ifndef PANEL_3_PIN_ROWS
 #error "this needs to be set for the selected board first"
+#endif
 #endif
 
 #if PANEL_Y > 8
 #ifndef RC
-#ifdef PANEL_5_PIN_ROWS
 #error "this needs to be set for the selected board first"
-#endif
 #endif
 #endif
 
 #if PANEL_Y > 16
 #ifndef RD
-#ifdef PANEL_5_PIN_ROWS
+#ifndef PANEL_3_PIN_ROWS
 #error "this needs to be set for the selected board first"
 #endif
 #endif
@@ -78,11 +78,7 @@
 
 #if PANEL_Y > 32
 #ifndef RE
-#error "this needs to be set for the selected board first"
-#endif
-#else
-#ifdef PANEL_5_PIN_ROWS
-#ifndef RE
+#ifndef PANEL_3_PIN_ROWS
 #error "this needs to be set for the selected board first"
 #endif
 #endif
