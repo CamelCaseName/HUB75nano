@@ -24,21 +24,7 @@ void _displayFlashBuffer()
 #endif
     {
         // we send first the MMSB, then MSB, LSB, LLSB
-#if PANEL_Y > 32
-        index = (buffer_t)(buffer + (y << (uint8_t)7));
-#else
-#if PANEL_Y > 16
-        index = (buffer_t)(buffer + (y << (uint8_t)6));
-#else
-#if PANEL_Y > 8
-        index = (buffer_t)(buffer + (y << (uint8_t)5));
-#else
-#if PANEL_Y > 4
-        index = (buffer_t)(buffer + (y << (uint8_t)4));
-#endif
-#endif
-#endif
-#endif
+        index = ((buffer_t)buffer) + ((uint16_t)y * PANEL_X);
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X - 1;
 #endif
@@ -179,7 +165,7 @@ void _displayFlashBuffer()
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
-        _set_color(pgm_read_byte(index));
+        _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
         // shift data into buffers
@@ -201,21 +187,7 @@ void _displayFlashBuffer()
     for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
-#if PANEL_Y > 32
-        index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE / 4);
-#else
-#if PANEL_Y > 16
-        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 4);
-#else
-#if PANEL_Y > 8
-        index = (buffer_t)(buffer + (y << (uint8_t)5)) + (PANEL_BUFFERSIZE / 4);
-#else
-#if PANEL_Y > 4
-        index = (buffer_t)(buffer + (y << (uint8_t)4)) + (PANEL_BUFFERSIZE / 4);
-#endif
-#endif
-#endif
-#endif
+        index = ((buffer_t)buffer) + ((uint16_t)y * PANEL_X) + (PANEL_BUFFERSIZE / 4);
 
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X - 1;
@@ -356,7 +328,7 @@ void _displayFlashBuffer()
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
-        _set_color(pgm_read_byte(index));
+        _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
         // shift data into buffers
@@ -378,21 +350,7 @@ void _displayFlashBuffer()
     for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
-#if PANEL_Y > 32
-        index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE / 2);
-#else
-#if PANEL_Y > 16
-        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE / 2);
-#else
-#if PANEL_Y > 8
-        index = (buffer_t)(buffer + (y << (uint8_t)5)) + (PANEL_BUFFERSIZE / 2);
-#else
-#if PANEL_Y > 4
-        index = (buffer_t)(buffer + (y << (uint8_t)4)) + (PANEL_BUFFERSIZE / 2);
-#endif
-#endif
-#endif
-#endif
+        index = ((buffer_t)buffer) + ((uint16_t)y * PANEL_X) + (PANEL_BUFFERSIZE / 2);
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X - 1;
 #endif
@@ -532,7 +490,7 @@ void _displayFlashBuffer()
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
-        _set_color(pgm_read_byte(index));
+        _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
         // shift data into buffers
@@ -554,21 +512,7 @@ void _displayFlashBuffer()
     for (int8_t y = (PANEL_Y / 2) - 1; y >= 0; y--) // 32 rows
 #endif
     {
-#if PANEL_Y > 32
-        index = (buffer_t)(buffer + (y << (uint8_t)7)) + (PANEL_BUFFERSIZE * 3 / 4);
-#else
-#if PANEL_Y > 16
-        index = (buffer_t)(buffer + (y << (uint8_t)6)) + (PANEL_BUFFERSIZE * 3 / 4);
-#else
-#if PANEL_Y > 8
-        index = (buffer_t)(buffer + (y << (uint8_t)5)) + (PANEL_BUFFERSIZE * 3 / 4);
-#else
-#if PANEL_Y > 4
-        index = (buffer_t)(buffer + (y << (uint8_t)4)) + (PANEL_BUFFERSIZE * 3 / 4);
-#endif
-#endif
-#endif
-#endif
+        index = ((buffer_t)buffer) + ((uint16_t)y * PANEL_X) + ((PANEL_BUFFERSIZE * 3) / 4);
 
 #ifdef PANEL_FLIP_HORIZONTAL
         index += PANEL_X - 1;
@@ -709,7 +653,7 @@ void _displayFlashBuffer()
         Clock;
         _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
-        _set_color(pgm_read_byte(index));
+        _set_color(pgm_read_byte(INDEX_MOVE));
         Clock;
 #endif
         // shift data into buffers

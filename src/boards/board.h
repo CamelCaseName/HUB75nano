@@ -11,8 +11,8 @@
 #pragma GCC warning "this panel size may be too large for the mighty nano ram, please choose a smaller size and let the library simulate bigger pixels"
 #endif
 #else
-#ifdef ARDUINO_AVR_UNO &&defined(__AVR_ATmega328P__)
-#include "boards/uno/uno.h"
+#ifdef ARDUINO_AVR_UNO && defined(__AVR_ATmega328P__)
+#include "boards/nano/nano.h"
 #else
 #ifdef ARDUINO_SAMD_NANO_33_IOT
 #include "boards/iot/iot.h"

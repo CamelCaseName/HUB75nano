@@ -7,6 +7,7 @@
 
 // buffer which contains the image we want to display, important to use the PROGMEM so it is saved to flash!
 // generated with https://github.com/CamelCaseName/BMP2HUB75
+// alternatively, you can use the python script in ../extras/bmp2hub75.py
 const unsigned char buffer[4096] PROGMEM = {
 
     0, 0, 0, 0, 48, 54, 54, 6, 54, 48, 8, 0, 6, 3, 6, 1, 1, 9, 9, 3, 3, 3, 3, 27, 1, 1, 3, 3, 3, 3, 3, 3, 3, 51, 51, 3, 1, 3, 51, 51, 51, 3, 51, 51, 51, 51, 51, 3, 51, 49, 1, 1, 1, 1, 51, 54, 48, 6, 0, 0, 48, 48, 48, 48,

@@ -47,7 +47,6 @@
 #endif
 #endif
 #endif
-#endif
 
 #ifndef HIGH_CLK
 #error "this needs to be set for the selected board first"
